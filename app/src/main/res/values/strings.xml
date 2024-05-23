@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Yahrtzeit Manager</string>
+    <string name="title_upcoming">Upcoming Yahrtzeits</string>
+    <string name="title_manage">Yahrtzeit List</string>
+    <string name="title_notifications">Notifications</string>
+</resources>
