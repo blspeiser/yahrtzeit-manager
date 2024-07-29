@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yahrtzeit_manager/model/yahrtzeit.dart';
-import 'package:provider/provider.dart';
 
 class YahrtzeitTile extends StatelessWidget {
   final Yahrtzeit yahrtzeit;
@@ -8,6 +7,7 @@ class YahrtzeitTile extends StatelessWidget {
 
   const YahrtzeitTile({required this.yahrtzeit, required this.onPressed});
 
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
@@ -17,27 +17,37 @@ class YahrtzeitTile extends StatelessWidget {
       margin: EdgeInsets.only(left: 20, right: 20, bottom: 10),
       padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
       child: ListTile(
-        leading: Image.asset(yahrtzeit.imagePath),
-        title: Padding(
-          padding: EdgeInsets.only(bottom: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(yahrtzeit.hebrewName, style: TextStyle(fontWeight: FontWeight.bold),),
-              Text(yahrtzeit.foreignName,),
-            ],
-          ),
-        ),
-        subtitle: Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(yahrtzeit.hebrewDate),
-            Text(yahrtzeit.gregorianDate)
+            Row(
+              children: [
+                Text(
+                  yahrtzeit.foreignName,
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                Spacer(),
+                Text(
+                  yahrtzeit.hebrewName,
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            SizedBox(height: 4),
+            Row(
+              children: [
+                Text(
+                  yahrtzeit.hebrewDate,
+                  style: TextStyle(fontSize: 18, ),
+                ),
+                Spacer(),
+                Text(
+                  yahrtzeit.gregorianDate,
+                  style: TextStyle(fontSize: 18,),
+                ),
+              ],
+            ),
           ],
-        ), 
-        trailing: IconButton(
-          icon: Icon(Icons.arrow_forward, color: Colors.brown[300]),
-          onPressed: onPressed,
         ),
       ),
     );

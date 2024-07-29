@@ -9,7 +9,7 @@ class ShownYahrtzeits extends ChangeNotifier {
       hebrewDate: "כו בתמוז",
       gregorianDate: "1.8.2024",
       tombPlace: "prague",
-      imagePath: "lib/images/1.jpg",
+      // imagePath: "lib/images/1.jpg",
     ),
     Yahrtzeit(
       hebrewName: "רַבִּי נַחוּם טְרִיבִיטְשׁ",
@@ -17,7 +17,7 @@ class ShownYahrtzeits extends ChangeNotifier {
       hebrewDate: "כו בתמוז",
       gregorianDate: "1.8.2024",
       tombPlace: "prague",
-      imagePath: "lib/images/1.jpg",
+      // imagePath: "lib/images/1.jpg",
     ),
     Yahrtzeit(
       hebrewName: "רַבִּי נַחוּם טְרִיבִיטְשׁ",
@@ -25,7 +25,7 @@ class ShownYahrtzeits extends ChangeNotifier {
       hebrewDate: "כו בתמוז",
       gregorianDate: "1.8.2024",
       tombPlace: "prague",
-      imagePath: "lib/images/1.jpg",
+      // imagePath: "lib/images/1.jpg",
     ),
     
   ];

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:yahrtzeit_manager/model/shown_yahrtzeits.dart';
-import 'pages/home_page.dart';
+import 'pages/yahrtzeit_list_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
-        home: HomePage(
+        home: YahrtzeitListPage(
         isDarkMode: _isDarkMode,
         toggleDarkMode: _toggleDarkMode,
         ),
