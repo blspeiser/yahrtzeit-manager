@@ -52,12 +52,29 @@ import '../model/shown_yahrtzeits.dart';
 import '../model/yahrtzeit.dart';
 
 class HomePage extends StatefulWidget {
+  final bool isDarkMode;
+  final Function toggleDarkMode;
+
+  const HomePage({
+    required this.isDarkMode,
+    required this.toggleDarkMode,
+  });
+
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+        title: Text(''),
+        actions: [
+          IconButton(
+            icon: Icon(widget.isDarkMode ? Icons.dark_mode : Icons.light_mode),
+            onPressed: widget.toggleDarkMode as void Function(),
+          ),
+        ],
+      ),
       body: Consumer<ShownYahrtzeits>(
         builder: (context, value, child) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,

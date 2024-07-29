@@ -7,13 +7,30 @@ void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+    _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _isDarkMode = false;
+
+  void _toggleDarkMode() {
+    setState(() {
+      _isDarkMode = !_isDarkMode;
+    });
+  }
+
+
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => ShownYahrtzeits(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: HomePage(),
+        theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
+        home: HomePage(
+        isDarkMode: _isDarkMode,
+        toggleDarkMode: _toggleDarkMode,
+        ),
       ),
     );
   }
