@@ -14,18 +14,27 @@ class YahrtzeitTile extends StatelessWidget {
         color: Colors.grey[200],
         borderRadius: BorderRadius.circular(12),
       ),
-      margin: EdgeInsets.only(left: 25, right: 25, bottom: 10),
-      padding: EdgeInsets.symmetric(vertical: 25, horizontal: 10),
+      margin: EdgeInsets.only(left: 20, right: 20, bottom: 10),
+      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
       child: ListTile(
         leading: Image.asset(yahrtzeit.imagePath),
         title: Padding(
           padding: EdgeInsets.only(bottom: 8),
-          child: Text(
-            yahrtzeit.hebrewName,
-            style: TextStyle(fontWeight: FontWeight.bold),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(yahrtzeit.hebrewName, style: TextStyle(fontWeight: FontWeight.bold),),
+              Text(yahrtzeit.foreignName,),
+            ],
           ),
         ),
-        subtitle: Text(yahrtzeit.hebrewDate),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(yahrtzeit.hebrewDate),
+            Text(yahrtzeit.gregorianDate)
+          ],
+        ), 
         trailing: IconButton(
           icon: Icon(Icons.arrow_forward, color: Colors.brown[300]),
           onPressed: onPressed,
