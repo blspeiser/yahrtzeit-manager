@@ -1,36 +1,73 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:yahrtzeit_manager/model/shown_yahrtzeits.dart';
-import 'pages/yahrtzeit_list_page.dart';
+import 'settings/settings.dart';
+import 'views/upcoming_yahrtzeits.dart';
+import 'views/manage_yahrtzeits.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(YahrtzeitManagerApp());
 }
 
-class MyApp extends StatefulWidget {
-    _MyAppState createState() => _MyAppState();
+class YahrtzeitManagerApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Yahrtzeit Manager',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        textTheme: TextTheme(
+          bodyLarge: TextStyle(color: Colors.black87),
+          bodyMedium: TextStyle(color: Colors.black54),
+        ),
+      ),
+      home: HomePage(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
 }
 
-class _MyAppState extends State<MyApp> {
-  bool _isDarkMode = false;
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
 
-  void _toggleDarkMode() {
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+
+  static  List<Widget> _widgetOptions = <Widget>[
+    UpcomingYahrtzeits(),
+    ManageYahrtzeits(),
+    SettingsPage(),
+  ];
+
+  void _onItemTapped(int index) {
     setState(() {
-      _isDarkMode = !_isDarkMode;
+      _selectedIndex = index;
     });
   }
 
-
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ShownYahrtzeits(),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
-        home: YahrtzeitListPage(
-        isDarkMode: _isDarkMode,
-        toggleDarkMode: _toggleDarkMode,
-        ),
+    return Scaffold(
+      body: _widgetOptions.elementAt(_selectedIndex),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: 'Upcoming',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.manage_accounts),
+            label: 'Manage',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.blue,
+        onTap: _onItemTapped,
       ),
     );
   }
