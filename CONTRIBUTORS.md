@@ -2,8 +2,8 @@
 
 - Baruch Speiser
 - Ohad Leibovich
-- Racheli Winer
-- Malka Yehudit Kirschenbaum
+- Rachel Weiner
+- Malka Yehudit Kirshenbaum
 - Avigail Gilboa
 - Michal Gutfroind
 - Mini Dzaldov
