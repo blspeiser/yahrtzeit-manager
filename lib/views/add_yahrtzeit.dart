@@ -3,6 +3,11 @@ import '../models/yahrtzeit.dart';
 import '../services/yahrtzeits_manager.dart';
 
 class AddYahrtzeitPage extends StatefulWidget {
+  final Yahrtzeit? yahrtzeit;
+  final bool isEditing;
+
+  AddYahrtzeitPage({this.yahrtzeit, this.isEditing = false});
+
   @override
   _AddYahrtzeitPageState createState() => _AddYahrtzeitPageState();
 }
@@ -15,10 +20,20 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
   final YahrtzeitsManager manager = YahrtzeitsManager();
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.isEditing && widget.yahrtzeit != null) {
+      _englishNameController.text = widget.yahrtzeit!.englishName;
+      _hebrewNameController.text = widget.yahrtzeit!.hebrewName;
+      _selectedDate = widget.yahrtzeit!.gregorianDate;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Yahrtzeit'),
+        title: Text(widget.isEditing ? 'Edit Yahrtzeit' : 'Add Yahrtzeit'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -58,7 +73,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveYahrtzeit,
-                child: Text('Save'),
+                child: Text(widget.isEditing ? 'Update' : 'Save'),
               ),
             ],
           ),
@@ -70,7 +85,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
   Future<void> _pickDate() async {
     DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime(2100),
     );
@@ -83,20 +98,6 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
 
   void _saveYahrtzeit() async {
     if (_formKey.currentState!.validate() && _selectedDate != null) {
-      // בקשת הרשאות
-      var permissionsGranted = await manager.deviceCalendarPlugin.hasPermissions();
-      print('Permissions Granted: $permissionsGranted');
-      if (permissionsGranted?.isSuccess == false || permissionsGranted?.data == false) {
-        permissionsGranted = await manager.deviceCalendarPlugin.requestPermissions();
-        print('Requested Permissions: $permissionsGranted');
-        if (permissionsGranted?.isSuccess == false || permissionsGranted?.data == false) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Calendar permissions not granted')),
-          );
-          return;
-        }
-      }
-
       final newYahrtzeit = Yahrtzeit(
         englishName: _englishNameController.text,
         hebrewName: _hebrewNameController.text,
@@ -105,8 +106,12 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
         year: _selectedDate!.year,
         gregorianDate: _selectedDate!,
       );
-      await manager.addYahrtzeit(newYahrtzeit);
-      Navigator.pop(context);
+      if (widget.isEditing && widget.yahrtzeit != null) {
+        await manager.updateYahrtzeit(widget.yahrtzeit!, newYahrtzeit);
+      } else {
+        await manager.addYahrtzeit(newYahrtzeit);
+      }
+      Navigator.pop(context, true);
     }
   }
 }
