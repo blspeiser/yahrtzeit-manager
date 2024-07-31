@@ -1,15 +1,16 @@
-import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
 import 'settings/settings.dart';
+import 'views/groups_page.dart';
 import 'views/manage_yahrtzeits.dart';
 import 'views/upcoming_yahrtzeits.dart';
 
 class HomePage extends StatefulWidget {
-  bool syncSettings = true;
-  bool notifications = true;
-  String language = 'en';
-  String jewishLanguage = 'he';
-  String calendar = 'he';
+  bool syncSettings;
+  bool notifications;
+  String language;
+  String jewishLanguage;
+  String calendar;
   int years;
   int days;
   final VoidCallback toggleSyncSettings;
@@ -36,6 +37,7 @@ class HomePage extends StatefulWidget {
     required this.changeYears,
     required this.changeDays,
   });
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -43,24 +45,16 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  static List<Widget> _widgetOptions = <Widget>[
-    UpcomingYahrtzeits(),
-    ManageYahrtzeits(),
-    ManageYahrtzeits(),
-    //SettingsPage(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  void navigateToSettingsPage() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SettingsPage(
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: <Widget>[
+          UpcomingYahrtzeits(),
+          ManageYahrtzeits(),
+          GroupsPage(),
+          SettingsPage(
             syncSettings: widget.syncSettings,
             notifications: widget.notifications,
             language: widget.language,
@@ -76,19 +70,8 @@ class _HomePageState extends State<HomePage> {
             changeYears: widget.changeYears,
             changeDays: widget.changeDays,
           ),
-        ));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: IconButton(
-          icon: Icon(Icons.settings),
-          onPressed: navigateToSettingsPage,
-        ),
+        ],
       ),
-      body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -100,13 +83,22 @@ class _HomePageState extends State<HomePage> {
             label: 'Manage',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'Groups',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue,
-        onTap: _onItemTapped,
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
       ),
     );
   }
