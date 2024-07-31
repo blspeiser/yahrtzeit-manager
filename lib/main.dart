@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'home_page.dart';
 import 'settings/settings.dart';
 import 'views/upcoming_yahrtzeits.dart';
 import 'views/manage_yahrtzeits.dart';
@@ -7,7 +8,67 @@ void main() {
   runApp(YahrtzeitManagerApp());
 }
 
-class YahrtzeitManagerApp extends StatelessWidget {
+class YahrtzeitManagerApp extends StatefulWidget {
+
+  YahrtzeitManagerApp();
+
+  @override
+  _YahrtzeitManagerAppState createState() => _YahrtzeitManagerAppState();
+}
+
+class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {
+
+  bool syncSettings = true;
+  bool notifications = true;
+  String language = 'en';
+  String jewishLanguage = 'he';
+  String calendar = 'device';
+  int years = 5;
+  int days = 10;
+
+
+  void toggleSyncSettings(){
+    setState(() {
+      syncSettings =!syncSettings;
+    });
+  }
+
+  void toggleNotifications(){
+    setState(() {
+      notifications =!notifications;
+    });
+  }
+
+  void changeLanguage(String lang){
+    setState(() {
+      language = lang;
+    });
+  }
+
+  void changeJewishLanguage(String lang){
+    setState(() {
+      jewishLanguage = lang;
+    });
+  }
+
+  void changeYears(int year){
+    setState(() {
+      years = year;
+    });
+  }
+
+  void changeDays(int day){
+    setState(() {
+      days = day;
+    });
+  }
+
+  void changeCalendar(String cal){
+    setState(() {
+      calendar = cal;
+    });
+  }
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -20,55 +81,23 @@ class YahrtzeitManagerApp extends StatelessWidget {
           bodyMedium: TextStyle(color: Colors.black54),
         ),
       ),
-      home: HomePage(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class HomePage extends StatefulWidget {
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
-
-  static  List<Widget> _widgetOptions = <Widget>[
-    UpcomingYahrtzeits(),
-    ManageYahrtzeits(),
-    SettingsPage(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _widgetOptions.elementAt(_selectedIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Upcoming',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.manage_accounts),
-            label: 'Manage',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        onTap: _onItemTapped,
+      home: HomePage(
+        syncSettings: syncSettings,
+        notifications: notifications,
+        language: language,
+        jewishLanguage: jewishLanguage,
+        years: years,
+        days: days,
+        calendar: calendar,
+        toggleSyncSettings: toggleSyncSettings,
+        toggleNotifications: toggleNotifications,
+        changeLanguage: changeLanguage,
+        changeJewishLanguage: changeJewishLanguage,
+        changeCalendar: changeCalendar,
+        changeYears: changeYears,
+        changeDays: changeDays,
       ),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
