@@ -16,8 +16,14 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
   final _formKey = GlobalKey<FormState>();
   final _englishNameController = TextEditingController();
   final _hebrewNameController = TextEditingController();
-  DateTime? _selectedDate;
+  final _dayController = TextEditingController();
+  String? _selectedMonth;
   final YahrtzeitsManager manager = YahrtzeitsManager();
+
+  final List<String> hebrewMonths = [
+    'Tishrey', 'Cheshvan', 'Kislev', 'Tevet', 'Shvat', 'Adar', 
+    'Nissan', 'Iyar', 'Sivan', 'Tamuz', 'Av', 'Elul'
+  ];
 
   @override
   void initState() {
@@ -25,7 +31,8 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     if (widget.isEditing && widget.yahrtzeit != null) {
       _englishNameController.text = widget.yahrtzeit!.englishName;
       _hebrewNameController.text = widget.yahrtzeit!.hebrewName;
-      _selectedDate = widget.yahrtzeit!.gregorianDate;
+      _dayController.text = widget.yahrtzeit!.day.toString();
+      _selectedMonth = hebrewMonths[widget.yahrtzeit!.month - 1];
     }
   }
 
@@ -61,14 +68,41 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                   return null;
                 },
               ),
-              ListTile(
-                title: Text(
-                  _selectedDate == null
-                      ? 'Select Date'
-                      : 'Selected Date: ${_selectedDate!.toLocal()}'.split(' ')[0],
-                ),
-                trailing: Icon(Icons.calendar_today),
-                onTap: _pickDate,
+              DropdownButtonFormField<String>(
+                value: _selectedMonth,
+                decoration: InputDecoration(labelText: 'Select Month'),
+                items: hebrewMonths.map((month) {
+                  return DropdownMenuItem<String>(
+                    value: month,
+                    child: Text(month),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedMonth = value;
+                  });
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a month';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _dayController,
+                decoration: InputDecoration(labelText: 'Select Day'),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a day';
+                  }
+                  final day = int.tryParse(value);
+                  if (day == null || day < 1 || day > 31) {
+                    return 'Please enter a valid day';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 20),
               ElevatedButton(
@@ -82,29 +116,19 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     );
   }
 
-  Future<void> _pickDate() async {
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100),
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
-
   void _saveYahrtzeit() async {
-    if (_formKey.currentState!.validate() && _selectedDate != null) {
+    if (_formKey.currentState!.validate()) {
+      final now = DateTime.now();
+      final selectedDay = int.parse(_dayController.text);
+      final selectedMonth = hebrewMonths.indexOf(_selectedMonth!) + 1;
+      final selectedDate = DateTime(now.year, selectedMonth, selectedDay);
       final newYahrtzeit = Yahrtzeit(
         englishName: _englishNameController.text,
         hebrewName: _hebrewNameController.text,
-        day: _selectedDate!.day,
-        month: _selectedDate!.month,
-        year: _selectedDate!.year,
-        gregorianDate: _selectedDate!,
+        day: selectedDay,
+        month: selectedMonth,
+        year: now.year,
+        gregorianDate: selectedDate,
       );
       if (widget.isEditing && widget.yahrtzeit != null) {
         await manager.updateYahrtzeit(widget.yahrtzeit!, newYahrtzeit);
@@ -115,3 +139,6 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     }
   }
 }
+
+
+

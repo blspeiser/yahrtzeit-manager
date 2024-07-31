@@ -9,6 +9,15 @@ class YahrtzeitsManager {
   final List<Yahrtzeit> _yahrtzeits = []; // In-memory storage
   final DeviceCalendarPlugin _deviceCalendarPlugin = DeviceCalendarPlugin();
 
+  static const platform = MethodChannel('com.yahrtzeits/manager');
+
+  Future<Map<String, dynamic>> nextYahrtzeit(
+      Map<String, dynamic> yahrtzeit) async {
+    final result = await platform.invokeMethod<Map<String, dynamic>>(
+        'nextYahrtzeit', yahrtzeit);
+    return result!;
+  }
+
   factory YahrtzeitsManager() {
     return _instance;
   }
@@ -21,10 +30,12 @@ class YahrtzeitsManager {
     try {
       var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
       print('Permissions Granted: $permissionsGranted');
-      if (permissionsGranted?.isSuccess == true && permissionsGranted?.data == false) {
+      if (permissionsGranted?.isSuccess == true &&
+          permissionsGranted?.data == false) {
         permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
         print('Requested Permissions: $permissionsGranted');
-        if (permissionsGranted?.isSuccess == false || permissionsGranted?.data == false) {
+        if (permissionsGranted?.isSuccess == false ||
+            permissionsGranted?.data == false) {
           print('Calendar permissions not granted');
           return;
         }
@@ -32,18 +43,21 @@ class YahrtzeitsManager {
 
       final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
       print('Calendars Result: $calendarsResult');
-      if (calendarsResult?.isSuccess == true && calendarsResult?.data!.isNotEmpty == true) {
+      if (calendarsResult?.isSuccess == true &&
+          calendarsResult?.data!.isNotEmpty == true) {
         _yahrtzeits.clear();
         for (var calendar in calendarsResult!.data!) {
           print('Retrieving events from calendar: ${calendar.name}');
           final eventsResult = await _deviceCalendarPlugin.retrieveEvents(
             calendar.id!,
             RetrieveEventsParams(
-              startDate: tz.TZDateTime.now(tz.local).subtract(Duration(days: 365)),
+              startDate:
+                  tz.TZDateTime.now(tz.local).subtract(Duration(days: 365)),
               endDate: tz.TZDateTime.now(tz.local).add(Duration(days: 365)),
             ),
           );
-          if (eventsResult?.isSuccess == true && eventsResult?.data!.isNotEmpty == true) {
+          if (eventsResult?.isSuccess == true &&
+              eventsResult?.data!.isNotEmpty == true) {
             for (var event in eventsResult!.data!) {
               if (event.description?.startsWith('Yahrtzeit for') == true) {
                 final hebrewName = _extractHebrewName(event.description!);
@@ -83,7 +97,8 @@ class YahrtzeitsManager {
     }
   }
 
-  Future<void> updateYahrtzeit(Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit) async {
+  Future<void> updateYahrtzeit(
+      Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit) async {
     await deleteYahrtzeit(oldYahrtzeit);
     await addYahrtzeit(newYahrtzeit);
   }
@@ -105,8 +120,10 @@ class YahrtzeitsManager {
     final allYahrtzeits = await getAllYahrtzeits();
     final now = tz.TZDateTime.now(tz.local);
     final upcomingYahrtzeits = allYahrtzeits.where((yahrtzeit) {
-      final yahrtzeitDate = tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local);
-      return yahrtzeitDate.isAfter(now) && yahrtzeitDate.isBefore(now.add(Duration(days: days)));
+      final yahrtzeitDate =
+          tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local);
+      return yahrtzeitDate.isAfter(now) &&
+          yahrtzeitDate.isBefore(now.add(Duration(days: days)));
     }).toList();
     return upcomingYahrtzeits;
   }
@@ -115,10 +132,12 @@ class YahrtzeitsManager {
     try {
       var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
       print('Permissions Granted: $permissionsGranted');
-      if (permissionsGranted?.isSuccess == true && permissionsGranted?.data == false) {
+      if (permissionsGranted?.isSuccess == true &&
+          permissionsGranted?.data == false) {
         permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
         print('Requested Permissions: $permissionsGranted');
-        if (permissionsGranted?.isSuccess == false || permissionsGranted?.data == false) {
+        if (permissionsGranted?.isSuccess == false ||
+            permissionsGranted?.data == false) {
           print('Calendar permissions not granted');
           return;
         }
@@ -126,21 +145,27 @@ class YahrtzeitsManager {
 
       final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
       print('Calendars Result: $calendarsResult');
-      if (calendarsResult?.isSuccess == true && calendarsResult?.data!.isNotEmpty == true) {
+      if (calendarsResult?.isSuccess == true &&
+          calendarsResult?.data!.isNotEmpty == true) {
         for (var calendar in calendarsResult!.data!) {
           print('Adding event to calendar: ${calendar.name}');
           final event = Event(
             calendar.id!,
             title: yahrtzeit.englishName,
-            description: 'Yahrtzeit for ${yahrtzeit.englishName} (${yahrtzeit.hebrewName})',
+            description:
+                'Yahrtzeit for ${yahrtzeit.englishName} (${yahrtzeit.hebrewName})',
             start: tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local),
-            end: tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local).add(Duration(hours: 1)),
+            end: tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local)
+                .add(Duration(hours: 1)),
           );
-          print('Event Details: ${event.title}, ${event.description}, ${event.start}, ${event.end}');
+          print(
+              'Event Details: ${event.title}, ${event.description}, ${event.start}, ${event.end}');
           final result = await _deviceCalendarPlugin.createOrUpdateEvent(event);
-          print('Create or Update Event Result for ${calendar.name}: ${result?.data}');
+          print(
+              'Create or Update Event Result for ${calendar.name}: ${result?.data}');
           if (result?.isSuccess == false) {
-            print('Error creating or updating event for ${calendar.name}: ${result?.data}');
+            print(
+                'Error creating or updating event for ${calendar.name}: ${result?.data}');
           }
         }
       } else {
@@ -154,19 +179,25 @@ class YahrtzeitsManager {
   Future<void> _deleteFromCalendar(Yahrtzeit yahrtzeit) async {
     try {
       final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
-      if (calendarsResult?.isSuccess == true && calendarsResult?.data!.isNotEmpty == true) {
+      if (calendarsResult?.isSuccess == true &&
+          calendarsResult?.data!.isNotEmpty == true) {
         for (var calendar in calendarsResult!.data!) {
           final eventsResult = await _deviceCalendarPlugin.retrieveEvents(
             calendar.id!,
             RetrieveEventsParams(
-              startDate: tz.TZDateTime.now(tz.local).subtract(Duration(days: 365)),
+              startDate:
+                  tz.TZDateTime.now(tz.local).subtract(Duration(days: 365)),
               endDate: tz.TZDateTime.now(tz.local).add(Duration(days: 365)),
             ),
           );
-          if (eventsResult?.isSuccess == true && eventsResult?.data!.isNotEmpty == true) {
+          if (eventsResult?.isSuccess == true &&
+              eventsResult?.data!.isNotEmpty == true) {
             for (var event in eventsResult!.data!) {
-              if (event.description?.startsWith('Yahrtzeit for ${yahrtzeit.englishName} (${yahrtzeit.hebrewName})') == true) {
-                await _deviceCalendarPlugin.deleteEvent(calendar.id!, event.eventId!);
+              if (event.description?.startsWith(
+                      'Yahrtzeit for ${yahrtzeit.englishName} (${yahrtzeit.hebrewName})') ==
+                  true) {
+                await _deviceCalendarPlugin.deleteEvent(
+                    calendar.id!, event.eventId!);
               }
             }
           }
@@ -178,7 +209,9 @@ class YahrtzeitsManager {
   }
 
   List<YahrtzeitDate> nextMultiple(List<Yahrtzeit> yahrtzeits) {
-    final dates = yahrtzeits.map((yahrtzeit) => YahrtzeitDate.fromYahrtzeit(yahrtzeit)).toList();
+    final dates = yahrtzeits
+        .map((yahrtzeit) => YahrtzeitDate.fromYahrtzeit(yahrtzeit))
+        .toList();
     dates.sort((a, b) => a.gregorianDate.compareTo(b.gregorianDate));
     return dates;
   }

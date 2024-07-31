@@ -30,9 +30,9 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       context,
       MaterialPageRoute(
         builder: (context) => AddYahrtzeitPage(
-          yahrtzeit: yahrtzeit,
-          isEditing: true,
-        ),
+            // yahrtzeit: yahrtzeit,
+            // isEditing: true,
+            ),
       ),
     );
     if (result == true) {
@@ -49,7 +49,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Manage Yahrtzeits', style: TextStyle(color: Colors.white, fontSize: 22)),
+        title: Text('Manage Yahrtzeits',
+            style: TextStyle(color: Colors.white, fontSize: 22)),
         centerTitle: true,
         backgroundColor: Color.fromARGB(255, 50, 4, 129),
         elevation: 0,
@@ -65,18 +66,74 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
           ),
         ],
       ),
+      // body: Container(
+      //   color: Colors.white,
+      //   child: ListView.builder(
+      //     itemCount: yahrtzeits.length,
+      //     itemBuilder: (context, index) {
+      //       final yahrtzeit = yahrtzeits[index];
+      //       return Card(
+      //         elevation: 5,
+      //         margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      //         child: ListTile(
+      //           contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      //           title: Row(
+      //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //             children: [
+      //               Column(
+      //                 crossAxisAlignment: CrossAxisAlignment.start,
+      //                 children: [
+      //                   Text(
+      //                     yahrtzeit.englishName,
+      //                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+      //                   ),
+      //                   SizedBox(height: 5),
+      //                   Text(
+      //                     yahrtzeit.hebrewName,
+      //                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+      //                   ),
+      //                 ],
+      //               ),
+      //             ],
+      //           ),
+      //           trailing: Row(
+      //             mainAxisSize: MainAxisSize.min,
+      //             children: [
+      //               IconButton(
+      //                 icon: Icon(Icons.edit, color: Colors.deepPurple),
+      //                 onPressed: () => _editYahrtzeit(yahrtzeit),
+      //               ),
+      //               IconButton(
+      //                 icon: Icon(Icons.delete, color: Colors.red),
+      //                 onPressed: () => _deleteYahrtzeit(yahrtzeit),
+      //               ),
+      //             ],
+      //           ),
+      //         ),
+      //       );
+      //     },
+      //   ),
+      // ),
       body: Container(
         color: Colors.white,
         child: ListView.builder(
           itemCount: yahrtzeits.length,
           itemBuilder: (context, index) {
+            // בדוק אם האינדקס תקין
+            if (index >= yahrtzeits.length || index < 0) {
+              return Container(); // החזר רכיב ריק אם האינדקס לא תקין
+            }
+
             final yahrtzeit = yahrtzeits[index];
             return Card(
               elevation: 5,
               margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
               child: ListTile(
-                contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                 title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -85,12 +142,16 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                       children: [
                         Text(
                           yahrtzeit.englishName,
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black),
                         ),
                         SizedBox(height: 5),
                         Text(
                           yahrtzeit.hebrewName,
-                          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[600]),
                         ),
                       ],
                     ),
