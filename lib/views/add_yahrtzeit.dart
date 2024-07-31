@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:time_machine/time_machine.dart';
+import 'package:time_machine/time_machine_text_patterns.dart';
 import '../models/yahrtzeit.dart';
 import '../services/yahrtzeits_manager.dart';
 
@@ -11,7 +13,8 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
   final _formKey = GlobalKey<FormState>();
   final _englishNameController = TextEditingController();
   final _hebrewNameController = TextEditingController();
-  DateTime? _selectedDate;
+  final _gregorianDateController = TextEditingController();
+  final _hebrewDateController = TextEditingController();
   final YahrtzeitsManager manager = YahrtzeitsManager();
 
   @override
@@ -46,19 +49,35 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                   return null;
                 },
               ),
-              ListTile(
-                title: Text(
-                  _selectedDate == null
-                      ? 'Select Date'
-                      : 'Selected Date: ${_selectedDate!.toLocal()}'.split(' ')[0],
+              TextFormField(
+                controller: _gregorianDateController,
+                decoration: InputDecoration(
+                  labelText: 'Gregorian Date',
+                  hintText: 'dd/MM/yyyy',
                 ),
-                trailing: Icon(Icons.calendar_today),
-                onTap: _pickDate,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter Gregorian Date';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _hebrewDateController,
+                decoration: InputDecoration(
+                  labelText: 'Hebrew Date',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter Hebrew Date';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveYahrtzeit,
-                child: Text('Save'),
+                child: Text('Save Yahrtzeit'),
               ),
             ],
           ),
@@ -67,46 +86,107 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     );
   }
 
-  Future<void> _pickDate() async {
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2100),
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
+  // void _saveYahrtzeit() async {
+  //   if (_formKey.currentState!.validate()) {
+  //     var permissionsGranted = await manager.deviceCalendarPlugin.hasPermissions();
+  //     print('Permissions Granted: $permissionsGranted');
+  //     if (permissionsGranted?.isSuccess == false || permissionsGranted?.data == false) {
+  //       permissionsGranted = await manager.deviceCalendarPlugin.requestPermissions();
+  //       print('Requested Permissions: $permissionsGranted');
+  //       if (permissionsGranted?.isSuccess == false || permissionsGranted?.data == false) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(content: Text('Calendar permissions not granted')),
+  //         );
+  //         return;
+  //       }
+  //     }
 
-  void _saveYahrtzeit() async {
-    if (_formKey.currentState!.validate() && _selectedDate != null) {
-      // בקשת הרשאות
-      var permissionsGranted = await manager.deviceCalendarPlugin.hasPermissions();
-      print('Permissions Granted: $permissionsGranted');
+  //     final pattern = OffsetDateTimePattern.createWithInvariantCulture('dd/MM/yyyy');
+  //     final parseResult = pattern.parse(_gregorianDateController.text);
+  //     if (!parseResult.success) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text('Invalid date format')),
+  //       );
+  //       return;
+  //     }
+
+  //     final offsetDateTime = parseResult.value;
+  //     final localDateTime = offsetDateTime.localDateTime;
+  //     final timeZone = await DateTimeZoneProviders.tzdb.getZoneOrNull("Asia/Jerusalem");
+  //     if (timeZone == null) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text('Time zone not found')),
+  //       );
+  //       return;
+  //     }
+  //     final zonedDateTime = ZonedDateTime(localDateTime as Instant, timeZone, offsetDateTime.offset as CalendarSystem?);
+
+  //     final newYahrtzeit = Yahrtzeit(
+  //       englishName: _englishNameController.text,
+  //       hebrewName: _hebrewNameController.text,
+  //       day: localDateTime.dayOfMonth,
+  //       month: localDateTime.monthOfYear,
+  //       year: localDateTime.year,
+  //       gregorianDate: zonedDateTime,
+  //     );
+
+  //     await manager.addYahrtzeit(newYahrtzeit);
+  //     Navigator.pop(context);
+  //   }
+  // }
+void _saveYahrtzeit() async {
+  if (_formKey.currentState!.validate()) {
+    var permissionsGranted = await manager.deviceCalendarPlugin.hasPermissions();
+    print('Permissions Granted: $permissionsGranted');
+    if (permissionsGranted?.isSuccess == false || permissionsGranted?.data == false) {
+      permissionsGranted = await manager.deviceCalendarPlugin.requestPermissions();
+      print('Requested Permissions: $permissionsGranted');
       if (permissionsGranted?.isSuccess == false || permissionsGranted?.data == false) {
-        permissionsGranted = await manager.deviceCalendarPlugin.requestPermissions();
-        print('Requested Permissions: $permissionsGranted');
-        if (permissionsGranted?.isSuccess == false || permissionsGranted?.data == false) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Calendar permissions not granted')),
-          );
-          return;
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Calendar permissions not granted')),
+        );
+        return;
       }
-
-      final newYahrtzeit = Yahrtzeit(
-        englishName: _englishNameController.text,
-        hebrewName: _hebrewNameController.text,
-        day: _selectedDate!.day,
-        month: _selectedDate!.month,
-        year: _selectedDate!.year,
-        gregorianDate: _selectedDate!,
-      );
-      await manager.addYahrtzeit(newYahrtzeit);
-      Navigator.pop(context);
     }
+
+    final pattern = OffsetDateTimePattern.createWithInvariantCulture('dd/MM/yyyy');
+    final parseResult = pattern.parse(_gregorianDateController.text);
+    if (!parseResult.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Invalid date format')),
+      );
+      return;
+    }
+
+    final offsetDateTime = parseResult.value;
+    final localDateTime = offsetDateTime.localDateTime;
+
+    // Get the timezone provider
+    final timeZoneProvider = await DateTimeZoneProviders.tzdb;
+    final timeZone = timeZoneProvider['Asia/Jerusalem'];
+    if (timeZone == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Time zone not found')),
+      );
+      return;
+    }
+
+    final zonedDateTime = ZonedDateTime(localDateTime as Instant, timeZone as DateTimeZone?, offsetDateTime.offset as CalendarSystem?);
+
+    final newYahrtzeit = Yahrtzeit(
+      englishName: _englishNameController.text,
+      hebrewName: _hebrewNameController.text,
+      day: localDateTime.dayOfMonth,
+      month: localDateTime.monthOfYear,
+      year: localDateTime.year,
+      gregorianDate: zonedDateTime,
+    );
+
+    await manager.addYahrtzeit(newYahrtzeit);
+    Navigator.pop(context);
   }
 }
+
+}
+
+

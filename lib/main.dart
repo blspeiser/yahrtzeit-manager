@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'settings/settings.dart';
 import 'views/upcoming_yahrtzeits.dart';
 import 'views/manage_yahrtzeits.dart';
+import 'package:time_machine/time_machine.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await TimeMachine.initialize({'rootBundle': rootBundle});
   runApp(YahrtzeitManagerApp());
 }
 

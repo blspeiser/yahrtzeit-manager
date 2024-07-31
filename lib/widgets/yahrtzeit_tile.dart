@@ -29,7 +29,7 @@ class YahrtzeitTile extends StatelessWidget {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  '${yahrtzeitDate.gregorianDate.toLocal().toString().split(' ')[0]}',
+                  '${yahrtzeitDate.gregorianDate.toString().split(' ')[0]}',
                   style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                 ),
               ],
@@ -79,14 +79,14 @@ class YahrtzeitTile extends StatelessWidget {
   }
 
   String _createICSContent(YahrtzeitDate yahrtzeitDate) {
-    final start = yahrtzeitDate.gregorianDate.toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '');
-    final end = yahrtzeitDate.gregorianDate.add(Duration(hours: 1)).toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '');
+    final start = yahrtzeitDate.gregorianDate.toString().replaceAll('-', '').replaceAll(':', '');
+    final end = yahrtzeitDate.gregorianDate.toString().replaceAll('-', '').replaceAll(':', '');
     return '''
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Your Organization//Your Product//EN
 BEGIN:VEVENT
-UID:${yahrtzeitDate.gregorianDate.microsecondsSinceEpoch}@yourdomain.com
+UID:${yahrtzeitDate.gregorianDate}@yourdomain.com
 DTSTAMP:${DateTime.now().toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '')}
 DTSTART:$start
 DTEND:$end

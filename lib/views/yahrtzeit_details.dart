@@ -20,7 +20,7 @@ class YahrtzeitDetailsPage extends StatelessWidget {
                 'Yahrtzeit Details:\n\n'
                 'English Name: ${yahrtzeitDate.yahrtzeit.englishName}\n'
                 'Hebrew Name: ${yahrtzeitDate.yahrtzeit.hebrewName}\n'
-                'Gregorian Date: ${yahrtzeitDate.gregorianDate.toLocal().toString().split(' ')[0]}\n'
+                'Gregorian Date: ${yahrtzeitDate.gregorianDate.toString().split(' ')[0]}\n'
                 'Hebrew Date: ${yahrtzeitDate.hebrewDate}',
               );
             },
@@ -36,7 +36,7 @@ class YahrtzeitDetailsPage extends StatelessWidget {
             SizedBox(height: 10),
             Text('Hebrew Name: ${yahrtzeitDate.yahrtzeit.hebrewName}', style: TextStyle(fontSize: 20)),
             SizedBox(height: 10),
-            Text('Gregorian Date: ${yahrtzeitDate.gregorianDate.toLocal().toString().split(' ')[0]}', style: TextStyle(fontSize: 20)),
+            Text('Gregorian Date: ${yahrtzeitDate.gregorianDate.toString().split(' ')[0]}', style: TextStyle(fontSize: 20)),
             SizedBox(height: 10),
             Text('Hebrew Date: ${yahrtzeitDate.hebrewDate}', style: TextStyle(fontSize: 20)),
           ],
