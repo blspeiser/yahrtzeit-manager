@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> {
     UpcomingYahrtzeits(),
     ManageYahrtzeits(),
     ManageYahrtzeits(),
-    //SettingsPage(),
+    // SettingsPage(),
   ];
 
   void _onItemTapped(int index) {

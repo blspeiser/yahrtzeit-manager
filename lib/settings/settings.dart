@@ -269,9 +269,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings', style: TextStyle(color: Colors.white),),
-        backgroundColor: Color.fromARGB(255, 50, 4, 129),
-        centerTitle: true,
+        title: Text('Settings'),
       ),
       body: ListView(
         children: [
@@ -282,7 +280,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           ListTile(
-            title: Text('Language'),
+            title: Text('Main Language'),
             trailing: DropdownButton<String>(
               value: _language,
               items: [
