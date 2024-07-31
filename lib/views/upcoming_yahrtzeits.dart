@@ -35,28 +35,17 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Upcoming Yahrtzeits', style: TextStyle(color: Colors.white, fontSize: 22)),
-        centerTitle: true,
-        backgroundColor: Color.fromARGB(255, 50, 4, 129),
-        elevation: 0,
+        title: Text('Upcoming Yahrtzeits'),
       ),
-      body: Container(
-        color: Colors.white,
-        child: yahrtzeitDates.isEmpty
-            ? Center(
-                child: Text(
-                  'No upcoming yahrtzeits found.',
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
-              )
-            : ListView.builder(
-                itemCount: yahrtzeitDates.length,
-                itemBuilder: (context, index) {
-                  final yahrtzeitDate = yahrtzeitDates[index];
-                  return YahrtzeitTile(yahrtzeitDate: yahrtzeitDate);
-                },
-              ),
-      ),
+      body: yahrtzeitDates.isEmpty
+          ? Center(child: Text('No upcoming yahrtzeits found.'))
+          : ListView.builder(
+              itemCount: yahrtzeitDates.length,
+              itemBuilder: (context, index) {
+                final yahrtzeitDate = yahrtzeitDates[index];
+                return YahrtzeitTile(yahrtzeitDate: yahrtzeitDate);
+              },
+            ),
     );
   }
 }

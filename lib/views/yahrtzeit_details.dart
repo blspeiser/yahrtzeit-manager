@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kosher_dart/kosher_dart.dart';
 import 'package:share/share.dart';
 import '../models/yahrtzeit_date.dart';
-import 'package:intl/intl.dart';
 
 class YahrtzeitDetailsPage extends StatelessWidget {
   final YahrtzeitDate yahrtzeitDate;
@@ -11,11 +9,6 @@ class YahrtzeitDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gregorianFormatter = DateFormat('MMMM d, yyyy');
-    final hebrewFormatter = HebrewDateFormatter()
-      ..hebrewFormat = true
-      ..useGershGershayim = true;
-
     return Scaffold(
       appBar: AppBar(
         title: Text('${yahrtzeitDate.yahrtzeit.englishName} Details'),
@@ -27,8 +20,8 @@ class YahrtzeitDetailsPage extends StatelessWidget {
                 'Yahrtzeit Details:\n\n'
                 'English Name: ${yahrtzeitDate.yahrtzeit.englishName}\n'
                 'Hebrew Name: ${yahrtzeitDate.yahrtzeit.hebrewName}\n'
-                'Gregorian Date: ${gregorianFormatter.format(yahrtzeitDate.gregorianDate)}\n'
-                'Hebrew Date: ${hebrewFormatter.format(yahrtzeitDate.hebrewDate)}',
+                'Gregorian Date: ${yahrtzeitDate.gregorianDate.toLocal().toString().split(' ')[0]}\n'
+                'Hebrew Date: ${yahrtzeitDate.hebrewDate}',
               );
             },
           ),
@@ -36,44 +29,18 @@ class YahrtzeitDetailsPage extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Card(
-          elevation: 5,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildDetailRow('English Name', yahrtzeitDate.yahrtzeit.englishName),
-                _buildDetailRow('Hebrew Name', yahrtzeitDate.yahrtzeit.hebrewName),
-                _buildDetailRow('Gregorian Date', gregorianFormatter.format(yahrtzeitDate.gregorianDate)),
-                _buildDetailRow('Hebrew Date', hebrewFormatter.format(yahrtzeitDate.hebrewDate)),
-              ],
-            ),
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('English Name: ${yahrtzeitDate.yahrtzeit.englishName}', style: TextStyle(fontSize: 20)),
+            SizedBox(height: 10),
+            Text('Hebrew Name: ${yahrtzeitDate.yahrtzeit.hebrewName}', style: TextStyle(fontSize: 20)),
+            SizedBox(height: 10),
+            Text('Gregorian Date: ${yahrtzeitDate.gregorianDate.toLocal().toString().split(' ')[0]}', style: TextStyle(fontSize: 20)),
+            SizedBox(height: 10),
+            Text('Hebrew Date: ${yahrtzeitDate.hebrewDate}', style: TextStyle(fontSize: 20)),
+          ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '$label:',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          Flexible(
-            child: Text(
-              value,
-              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-              textAlign: TextAlign.right,
-            ),
-          ),
-        ],
       ),
     );
   }

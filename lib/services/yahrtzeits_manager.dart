@@ -83,19 +83,6 @@ class YahrtzeitsManager {
     }
   }
 
-  Future<void> updateYahrtzeit(Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit) async {
-    await deleteYahrtzeit(oldYahrtzeit);
-    await addYahrtzeit(newYahrtzeit);
-  }
-
-  Future<void> deleteYahrtzeit(Yahrtzeit yahrtzeit) async {
-    _yahrtzeits.removeWhere((y) =>
-        y.englishName == yahrtzeit.englishName &&
-        y.hebrewName == yahrtzeit.hebrewName &&
-        y.gregorianDate == yahrtzeit.gregorianDate);
-    await _deleteFromCalendar(yahrtzeit);
-  }
-
   Future<List<Yahrtzeit>> getAllYahrtzeits() async {
     await syncWithCalendar();
     return _yahrtzeits;
@@ -148,32 +135,6 @@ class YahrtzeitsManager {
       }
     } on PlatformException catch (e) {
       print('Error adding event to calendar: $e');
-    }
-  }
-
-  Future<void> _deleteFromCalendar(Yahrtzeit yahrtzeit) async {
-    try {
-      final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
-      if (calendarsResult?.isSuccess == true && calendarsResult?.data!.isNotEmpty == true) {
-        for (var calendar in calendarsResult!.data!) {
-          final eventsResult = await _deviceCalendarPlugin.retrieveEvents(
-            calendar.id!,
-            RetrieveEventsParams(
-              startDate: tz.TZDateTime.now(tz.local).subtract(Duration(days: 365)),
-              endDate: tz.TZDateTime.now(tz.local).add(Duration(days: 365)),
-            ),
-          );
-          if (eventsResult?.isSuccess == true && eventsResult?.data!.isNotEmpty == true) {
-            for (var event in eventsResult!.data!) {
-              if (event.description?.startsWith('Yahrtzeit for ${yahrtzeit.englishName} (${yahrtzeit.hebrewName})') == true) {
-                await _deviceCalendarPlugin.deleteEvent(calendar.id!, event.eventId!);
-              }
-            }
-          }
-        }
-      }
-    } on PlatformException catch (e) {
-      print('Error deleting event from calendar: $e');
     }
   }
 

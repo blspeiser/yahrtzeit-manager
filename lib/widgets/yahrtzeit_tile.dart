@@ -1,12 +1,9 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:kosher_dart/kosher_dart.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
+import 'package:path_provider/path_provider.dart';
 import '../models/yahrtzeit_date.dart';
 import '../views/yahrtzeit_details.dart';
-import 'package:intl/intl.dart';
 
 class YahrtzeitTile extends StatelessWidget {
   final YahrtzeitDate yahrtzeitDate;
@@ -15,11 +12,6 @@ class YahrtzeitTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gregorianFormatter = DateFormat('MMMM d, yyyy');
-    final hebrewFormatter = HebrewDateFormatter()
-      ..hebrewFormat = true
-      ..useGershGershayim = true;
-
     return Card(
       elevation: 5,
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -37,7 +29,7 @@ class YahrtzeitTile extends StatelessWidget {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  gregorianFormatter.format(yahrtzeitDate.gregorianDate),
+                  '${yahrtzeitDate.gregorianDate.toLocal().toString().split(' ')[0]}',
                   style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                 ),
               ],
@@ -50,7 +42,7 @@ class YahrtzeitTile extends StatelessWidget {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  hebrewFormatter.format(yahrtzeitDate.hebrewDate),
+                  '${yahrtzeitDate.hebrewDate}',
                   style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                 ),
               ],
@@ -87,31 +79,21 @@ class YahrtzeitTile extends StatelessWidget {
   }
 
   String _createICSContent(YahrtzeitDate yahrtzeitDate) {
-    final start = _formatDateTime(yahrtzeitDate.gregorianDate);
-    final end = _formatDateTime(yahrtzeitDate.gregorianDate.add(Duration(hours: 1)));
-    final now = _formatDateTime(DateTime.now());
-    final uid = '${yahrtzeitDate.gregorianDate.microsecondsSinceEpoch}@yourdomain.com';
-    
+    final start = yahrtzeitDate.gregorianDate.toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '');
+    final end = yahrtzeitDate.gregorianDate.add(Duration(hours: 1)).toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '');
     return '''
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Your Organization//Your Product//EN
-CALSCALE:GREGORIAN
 BEGIN:VEVENT
-UID:$uid
-DTSTAMP:$now
+UID:${yahrtzeitDate.gregorianDate.microsecondsSinceEpoch}@yourdomain.com
+DTSTAMP:${DateTime.now().toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '')}
 DTSTART:$start
 DTEND:$end
 SUMMARY:Yahrtzeit for ${yahrtzeitDate.yahrtzeit.englishName} (${yahrtzeitDate.yahrtzeit.hebrewName})
 DESCRIPTION:Yahrtzeit for ${yahrtzeitDate.yahrtzeit.englishName} (${yahrtzeitDate.yahrtzeit.hebrewName})
-STATUS:CONFIRMED
-TRANSP:OPAQUE
 END:VEVENT
 END:VCALENDAR
     ''';
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    return dateTime.toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '').split('.')[0] + 'Z';
   }
 }
