@@ -17,11 +17,13 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
   final _englishNameController = TextEditingController();
   final _hebrewNameController = TextEditingController();
   final _dayController = TextEditingController();
+  final _groupController = TextEditingController();
+
   String? _selectedMonth;
   final YahrtzeitsManager manager = YahrtzeitsManager();
 
   final List<String> hebrewMonths = [
-    'Tishrey', 'Cheshvan', 'Kislev', 'Tevet', 'Shvat', 'Adar', 
+    'Tishrey', 'Cheshvan', 'Kislev', 'Tevet', 'Shvat', 'Adar', 'AdarAleph','AdarBeit',
     'Nissan', 'Iyar', 'Sivan', 'Tamuz', 'Av', 'Elul'
   ];
 
@@ -100,6 +102,16 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                   final day = int.tryParse(value);
                   if (day == null || day < 1 || day > 31) {
                     return 'Please enter a valid day';
+                  }
+                  return null;
+                },
+              ),
+               TextFormField(
+                controller: _groupController,
+                decoration: InputDecoration(labelText: 'Group Name'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter Group name';
                   }
                   return null;
                 },
