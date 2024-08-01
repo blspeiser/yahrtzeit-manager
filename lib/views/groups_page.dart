@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../models/yahrtzeit.dart';
 import '../models/group.dart';
