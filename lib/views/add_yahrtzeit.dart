@@ -47,7 +47,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                 controller: _englishNameController,
                 // decoration: InputDecoration(labelText: 'English Name'),
                 //  title: Text(AppLocalizations.of(context)!.translate('settings'), style: TextStyle(color: Colors.white)),
-                decoration: InputDecoration( labelText: (AppLocalizations.of(context)!.translate('English Name'))),
+                decoration: InputDecoration( labelText: (AppLocalizations.of(context)!.translate('Jewish Name'))),
  
 
                 validator: (value) {
@@ -59,7 +59,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
               ),
               TextFormField(
                 controller: _hebrewNameController,
-                decoration: InputDecoration( labelText: (AppLocalizations.of(context)!.translate('Hebrew Name'))),
+                decoration: InputDecoration( labelText: (AppLocalizations.of(context)!.translate('Full Name'))),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return (AppLocalizations.of(context)!.translate('Please enter Hebrew name'));

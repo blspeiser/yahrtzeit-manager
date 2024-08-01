@@ -19,6 +19,15 @@
     "Update":"עדכן",
     "Edit Yahrtzeit":"עריכה",
     "Details":"פרטים",
-    "Groups":"קבוצות"
+    "Groups":"קבוצות",
+    "Jewish Name":"שם יהודי",
+    "Full Name":"שם מלא ",
+    "days_before":"מספר ימים לפני קבלת ההתראה",
+    "years":"שנים",
+    "jewish_language":"שפה יהודית",
+    "calendar_settings":"הגדרות לוח",
+    "Google Calendar":"לוח גוגל",
+    "Device Calendar":"יומן הפלאפון"
+    
   }
   

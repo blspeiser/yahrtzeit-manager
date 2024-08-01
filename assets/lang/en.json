@@ -1,4 +1,3 @@
-
 {
     "title": "Yahrtzeit Manager",
     "upcoming": "Upcoming",
@@ -20,6 +19,16 @@
     "Update":"Update",
     "Edit Yahrtzeit":"Edit Yahrtzeit",
     "Details":"Details",
-    "Groups":"Groups"
+    "Groups":"Groups",
+    "Jewish Name":"Jewish Name",
+    "Full Name":"Full Name",
+    "days_before":"days_before",
+    "years":"years",
+    "jewish_language":"jewish_language",
+    "calendar_settings":"calendar_settings",
+    "Google Calendar":"Google Calendar",
+    "Device Calendar":"Device Calendar"
+
+    
   }
   
