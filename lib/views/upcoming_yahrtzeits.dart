@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/yahrtzeit.dart';
 import '../models/yahrtzeit_date.dart';
 import '../services/yahrtzeits_manager.dart';
 import '../widgets/yahrtzeit_tile.dart';
@@ -12,13 +11,11 @@ class UpcomingYahrtzeits extends StatefulWidget {
 class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   final YahrtzeitsManager manager = YahrtzeitsManager();
   List<YahrtzeitDate> yahrtzeitDates = [];
-
   @override
   void initState() {
     super.initState();
     fetchYahrtzeits();
   }
-
   Future<void> fetchYahrtzeits() async {
     try {
       final yahrtzeits = await manager.getUpcomingYahrtzeits();
