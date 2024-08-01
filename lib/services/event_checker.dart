@@ -31,24 +31,35 @@ class EventChecker {
   }
 
   void showAlert(BuildContext context, Event event) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Event Today: ${event.title}'),
-            content: Text('Details: ${event.description ?? "No details"}'),
-            actions: <Widget>[
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text('Today is Yarzeit of:', style:TextStyle(
+              )),
+              Text(
+                event.title ?? '',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ],
-          );
-        },
-      );
-    });
-  }
+          ),
+          content: Text('Details: ${event.description ?? "No details"}'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  });
+}
+
 }
