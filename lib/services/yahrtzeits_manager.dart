@@ -3,12 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../models/yahrtzeit.dart';
 import '../models/yahrtzeit_date.dart';
-import '../models/group.dart';
 
 class YahrtzeitsManager {
   static final YahrtzeitsManager _instance = YahrtzeitsManager._internal();
   final List<Yahrtzeit> _yahrtzeits = []; // In-memory storage
-  final List<Group> _groups = []; // In-memory storage for groups
   final DeviceCalendarPlugin _deviceCalendarPlugin = DeviceCalendarPlugin();
 
   static const platform = MethodChannel('com.yahrtzeits/manager');
@@ -86,49 +84,6 @@ class YahrtzeitsManager {
       }
     } on PlatformException catch (e) {
       print('Error syncing with calendar: $e');
-    }
-  }
-
-  Future<void> _loadGroupsFromCalendar(List<Calendar> calendars) async {
-    try {
-      _groups.clear();
-      for (var calendar in calendars) {
-        final eventsResult = await _deviceCalendarPlugin.retrieveEvents(
-          calendar.id!,
-          RetrieveEventsParams(
-            startDate:
-                tz.TZDateTime.now(tz.local).subtract(Duration(days: 365)),
-            endDate: tz.TZDateTime.now(tz.local).add(Duration(days: 365)),
-          ),
-        );
-        if (eventsResult?.isSuccess == true &&
-            eventsResult?.data!.isNotEmpty == true) {
-          final groupsMap = <String, List<Yahrtzeit>>{};
-          for (var event in eventsResult!.data!) {
-            if (event.description?.startsWith('Group Yahrtzeit for') == true) {
-              final groupName = event.title ?? 'Unknown Group';
-              final yahrtzeit = Yahrtzeit(
-                englishName: _extractEnglishName(event.description!),
-                hebrewName: _extractHebrewName(event.description!),
-                day: event.start!.day,
-                month: event.start!.month,
-                year: event.start!.year,
-                gregorianDate: event.start!,
-              );
-              if (groupsMap.containsKey(groupName)) {
-                groupsMap[groupName]!.add(yahrtzeit);
-              } else {
-                groupsMap[groupName] = [yahrtzeit];
-              }
-            }
-          }
-          for (var entry in groupsMap.entries) {
-            _groups.add(Group(name: entry.key, yahrtzeits: entry.value));
-          }
-        }
-      }
-    } on PlatformException catch (e) {
-      print('Error loading groups from calendar: $e');
     }
   }
 
@@ -273,10 +228,7 @@ class YahrtzeitsManager {
     return match != null ? match.group(1)! : 'Unknown';
   }
 
-    Future<List<Group>> getGroups() async {
-    await syncWithCalendar();
-    return _groups;
-  }
+
    bool _compareYahrtzeitLists(List<Yahrtzeit> list1, List<Yahrtzeit> list2) {
     if (list1.length != list2.length) {
       return false;
@@ -292,106 +244,4 @@ class YahrtzeitsManager {
     return true;
   }
 
-   Future<void> createGroup(String groupName, List<Yahrtzeit> yahrtzeits) async {
-    final newGroup = Group(name: groupName, yahrtzeits: yahrtzeits);
-    _groups.add(newGroup);
-    await _addGroupToCalendar(newGroup);
-  }
-
-  Future<void> updateGroup(
-      String oldName, String newName, List<Yahrtzeit> yahrtzeits) async {
-    final index = _groups.indexWhere((g) => g.name == oldName);
-    if (index != -1) {
-      _groups[index] = Group(name: newName, yahrtzeits: yahrtzeits);
-    }
-  }
-
-  Future<void> deleteGroup(String name) async {
-    final group = _groups.firstWhere((group) => group.name == name);
-    _groups.remove(group);
-    await _deleteGroupFromCalendar(group);
-  }
-   Future<void> _addGroupToCalendar(Group group) async {
-    try {
-      var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
-      if (permissionsGranted?.isSuccess == true &&
-          permissionsGranted?.data == false) {
-        permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
-        if (permissionsGranted?.isSuccess == false ||
-            permissionsGranted?.data == false) {
-          return;
-        }
-      }
-
-      final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
-      if (calendarsResult?.isSuccess == true &&
-          calendarsResult?.data!.isNotEmpty == true) {
-        for (var calendar in calendarsResult!.data!) {
-          for (var yahrtzeit in group.yahrtzeits) {
-            final event = Event(
-              calendar.id!,
-              title: group.name,
-              description:
-                  'Group Yahrtzeit for ${yahrtzeit.englishName} (${yahrtzeit.hebrewName})',
-              start: tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local),
-              end: tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local)
-                  .add(Duration(hours: 1)),
-            );
-            final result =
-                await _deviceCalendarPlugin.createOrUpdateEvent(event);
-            if (result?.isSuccess == false) {
-              print(
-                  'Error creating or updating event for ${calendar.name}: ${result?.data}');
-            }
-          }
-        }
-      }
-    } on PlatformException catch (e) {
-      print('Error adding group to calendar: $e');
-    }
-  }
-
-  Future<void> _deleteGroupFromCalendar(Group group) async {
-    try {
-      var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
-      if (permissionsGranted?.isSuccess == true &&
-          permissionsGranted?.data == false) {
-        permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
-        if (permissionsGranted?.isSuccess == false ||
-            permissionsGranted?.data == false) {
-          return;
-        }
-      }
-
-      final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
-      if (calendarsResult?.isSuccess == true &&
-          calendarsResult?.data!.isNotEmpty == true) {
-        for (var calendar in calendarsResult!.data!) {
-          final eventsResult = await _deviceCalendarPlugin.retrieveEvents(
-            calendar.id!,
-            RetrieveEventsParams(
-              startDate:
-                  tz.TZDateTime.now(tz.local).subtract(Duration(days: 365)),
-              endDate: tz.TZDateTime.now(tz.local).add(Duration(days: 365)),
-            ),
-          );
-          if (eventsResult?.isSuccess == true &&
-              eventsResult?.data!.isNotEmpty == true) {
-            for (var event in eventsResult!.data!) {
-              if (event.title == group.name) {
-                final result = await _deviceCalendarPlugin.deleteEvent(
-                    calendar.id!, event.eventId!);
-                if (result?.isSuccess == false) {
-                  print(
-                      'Error deleting event for ${calendar.name}: ${result?.data}');
-                }
-              }
-            }
-          }
-        }
-      }
-    } on PlatformException catch (e) {
-      print('Error deleting group from calendar: $e');
-    }
-  }
 }

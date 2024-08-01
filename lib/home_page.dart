@@ -53,7 +53,7 @@ class _HomePageState extends State<HomePage> {
         children: <Widget>[
           UpcomingYahrtzeits(),
           ManageYahrtzeits(),
-          GroupsPage(),
+          // GroupsPage(),
           SettingsPage(
             syncSettings: widget.syncSettings,
             notifications: widget.notifications,
@@ -82,10 +82,10 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.manage_accounts),
             label: 'Manage',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.group),
-            label: 'Groups',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.group),
+          //   label: 'Groups',
+          // ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: 'Settings',
