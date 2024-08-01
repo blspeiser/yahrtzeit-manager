@@ -37,11 +37,14 @@ dependencies:
   cupertino_icons: ^1.0.6
   kosher_dart: ^2.0.16
   device_calendar: ^4.0.0
-  # timezone: ^0.8.0
   flutter_local_notifications: ^17.2.1+2
   share: ^2.0.4
   timezone: ^0.9.4
+  time_machine: ^0.9.17
   path_provider: ^2.0.9
+  riverpod: 2.5.1
+  flutter_riverpod: ^2.0.0
+  http: 1.2.2
 
 dev_dependencies:
   flutter_test:

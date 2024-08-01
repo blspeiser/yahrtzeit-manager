@@ -280,7 +280,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           ListTile(
-            title: Text('Language'),
+            title: Text('Main Language'),
             trailing: DropdownButton<String>(
               value: _language,
               items: [
