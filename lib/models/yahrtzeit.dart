@@ -5,6 +5,8 @@ class Yahrtzeit {
   final int month;
   final int year;
   final DateTime gregorianDate; // נוסיף את השדה הזה
+  bool selected = false; // Add this line
+
 
   Yahrtzeit({
     required this.englishName,

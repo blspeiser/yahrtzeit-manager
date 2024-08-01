@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../localizations/app_localizations.dart';
 import '../models/yahrtzeit.dart';
 import '../services/yahrtzeits_manager.dart';
 
@@ -33,7 +34,8 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.isEditing ? 'Edit Yahrtzeit' : 'Add Yahrtzeit'),
+        // title: Text(widget.isEditing ? 'Edit Yahrtzeit' : 'Add Yahrtzeit'),
+         title: Text(widget.isEditing ? AppLocalizations.of(context)!.translate('Edit Yahrtzeit') : AppLocalizations.of(context)!.translate('Add Yahrtzeit')),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -43,20 +45,24 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
             children: <Widget>[
               TextFormField(
                 controller: _englishNameController,
-                decoration: InputDecoration(labelText: 'English Name'),
+                // decoration: InputDecoration(labelText: 'English Name'),
+                //  title: Text(AppLocalizations.of(context)!.translate('settings'), style: TextStyle(color: Colors.white)),
+                decoration: InputDecoration( labelText: (AppLocalizations.of(context)!.translate('English Name'))),
+ 
+
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter English name';
+                    return (AppLocalizations.of(context)!.translate('Please enter English name'));
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _hebrewNameController,
-                decoration: InputDecoration(labelText: 'Hebrew Name'),
+                decoration: InputDecoration( labelText: (AppLocalizations.of(context)!.translate('Hebrew Name'))),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter Hebrew name';
+                    return (AppLocalizations.of(context)!.translate('Please enter Hebrew name'));
                   }
                   return null;
                 },
@@ -64,8 +70,9 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
               ListTile(
                 title: Text(
                   _selectedDate == null
-                      ? 'Select Date'
-                      : 'Selected Date: ${_selectedDate!.toLocal()}'.split(' ')[0],
+                      ? (AppLocalizations.of(context)!.translate('Select Date'))
+                      :(AppLocalizations.of(context)!.translate('Select Date:${_selectedDate!.toLocal()}')) 
+                          .split(' ')[0],
                 ),
                 trailing: Icon(Icons.calendar_today),
                 onTap: _pickDate,
@@ -73,7 +80,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveYahrtzeit,
-                child: Text(widget.isEditing ? 'Update' : 'Save'),
+                child: Text(widget.isEditing ? (AppLocalizations.of(context)!.translate('Update')) :(AppLocalizations.of(context)!.translate('Save')) ),
               ),
             ],
           ),

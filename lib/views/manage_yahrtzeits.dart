@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../localizations/app_localizations.dart';
 import '../models/yahrtzeit.dart';
 import '../services/yahrtzeits_manager.dart';
 import 'add_yahrtzeit.dart';
@@ -49,7 +50,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Manage Yahrtzeits', style: TextStyle(color: Colors.white, fontSize: 22)),
+        title: Text(AppLocalizations.of(context)!.translate('manage_yahrzeits'), style: TextStyle(color: Colors.white)),
         centerTitle: true,
         backgroundColor: Color.fromARGB(255, 50, 4, 129),
         elevation: 0,

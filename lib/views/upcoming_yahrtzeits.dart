@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../localizations/app_localizations.dart';
 import '../models/yahrtzeit.dart';
 import '../models/yahrtzeit_date.dart';
 import '../services/yahrtzeits_manager.dart';
@@ -35,7 +36,7 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Upcoming Yahrtzeits', style: TextStyle(color: Colors.white, fontSize: 22)),
+        title: Text(AppLocalizations.of(context)!.translate('upcoming_yahrtzeits'), style: TextStyle(color: Colors.white)),
         centerTitle: true,
         backgroundColor: Color.fromARGB(255, 50, 4, 129),
         elevation: 0,

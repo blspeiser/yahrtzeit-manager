@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kosher_dart/kosher_dart.dart';
 import 'package:share/share.dart';
+import '../localizations/app_localizations.dart';
 import '../models/yahrtzeit_date.dart';
 import 'package:intl/intl.dart';
 
@@ -18,13 +19,16 @@ class YahrtzeitDetailsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${yahrtzeitDate.yahrtzeit.englishName} Details'),
+        title: Text(AppLocalizations.of(context)!
+            .translate('${yahrtzeitDate.yahrtzeit.englishName} Details')),
         actions: [
           IconButton(
             icon: Icon(Icons.share),
             onPressed: () {
               Share.share(
                 'Yahrtzeit Details:\n\n'
+                // (AppLocalizations.of(context)!.translate('Yahrtzeit Details:\n\n'))
+
                 'English Name: ${yahrtzeitDate.yahrtzeit.englishName}\n'
                 'Hebrew Name: ${yahrtzeitDate.yahrtzeit.hebrewName}\n'
                 'Gregorian Date: ${gregorianFormatter.format(yahrtzeitDate.gregorianDate)}\n'
@@ -38,16 +42,21 @@ class YahrtzeitDetailsPage extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Card(
           elevation: 5,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildDetailRow('English Name', yahrtzeitDate.yahrtzeit.englishName),
-                _buildDetailRow('Hebrew Name', yahrtzeitDate.yahrtzeit.hebrewName),
-                _buildDetailRow('Gregorian Date', gregorianFormatter.format(yahrtzeitDate.gregorianDate)),
-                _buildDetailRow('Hebrew Date', hebrewFormatter.format(yahrtzeitDate.hebrewDate)),
+                _buildDetailRow(
+                    'English Name', yahrtzeitDate.yahrtzeit.englishName),
+                _buildDetailRow(
+                    'Hebrew Name', yahrtzeitDate.yahrtzeit.hebrewName),
+                _buildDetailRow('Gregorian Date',
+                    gregorianFormatter.format(yahrtzeitDate.gregorianDate)),
+                _buildDetailRow('Hebrew Date',
+                    hebrewFormatter.format(yahrtzeitDate.hebrewDate)),
               ],
             ),
           ),
