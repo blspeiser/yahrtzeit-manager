@@ -87,19 +87,18 @@ class YahrtzeitsManager {
     }
   }
 
-
   Future<void> addYahrtzeit(Yahrtzeit yahrtzeit) async {
     if (!_yahrtzeits.any((y) =>
         y.englishName == yahrtzeit.englishName &&
         y.hebrewName == yahrtzeit.hebrewName &&
-        y.gregorianDate == yahrtzeit.gregorianDate)) {
+        y.gregorianDate == yahrtzeit.gregorianDate
+        )) {
       _yahrtzeits.add(yahrtzeit);
       await _addToCalendar(yahrtzeit);
     }
   }
 
-  Future<void> updateYahrtzeit(
-      Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit) async {
+  Future<void> updateYahrtzeit( Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit) async {
     await deleteYahrtzeit(oldYahrtzeit);
     await addYahrtzeit(newYahrtzeit);
   }
@@ -177,7 +176,7 @@ class YahrtzeitsManager {
     }
   }
 
-  Future<void> _deleteFromCalendar(Yahrtzeit yahrtzeit) async {
+   Future<void> _deleteFromCalendar(Yahrtzeit yahrtzeit) async {
     try {
       final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
       if (calendarsResult?.isSuccess == true &&
@@ -222,14 +221,14 @@ class YahrtzeitsManager {
     final match = regex.firstMatch(description);
     return match != null ? match.group(1)! : 'Unknown';
   }
-    String _extractEnglishName(String description) {
+
+  String _extractEnglishName(String description) {
     final regex = RegExp(r'Group Yahrtzeit for (.*?) \(');
     final match = regex.firstMatch(description);
     return match != null ? match.group(1)! : 'Unknown';
   }
 
-
-   bool _compareYahrtzeitLists(List<Yahrtzeit> list1, List<Yahrtzeit> list2) {
+  bool _compareYahrtzeitLists(List<Yahrtzeit> list1, List<Yahrtzeit> list2) {
     if (list1.length != list2.length) {
       return false;
     }
@@ -243,5 +242,4 @@ class YahrtzeitsManager {
     }
     return true;
   }
-
 }

@@ -149,10 +149,6 @@ class YahrtzeitManagerApp extends StatefulWidget {
   final Locale initialLocale;
 
   YahrtzeitManagerApp({required this.initialLocale});
-
-
-
-
   @override
   _YahrtzeitManagerAppState createState() => _YahrtzeitManagerAppState();
 }

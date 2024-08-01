@@ -32,6 +32,7 @@ class CalendarService {
       return [];
     }
   }
+  
   Future<List<Event>> retrieveEventsForToday(String calendarId) async {
     try {
       final now = tz.TZDateTime.now(tz.local);

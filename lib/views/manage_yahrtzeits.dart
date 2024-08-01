@@ -68,52 +68,60 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       ),
       body: Container(
         color: Colors.white,
-        child: ListView.builder(
-          itemCount: yahrtzeits.length,
-          itemBuilder: (context, index) {
-            final yahrtzeit = yahrtzeits[index];
-            return Card(
-              elevation: 5,
-              margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              child: ListTile(
-                contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          yahrtzeit.englishName,
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+        child: yahrtzeits.isEmpty
+            ? Center(
+                child: Text('No yahrtzeits available'),
+              )
+            : ListView.builder(
+                itemCount: yahrtzeits.length,
+                itemBuilder: (context, index) {
+                  if (index < yahrtzeits.length) {
+                    final yahrtzeit = yahrtzeits[index];
+                    return Card(
+                      elevation: 5,
+                      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      child: ListTile(
+                        contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  yahrtzeit.englishName,
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  yahrtzeit.hebrewName,
+                                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 5),
-                        Text(
-                          yahrtzeit.hebrewName,
-                          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.edit, color: Colors.deepPurple),
+                              onPressed: () => _editYahrtzeit(yahrtzeit),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _deleteYahrtzeit(yahrtzeit),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit, color: Colors.deepPurple),
-                      onPressed: () => _editYahrtzeit(yahrtzeit),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteYahrtzeit(yahrtzeit),
-                    ),
-                  ],
-                ),
+                      ),
+                    );
+                  } else {
+                    return SizedBox.shrink(); // Return an empty widget if index is out of bounds
+                  }
+                },
               ),
-            );
-          },
-        ),
       ),
     );
   }
