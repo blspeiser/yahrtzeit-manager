@@ -13,6 +13,7 @@ class UpcomingYahrtzeits extends StatefulWidget {
 class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   final YahrtzeitsManager manager = YahrtzeitsManager();
   List<YahrtzeitDate> yahrtzeitDates = [];
+  bool isLoading = true; // משתנה חדש לבדוק אם הדאטה בטעינה
 
   @override
   void initState() {
@@ -26,9 +27,14 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
       final upcomingDates = manager.nextMultiple(yahrtzeits);
       setState(() {
         yahrtzeitDates = upcomingDates;
+        isLoading = false; // הגדרת המשתנה ל-false לאחר שהדאטה התקבלה
       });
+      print('Upcoming yahrtzeits fetched: ${yahrtzeitDates.length}');
     } catch (e) {
       print('Error fetching yahrtzeits: $e');
+      setState(() {
+        isLoading = false; // הגדרת המשתנה ל-false גם במקרה של שגיאה
+      });
     }
   }
 
@@ -36,27 +42,37 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.translate('upcoming_yahrtzeits'), style: TextStyle(color: Colors.white)),
+        title: Text(
+            AppLocalizations.of(context)!.translate('upcoming_yahrtzeits'),
+            style: TextStyle(color: Colors.white)),
         centerTitle: true,
         backgroundColor: Color.fromARGB(255, 50, 4, 129),
         elevation: 0,
       ),
       body: Container(
         color: Colors.white,
-        child: yahrtzeitDates.isEmpty
+        child: isLoading // בדיקה אם הדאטה עדיין בטעינה
             ? Center(
-                child: Text(
-                  'No upcoming yahrtzeits found.',
-                  style: TextStyle(color: Colors.white, fontSize: 18),
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
                 ),
               )
-            : ListView.builder(
-                itemCount: yahrtzeitDates.length,
-                itemBuilder: (context, index) {
-                  final yahrtzeitDate = yahrtzeitDates[index];
-                  return YahrtzeitTile(yahrtzeitDate: yahrtzeitDate);
-                },
-              ),
+            : yahrtzeitDates.isEmpty
+                ? Center(
+                    child: Text(
+                      'No upcoming yahrtzeits found.',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18), // שונה מ-Colors.white ל-Colors.black
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: yahrtzeitDates.length,
+                    itemBuilder: (context, index) {
+                      final yahrtzeitDate = yahrtzeitDates[index];
+                      return YahrtzeitTile(yahrtzeitDate: yahrtzeitDate);
+                    },
+                  ),
       ),
     );
   }

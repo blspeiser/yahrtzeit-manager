@@ -18,7 +18,7 @@ class Yahrtzeit {
     this.group,
   });
 
-  get id => null;
+  // get id => null;
 
   // get group => null;
 
