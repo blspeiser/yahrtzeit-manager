@@ -5,6 +5,8 @@ import '../services/yahrtzeits_manager.dart';
 import 'add_yahrtzeit.dart';
 
 class ManageYahrtzeits extends StatefulWidget {
+  int yearsToSync;
+  ManageYahrtzeits({required this.yearsToSync});
   @override
   _ManageYahrtzeitsState createState() => _ManageYahrtzeitsState();
 }
@@ -51,6 +53,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
         builder: (context) => AddYahrtzeitPage(
           yahrtzeit: yahrtzeit,
           isEditing: true,
+          yearsToSync: widget.yearsToSync,
         ),
       ),
     );
@@ -181,7 +184,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AddYahrtzeitPage()),
+                MaterialPageRoute(builder: (context) => AddYahrtzeitPage(yearsToSync: widget.yearsToSync,)),
               ).then((result) {
                 if (result == true) {
                   fetchYahrtzeits();

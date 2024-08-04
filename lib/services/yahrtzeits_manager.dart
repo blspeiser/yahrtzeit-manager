@@ -111,6 +111,7 @@ class YahrtzeitsManager {
    Future<void> updateYahrtzeit(Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit) async {
       await deleteYahrtzeit(oldYahrtzeit); // מחיקת היארצייט הישן
       await addYahrtzeit(newYahrtzeit);   // הוספת היארצייט החדש
+      await getUpcomingYahrtzeits();
       print('Yahrtzeit updated: ${newYahrtzeit.englishName}');
     }
 
@@ -124,6 +125,7 @@ class YahrtzeitsManager {
           y.month == y.month &&
           y.gregorianDate == nextYearGregorianDate);
       await _deleteFromCalendar(yahrtzeit);
+      await getUpcomingYahrtzeits();
       print('Yahrtzeit deleted: ${yahrtzeit.englishName}');
     } catch (e) {
       print('Error deleting yahrtzeit: $e');
@@ -136,7 +138,7 @@ class YahrtzeitsManager {
     return _yahrtzeits;
   }
 
-  Future<List<Yahrtzeit>> getUpcomingYahrtzeits({int days = 1000}) async {
+  Future<List<Yahrtzeit>> getUpcomingYahrtzeits({int days = 14}) async {
     final allYahrtzeits = await getAllYahrtzeits();
     final now = tz.TZDateTime.now(tz.local);
     final upcomingYahrtzeits = allYahrtzeits.where((yahrtzeit) {
