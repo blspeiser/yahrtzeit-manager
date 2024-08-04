@@ -51,6 +51,9 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
           _selectedMonth = widget.yahrtzeit!.month;
         }
   }
+  // JewishDate jewishDate = JewishDate.initDate(jewishYear: 5784, jewishMonth: 5, jewishDayOfMonth: 3);
+  
+
 
   @override
   Widget build(BuildContext context) {
@@ -168,14 +171,20 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     if (_formKey.currentState!.validate() && _selectedDay != null && _selectedMonth != null) {
       try {
         print(AppLocalizations.of(context)!.translate('saving_yahrtzeit...'));
-        final gregorianDate = _getNextGregorianDate(_selectedDay!, _selectedMonth!);
+        // final gregorianDate = _getNextGregorianDate(_selectedDay!, _selectedMonth!);
+        // print(AppLocalizations.of(context)!.translate('gregorian_date') + ': $gregorianDate');
+        int year = JewishDate().getJewishYear();
+        JewishDate jewishDate = JewishDate.initDate(jewishYear: year, jewishMonth: _selectedMonth!, jewishDayOfMonth: _selectedDay!);
+        DateTime gregorianDate = DateTime(jewishDate.getGregorianYear(), jewishDate.getGregorianMonth(), jewishDate.getGregorianDayOfMonth());
         print(AppLocalizations.of(context)!.translate('gregorian_date') + ': $gregorianDate');
         final newYahrtzeit = Yahrtzeit(
           englishName: _englishNameController.text,
           hebrewName: _hebrewNameController.text,
           day: _selectedDay!,
           month: _selectedMonth!,
-          year: JewishDate().getJewishYear() + 1, // Use the next Hebrew year
+          group: _groupController.text,
+          // year: JewishDate().getJewishYear() + 1, // Use the next Hebrew year
+          year: JewishDate().getJewishYear(), 
           gregorianDate: gregorianDate,
         );
         print(AppLocalizations.of(context)!.translate('new_yahrtzeit') + ': $newYahrtzeit');
@@ -209,20 +218,20 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     }
   }
 
-  DateTime _getNextGregorianDate(int day, int month) {
-    try {
-      final now = DateTime.now();
-      final jewishDate = JewishDate();
-      final hebrewYear = JewishDate.fromDateTime(now).getJewishYear();
-      jewishDate.setJewishDate(hebrewYear + 1, month, day); // Use the next Hebrew year
-      final gregorianDate = jewishDate.getGregorianCalendar();
+  // DateTime _getNextGregorianDate(int day, int month) {
+  //   try {
+  //     final now = DateTime.now();
+  //     final jewishDate = JewishDate();
+  //     final hebrewYear = JewishDate.fromDateTime(now).getJewishYear();
+  //     jewishDate.setJewishDate(hebrewYear + 1, month, day); // Use the next Hebrew year
+  //     final gregorianDate = jewishDate.getGregorianCalendar();
       
-      print('Next Year Gregorian Date: $gregorianDate');
-      return gregorianDate;
-    } catch (e) {
-      print('Error converting date: $e');
-      throw ArgumentError('Invalid Hebrew date provided.');
-    }
-  }
+  //     print('Next Year Gregorian Date: $gregorianDate');
+  //     return gregorianDate;
+  //   } catch (e) {
+  //     print('Error converting date: $e');
+  //     throw ArgumentError('Invalid Hebrew date provided.');
+  //   }
+  // }
 }
 

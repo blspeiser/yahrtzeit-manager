@@ -87,20 +87,20 @@ class YahrtzeitsManager {
   }
 
   Future<void> addYahrtzeit(Yahrtzeit yahrtzeit) async {
-    final nextYearGregorianDate = _getNextGregorianDate(yahrtzeit.day, yahrtzeit.month);
+    // final nextYearGregorianDate = _getNextGregorianDate(yahrtzeit.day, yahrtzeit.month);
     if (!_yahrtzeits.any((y) =>
         y.englishName == yahrtzeit.englishName &&
         y.hebrewName == y.hebrewName &&
         y.day == yahrtzeit.day &&
         y.month == yahrtzeit.month &&
-        y.gregorianDate == nextYearGregorianDate)) {
+        y.gregorianDate == yahrtzeit.gregorianDate)) {
       final newYahrtzeit = Yahrtzeit(
         englishName: yahrtzeit.englishName,
         hebrewName: yahrtzeit.hebrewName,
         day: yahrtzeit.day,
         month: yahrtzeit.month,
         year: yahrtzeit.year,
-        gregorianDate: nextYearGregorianDate,
+        gregorianDate: yahrtzeit.gregorianDate,
       );
       _yahrtzeits.add(newYahrtzeit);
       await _addToCalendar(newYahrtzeit);
