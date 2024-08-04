@@ -23,8 +23,8 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
 
   Future<void> fetchYahrtzeits() async {
     try {
-      // final yahrtzeits = await manager.getUpcomingYahrtzeits();
-      final yahrtzeits = await manager.getAllYahrtzeits();
+      final yahrtzeits = await manager.getUpcomingYahrtzeits();
+      // final yahrtzeits = await manager.getAllYahrtzeits();
 
       final upcomingDates = manager.nextMultiple(yahrtzeits);
       setState(() {
