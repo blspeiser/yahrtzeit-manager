@@ -1,0 +1,10 @@
+# Specify Dart as the main language
+*.dart linguist-language=Dart
+
+# Exclude CMake files from language statistics
+CMakeLists.txt linguist-vendored
+*.cmake linguist-vendored
+
+# Exclude other files that might affect language detection
+*.cpp linguist-vendored
+*.h linguist-vendored
