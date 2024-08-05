@@ -172,8 +172,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       ),
     );
     if (result != null && result is Yahrtzeit) {
-      await manager.deleteYahrtzeit(yahrtzeit);
-      await manager.addYahrtzeit(result, widget.yearsToSync);
+      // await manager.deleteYahrtzeit(yahrtzeit);
+      // await manager.addYahrtzeit(result, widget.yearsToSync);
       fetchYahrtzeits();
     }
   }
@@ -296,7 +296,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
         await _deleteYahrtzeitFromFile(yahrtzeit);
       }
     } catch (e) {
-      print('Error deleting yahrtzeit: $e');
+      print('Error while deleting yahrtzeit: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content:
