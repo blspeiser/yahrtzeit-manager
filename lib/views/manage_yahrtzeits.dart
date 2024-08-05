@@ -14,7 +14,6 @@ class ManageYahrtzeits extends StatefulWidget {
   bool syncSettings;
 
   ManageYahrtzeits({required this.yearsToSync, required this.syncSettings});
-
   @override
   _ManageYahrtzeitsState createState() => _ManageYahrtzeitsState();
 }
@@ -173,8 +172,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       ),
     );
     if (result != null && result is Yahrtzeit) {
-      await _deleteYahrtzeitFromFile(yahrtzeit);
-      await _addYahrtzeitToFile(result);
+      await manager.deleteYahrtzeit(yahrtzeit);
+      await manager.addYahrtzeit(result, widget.yearsToSync);
       fetchYahrtzeits();
     }
   }
