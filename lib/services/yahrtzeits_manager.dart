@@ -1,5 +1,6 @@
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/services.dart';
+import 'package:kosher_dart/kosher_dart.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../models/yahrtzeit.dart';
 import '../models/yahrtzeit_date.dart';
@@ -65,13 +66,14 @@ class YahrtzeitsManager {
                   hebrewName: hebrewName,
                   day: event.start!.day,
                   month: event.start!.month,
-                  year: event.start!.year,
-                  gregorianDate: event.start!,
+                  // year: event.start!.year,
+                  // gregorianDate: event.start!,
                 );
                 if (!_yahrtzeits.any((y) =>
                     y.englishName == yahrtzeit.englishName &&
-                    y.hebrewName == yahrtzeit.hebrewName &&
-                    y.gregorianDate == yahrtzeit.gregorianDate)) {
+                    y.hebrewName == yahrtzeit.hebrewName
+                    // && y.gregorianDate == yahrtzeit.gregorianDate
+                    )) {
                   _yahrtzeits.add(yahrtzeit);
                 }
               }
@@ -86,31 +88,32 @@ class YahrtzeitsManager {
     }
   }
 
-  Future<void> addYahrtzeit(Yahrtzeit yahrtzeit) async {
+  Future<void> addYahrtzeit(Yahrtzeit yahrtzeit, int yearsToSync) async {
     // final nextYearGregorianDate = _getNextGregorianDate(yahrtzeit.day, yahrtzeit.month);
     if (!_yahrtzeits.any((y) =>
         y.englishName == yahrtzeit.englishName &&
         y.hebrewName == y.hebrewName &&
         y.day == yahrtzeit.day &&
-        y.month == yahrtzeit.month &&
-        y.gregorianDate == yahrtzeit.gregorianDate)) {
+        y.month == yahrtzeit.month
+        // && y.gregorianDate == yahrtzeit.gregorianDate
+        )) {
       final newYahrtzeit = Yahrtzeit(
         englishName: yahrtzeit.englishName,
         hebrewName: yahrtzeit.hebrewName,
         day: yahrtzeit.day,
         month: yahrtzeit.month,
-        year: yahrtzeit.year,
-        gregorianDate: yahrtzeit.gregorianDate,
+        // year: yahrtzeit.year,
+        // gregorianDate: yahrtzeit.gregorianDate,
       );
       _yahrtzeits.add(newYahrtzeit);
-      await _addToCalendar(newYahrtzeit);
+      await _addToCalendar(newYahrtzeit, yearsToSync);
       print('Yahrtzeit added: ${newYahrtzeit.englishName}');
     }
   }
 
-   Future<void> updateYahrtzeit(Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit) async {
+   Future<void> updateYahrtzeit(Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit, int yearsToSync) async {
       await deleteYahrtzeit(oldYahrtzeit); // מחיקת היארצייט הישן
-      await addYahrtzeit(newYahrtzeit);   // הוספת היארצייט החדש
+      await addYahrtzeit(newYahrtzeit, yearsToSync);   // הוספת היארצייט החדש
       await getUpcomingYahrtzeits();
       print('Yahrtzeit updated: ${newYahrtzeit.englishName}');
     }
@@ -122,8 +125,9 @@ class YahrtzeitsManager {
           y.englishName == yahrtzeit.englishName &&
           y.hebrewName == y.hebrewName &&
           y.day == yahrtzeit.day &&
-          y.month == y.month &&
-          y.gregorianDate == nextYearGregorianDate);
+          y.month == y.month
+          // && y.gregorianDate == nextYearGregorianDate
+          );
       await _deleteFromCalendar(yahrtzeit);
       await getUpcomingYahrtzeits();
       print('Yahrtzeit deleted: ${yahrtzeit.englishName}');
@@ -142,13 +146,17 @@ class YahrtzeitsManager {
     final allYahrtzeits = await getAllYahrtzeits();
     final now = tz.TZDateTime.now(tz.local);
     final upcomingYahrtzeits = allYahrtzeits.where((yahrtzeit) {
-      final yahrtzeitDate = tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local);
+      var date = YahrtzeitDate.fromYahrtzeit(yahrtzeit);
+      // final yahrtzeitDate = tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local);
+      final yahrtzeitDate = tz.TZDateTime.from(date.gregorianDate, tz.local);
       return yahrtzeitDate.isAfter(now) &&  yahrtzeitDate.isBefore(now.add(Duration(days: days)));
     }).toList();
     print('Upcoming yahrtzeits fetched: ${upcomingYahrtzeits.length}');
     return upcomingYahrtzeits;
   }
-  Future<void> _addToCalendar(Yahrtzeit yahrtzeit) async {
+
+
+  Future<void> _addToCalendar(Yahrtzeit yahrtzeit, int yearsToSync) async {
     try {
       var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
       if (permissionsGranted?.isSuccess == true && permissionsGranted?.data == false) {
@@ -161,21 +169,35 @@ class YahrtzeitsManager {
       final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
       if (calendarsResult?.isSuccess == true && calendarsResult?.data!.isNotEmpty == true) {
         for (var calendar in calendarsResult!.data!) {
-          final gregorianDate = DateTime(
-            yahrtzeit.gregorianDate.year,
-            yahrtzeit.gregorianDate.month,
-            yahrtzeit.gregorianDate.day,
-          );
+          // final gregorianDate = DateTime(
+          //   yahrtzeit.gregorianDate.year,
+          //   yahrtzeit.gregorianDate.month,
+          //   yahrtzeit.gregorianDate.day,
+          // );
+          for (int i = 0; i < yearsToSync; i++) {
+          int year = JewishDate().getJewishYear() + i;
+            JewishDate jewishDate = JewishDate.initDate(
+                jewishYear: year,
+                jewishMonth: yahrtzeit.month,
+                jewishDayOfMonth: yahrtzeit.day);
+            DateTime gregorianDate = DateTime(
+                jewishDate.getGregorianYear(),
+                jewishDate.getGregorianMonth(),
+                jewishDate.getGregorianDayOfMonth());
           final event = dc.Event(
-            calendar.id!,
-            title: yahrtzeit.englishName,
-            description: 'Yahrtzeit for ${yahrtzeit.englishName} (${yahrtzeit.hebrewName})',
-            start: tz.TZDateTime.from(gregorianDate, tz.local),
-            end: tz.TZDateTime.from(gregorianDate, tz.local).add(Duration(hours: 1)),
-          );
+              calendar.id!,
+              title: 'Yahrtzeit: ${yahrtzeit.englishName}',
+              description:
+                  '${yahrtzeit.hebrewName}',
+
+              start: tz.TZDateTime.from(gregorianDate, tz.local),
+              end: tz.TZDateTime.from(gregorianDate, tz.local)
+                  .add(Duration(hours: 1)),
+            );
           final result = await _deviceCalendarPlugin.createOrUpdateEvent(event);
           if (result?.isSuccess == false) {
             print('Error creating or updating event for ${calendar.name}: ${result?.data}');
+          }
           }
         }
       }
@@ -248,8 +270,9 @@ Future<void> _deleteFromCalendar(Yahrtzeit yahrtzeit) async {
     for (var yahrtzeit in list1) {
       if (!list2.any((element) =>
           element.englishName == yahrtzeit.englishName &&
-          element.hebrewName == yahrtzeit.hebrewName &&
-          element.gregorianDate == yahrtzeit.gregorianDate)) {
+          element.hebrewName == yahrtzeit.hebrewName
+          // && element.gregorianDate == yahrtzeit.gregorianDate
+          )) {
         return false;
       }
     }

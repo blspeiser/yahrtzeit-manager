@@ -4,9 +4,9 @@ class Yahrtzeit {
   final String hebrewName;
   final int day;
   final int month;
-  final int year;
+  // final int year;
   final String? group;
-  final DateTime gregorianDate; // נוסיף את השדה הזה
+  // final DateTime gregorianDate; // נוסיף את השדה הזה
   bool selected = false; // Add this line
 
 
@@ -15,8 +15,8 @@ class Yahrtzeit {
     required this.hebrewName,
     required this.day,
     required this.month,
-    required this.year,
-    required this.gregorianDate,
+    // required this.year,
+    // required this.gregorianDate,
     this.group,
   });
 
@@ -28,8 +28,8 @@ class Yahrtzeit {
       'hebrewName': hebrewName,
       'day': day,
       'month': month,
-      'year': year,
-      'gregorianDate': gregorianDate.toIso8601String(),
+      // 'year': year,
+      // 'gregorianDate': gregorianDate.toIso8601String(),
       'group': group,
     };
   }
@@ -40,13 +40,13 @@ class Yahrtzeit {
       hebrewName: map['hebrewName'],
       day: map['day'],
       month: map['month'],
-      year: map['year'],
-      gregorianDate: DateTime.parse(map['gregorianDate']),
+      // year: map['year'],
+      // gregorianDate: DateTime.parse(map['gregorianDate']),
       group: map['group'],
     );
   }
 
-  DateTime getGregorianDate() {
-    return gregorianDate;
-  }
+  // DateTime getGregorianDate() {
+  //   return gregorianDate;
+  // }
 }

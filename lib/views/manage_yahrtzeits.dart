@@ -59,7 +59,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     );
     if (result != null && result is Yahrtzeit) {
       await manager.deleteYahrtzeit(yahrtzeit); // מחיקת הישן
-      await manager.addYahrtzeit(result); // הוספת החדש
+      await manager.addYahrtzeit(result, widget.yearsToSync); // הוספת החדש
       fetchYahrtzeits();
     }
   }

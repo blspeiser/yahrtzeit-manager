@@ -270,16 +270,16 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
           day: _selectedDay!,
           month: _selectedMonth!,
           group: _groupController.text,
-          year: year,
-          gregorianDate: gregorianDate,
+          // year: year,
+          // gregorianDate: gregorianDate,
         );
 
         print(localizations.translate('new_yahrtzeit') + ': $newYahrtzeit');
 
         if (widget.isEditing && widget.yahrtzeit != null) {
-          await manager.updateYahrtzeit(widget.yahrtzeit!, newYahrtzeit);
+          await manager.updateYahrtzeit(widget.yahrtzeit!, newYahrtzeit, widget.yearsToSync);
         } else {
-          await manager.addYahrtzeit(newYahrtzeit);
+          await manager.addYahrtzeit(newYahrtzeit, widget.yearsToSync);
         }
 
         print(localizations.translate('yahrtzeit_saved_successfully'));
