@@ -296,7 +296,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
         await _deleteYahrtzeitFromFile(yahrtzeit);
       }
     } catch (e) {
-      print('Error deleting yahrtzeit: $e');
+      print('Error while deleting yahrtzeit: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content:
