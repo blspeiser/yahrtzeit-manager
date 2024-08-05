@@ -13,7 +13,7 @@ class UpcomingYahrtzeits extends StatefulWidget {
 class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   final YahrtzeitsManager manager = YahrtzeitsManager();
   List<YahrtzeitDate> yahrtzeitDates = [];
-  bool isLoading = true; // משתנה חדש לבדוק אם הדאטה בטעינה
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -24,19 +24,32 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   Future<void> fetchYahrtzeits() async {
     try {
       final yahrtzeits = await manager.getUpcomingYahrtzeits();
-      // final yahrtzeits = await manager.getAllYahrtzeits();
-
-      final upcomingDates = manager.nextMultiple(yahrtzeits);
+      print('Fetched upcoming yahrtzeits: ${yahrtzeits.length}');
       setState(() {
-        yahrtzeitDates = upcomingDates;
-        isLoading = false; // הגדרת המשתנה ל-false לאחר שהדאטה התקבלה
+        yahrtzeitDates =
+            _filterDuplicateYahrtzeits(manager.nextMultiple(yahrtzeits));
+        isLoading = false;
       });
     } catch (e) {
       print('Error fetching yahrtzeits: $e');
       setState(() {
-        isLoading = false; // הגדרת המשתנה ל-false גם במקרה של שגיאה
+        isLoading = false;
       });
     }
+  }
+
+  List<YahrtzeitDate> _filterDuplicateYahrtzeits(
+      List<YahrtzeitDate> yahrtzeits) {
+    final uniqueNames = <String>{};
+    final filteredList = <YahrtzeitDate>[];
+
+    for (var yahrtzeitDate in yahrtzeits) {
+      if (uniqueNames.add(yahrtzeitDate.yahrtzeit.englishName)) {
+        filteredList.add(yahrtzeitDate);
+      }
+    }
+
+    return filteredList;
   }
 
   @override
@@ -44,15 +57,16 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            AppLocalizations.of(context)!.translate('upcoming_yahrtzeits'),
-            style: TextStyle(color: Colors.white)),
+          AppLocalizations.of(context)!.translate('upcoming_yahrtzeits'),
+          style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
         backgroundColor: Color.fromARGB(255, 50, 4, 129),
         elevation: 0,
       ),
       body: Container(
         color: Colors.white,
-        child: isLoading // בדיקה אם הדאטה עדיין בטעינה
+        child: isLoading
             ? Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),

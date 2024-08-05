@@ -175,152 +175,60 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     );
   }
 
-  // void _saveYahrtzeit() async {
-  //   if (_formKey.currentState!.validate() &&
-  //       _selectedDay != null &&
-  //       _selectedMonth != null) {
-  //     try {
-  //       for (int i = 0; i < widget.yearsToSync; i++) {
-  //         print(AppLocalizations.of(context)!.translate('saving_yahrtzeit...'));
-  //         // final gregorianDate = _getNextGregorianDate(_selectedDay!, _selectedMonth!);
-  //         // print(AppLocalizations.of(context)!.translate('gregorian_date') + ': $gregorianDate');
-  //         int year = JewishDate().getJewishYear() + i;
-  //         JewishDate jewishDate = JewishDate.initDate(
-  //             jewishYear: year,
-  //             jewishMonth: _selectedMonth!,
-  //             jewishDayOfMonth: _selectedDay!);
-  //         DateTime gregorianDate = DateTime(
-  //             jewishDate.getGregorianYear(),
-  //             jewishDate.getGregorianMonth(),
-  //             jewishDate.getGregorianDayOfMonth());
-  //         print(AppLocalizations.of(context)!.translate('gregorian_date') +
-  //             ': $gregorianDate');
-  //         final newYahrtzeit = Yahrtzeit(
-  //           englishName: _englishNameController.text,
-  //           hebrewName: _hebrewNameController.text,
-  //           day: _selectedDay!,
-  //           month: _selectedMonth!,
-  //           group: _groupController.text,
-  //           // year: JewishDate().getJewishYear() + 1, // Use the next Hebrew year
-  //           year: year,
-  //           gregorianDate: gregorianDate,
-  //         );
-  //         print(AppLocalizations.of(context)!.translate('new_yahrtzeit') +
-  //             ': $newYahrtzeit');
-  //         if (widget.isEditing && widget.yahrtzeit != null) {
-  //           await manager.updateYahrtzeit(widget.yahrtzeit!, newYahrtzeit);
-  //         } else {
-  //           await manager.addYahrtzeit(newYahrtzeit);
-  //         }
-  //         print(AppLocalizations.of(context)!
-  //             .translate('yahrtzeit_saved_successfully'));
-  //         Navigator.pop(
-  //           context,
-  //         );
-  //       }
-  //     } catch (e) {
-  //       print(AppLocalizations.of(context)!.translate('error') + ': $e');
-  //       showDialog(
-  //         context: context,
-  //         builder: (context) => AlertDialog(
-  //           title: Text(AppLocalizations.of(context)!.translate('error')),
-  //           content:
-  //               Text(AppLocalizations.of(context)!.translate('error') + ': $e'),
-  //           actions: [
-  //             TextButton(
-  //               onPressed: () {
-  //                 Navigator.pop(context);
-  //               },
-  //               child: Text(AppLocalizations.of(context)!.translate('ok')),
-  //             ),
-  //           ],
-  //         ),
-  //       );
-  //     }
-  //   }
-  // }
-
   void _saveYahrtzeit() async {
-  if (_formKey.currentState!.validate() &&
-      _selectedDay != null &&
-      _selectedMonth != null) {
-    // Save the necessary values from the context before starting the async operations
-    final localizations = AppLocalizations.of(context)!;
-    final navigator = Navigator.of(context);
+    if (_formKey.currentState!.validate() &&
+        _selectedDay != null &&
+        _selectedMonth != null) {
+      final localizations = AppLocalizations.of(context)!;
+      final navigator = Navigator.of(context);
 
-    try {
-      for (int i = 0; i < widget.yearsToSync; i++) {
-        print(localizations.translate('saving_yahrtzeit...'));
+      try {
+        for (int i = 0; i < widget.yearsToSync; i++) {
+          int year = JewishDate().getJewishYear() + i;
+          JewishDate jewishDate = JewishDate.initDate(
+              jewishYear: year,
+              jewishMonth: _selectedMonth!,
+              jewishDayOfMonth: _selectedDay!);
+          DateTime gregorianDate = DateTime(
+              jewishDate.getGregorianYear(),
+              jewishDate.getGregorianMonth(),
+              jewishDate.getGregorianDayOfMonth());
 
-        int year = JewishDate().getJewishYear() + i;
-        JewishDate jewishDate = JewishDate.initDate(
-            jewishYear: year,
-            jewishMonth: _selectedMonth!,
-            jewishDayOfMonth: _selectedDay!);
-        DateTime gregorianDate = DateTime(
-            jewishDate.getGregorianYear(),
-            jewishDate.getGregorianMonth(),
-            jewishDate.getGregorianDayOfMonth());
+          final newYahrtzeit = Yahrtzeit(
+            englishName: _englishNameController.text,
+            hebrewName: _hebrewNameController.text,
+            day: _selectedDay!,
+            month: _selectedMonth!,
+            group: _groupController.text,
+            // year: year,
+            // gregorianDate: gregorianDate,
+          );
 
-        print(localizations.translate('gregorian_date') + ': $gregorianDate');
-
-        final newYahrtzeit = Yahrtzeit(
-          englishName: _englishNameController.text,
-          hebrewName: _hebrewNameController.text,
-          day: _selectedDay!,
-          month: _selectedMonth!,
-          group: _groupController.text,
-          year: year,
-          gregorianDate: gregorianDate,
-        );
-
-        print(localizations.translate('new_yahrtzeit') + ': $newYahrtzeit');
-
-        if (widget.isEditing && widget.yahrtzeit != null) {
-          await manager.updateYahrtzeit(widget.yahrtzeit!, newYahrtzeit);
-        } else {
-          await manager.addYahrtzeit(newYahrtzeit);
+          if (widget.isEditing && widget.yahrtzeit != null) {
+            await manager.updateYahrtzeit(
+                widget.yahrtzeit!, newYahrtzeit, widget.yearsToSync);
+          } else {
+            await manager.addYahrtzeit(newYahrtzeit, widget.yearsToSync);
+          }
         }
-
-        print(localizations.translate('yahrtzeit_saved_successfully'));
+        navigator.pop(true); // החזר ערך אמת כדי לציין שהפעולה הצליחה
+      } catch (e) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(localizations.translate('error')),
+            content: Text(localizations.translate('error') + ': $e'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(localizations.translate('ok')),
+              ),
+            ],
+          ),
+        );
       }
-
-      navigator.pop();
-    } catch (e) {
-      print(localizations.translate('error') + ': $e');
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(localizations.translate('error')),
-          content: Text(localizations.translate('error') + ': $e'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(localizations.translate('ok')),
-            ),
-          ],
-        ),
-      );
     }
   }
-}
-
-
-  // DateTime _getNextGregorianDate(int day, int month) {
-  //   try {
-  //     final now = DateTime.now();
-  //     final jewishDate = JewishDate();
-  //     final hebrewYear = JewishDate.fromDateTime(now).getJewishYear();
-  //     jewishDate.setJewishDate(hebrewYear + 1, month, day); // Use the next Hebrew year
-  //     final gregorianDate = jewishDate.getGregorianCalendar();
-
-  //     print('Next Year Gregorian Date: $gregorianDate');
-  //     return gregorianDate;
-  //   } catch (e) {
-  //     print('Error converting date: $e');
-  //     throw ArgumentError('Invalid Hebrew date provided.');
-  //   }
-  // }
 }
