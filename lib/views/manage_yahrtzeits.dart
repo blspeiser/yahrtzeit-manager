@@ -172,8 +172,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       ),
     );
     if (result != null && result is Yahrtzeit) {
-      await manager.deleteYahrtzeit(yahrtzeit);
-      await manager.addYahrtzeit(result, widget.yearsToSync);
+      // await manager.deleteYahrtzeit(yahrtzeit);
+      // await manager.addYahrtzeit(result, widget.yearsToSync);
       fetchYahrtzeits();
     }
   }

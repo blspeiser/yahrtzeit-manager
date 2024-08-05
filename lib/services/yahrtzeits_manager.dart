@@ -91,7 +91,7 @@ class YahrtzeitsManager {
     }
   }
 
-  Future<void> addYahrtzeit(Yahrtzeit yahrtzeit, int yearsToSync) async {
+  Future<void> addYahrtzeit(Yahrtzeit yahrtzeit, int yearsToSync, bool syncSettings) async {
     if (!_yahrtzeits.any((y) =>
             y.englishName == yahrtzeit.englishName &&
             y.hebrewName == y.hebrewName &&
@@ -108,7 +108,10 @@ class YahrtzeitsManager {
         // gregorianDate: yahrtzeit.gregorianDate,
       );
       _yahrtzeits.add(newYahrtzeit);
-      await _addToCalendar(newYahrtzeit, yearsToSync);
+      if(syncSettings){
+        await _addToCalendar(newYahrtzeit, yearsToSync);
+      }
+      
       print('Yahrtzeit added: ${newYahrtzeit.englishName}');
     } else {
       print('Yahrtzeit already exists: ${yahrtzeit.englishName}');
@@ -117,9 +120,9 @@ class YahrtzeitsManager {
   }
 
   Future<void> updateYahrtzeit(
-      Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit, int yearsToSync) async {
+      Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit, int yearsToSync, bool syncSettings) async {
     await deleteYahrtzeit(oldYahrtzeit); // מחיקת היארצייט הישן
-    await addYahrtzeit(newYahrtzeit, yearsToSync); // הוספת היארצייט החדש
+    await addYahrtzeit(newYahrtzeit, yearsToSync, syncSettings); // הוספת היארצייט החדש
     await getUpcomingYahrtzeits();
     print('Yahrtzeit updated: ${newYahrtzeit.englishName}');
   }
