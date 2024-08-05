@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'settings/settings.dart';
+import 'views/add_yahrtzeit.dart';
 import 'views/manage_yahrtzeits.dart';
 import 'views/upcoming_yahrtzeits.dart';
 import '../localizations/app_localizations.dart';
@@ -52,7 +53,8 @@ class _HomePageState extends State<HomePage> {
         index: _selectedIndex,
         children: <Widget>[
           UpcomingYahrtzeits(),
-          ManageYahrtzeits(yearsToSync: widget.years,),
+          // AddYahrtzeitPage(yearsToSync: widget.years, syncSettings: widget.syncSettings,),
+         ManageYahrtzeits(yearsToSync: widget.years, syncSettings: widget.syncSettings,),
           // GroupsPage(),
           SettingsPage(
             syncSettings: widget.syncSettings,

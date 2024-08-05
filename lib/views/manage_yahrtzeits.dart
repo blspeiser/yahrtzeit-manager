@@ -4,20 +4,21 @@ import 'package:kosher_dart/kosher_dart.dart';
 import '../localizations/app_localizations.dart';
 import '../models/yahrtzeit.dart';
 import '../models/yahrtzeit_date.dart';
-import '../services/yahrtzeits_manager.dart';
 import 'add_yahrtzeit.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class ManageYahrtzeits extends StatefulWidget {
   int yearsToSync;
+  bool syncSettings;
 
-  ManageYahrtzeits({required this.yearsToSync});
-
+  ManageYahrtzeits({required this.yearsToSync, required this.syncSettings});
   @override
   _ManageYahrtzeitsState createState() => _ManageYahrtzeitsState();
 }
 
 class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
-  final YahrtzeitsManager manager = YahrtzeitsManager();
   List<YahrtzeitDate> yahrtzeitDates = [];
   bool isLoading = true;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
@@ -44,9 +45,40 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     fetchYahrtzeits();
   }
 
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    return File('$path/yahrtzeit_data.json');
+  }
+
+  Future<void> writeData(List<Map<String, dynamic>> data) async {
+    final file = await _localFile;
+    await file.writeAsString(json.encode(data));
+  }
+
+  Future<List<Yahrtzeit>> readData() async {
+    try {
+      final file = await _localFile;
+      if (await file.exists()) {
+        final contents = await file.readAsString();
+        List<Map<String, dynamic>> jsonData = List<Map<String, dynamic>>.from(json.decode(contents));
+        return jsonData.map((data) => Yahrtzeit.fromJson(data)).toList();
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print('Error reading JSON file: $e');
+      return [];
+    }
+  }
+
   Future<void> fetchYahrtzeits() async {
     try {
-      final fetchedYahrtzeits = await manager.getAllYahrtzeits();
+      final fetchedYahrtzeits = await readData();
       setState(() {
         yahrtzeitDates = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
         isLoading = false;
@@ -135,6 +167,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
           yearsToSync: widget.yearsToSync,
           yahrtzeit: yahrtzeit,
           isEditing: true,
+          syncSettings: widget.syncSettings,
         ),
       ),
     );
@@ -142,6 +175,28 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       await manager.deleteYahrtzeit(yahrtzeit);
       await manager.addYahrtzeit(result, widget.yearsToSync);
       fetchYahrtzeits();
+    }
+  }
+
+  Future<void> _addYahrtzeitToFile(Yahrtzeit yahrtzeit) async {
+    try {
+      List<Yahrtzeit> yahrtzeits = await readData();
+      yahrtzeits.add(yahrtzeit);
+      List<Map<String, dynamic>> jsonData = yahrtzeits.map((yahrtzeit) => yahrtzeit.toJson()).toList();
+      await writeData(jsonData);
+    } catch (e) {
+      print('Error adding yahrtzeit: $e');
+    }
+  }
+
+  Future<void> _deleteYahrtzeitFromFile(Yahrtzeit yahrtzeit) async {
+    try {
+      List<Yahrtzeit> yahrtzeits = await readData();
+      yahrtzeits.removeWhere((element) => element.id == yahrtzeit.id);
+      List<Map<String, dynamic>> jsonData = yahrtzeits.map((yahrtzeit) => yahrtzeit.toJson()).toList();
+      await writeData(jsonData);
+    } catch (e) {
+      print('Error deleting yahrtzeit: $e');
     }
   }
 
@@ -238,7 +293,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
             );
           }, duration: Duration(milliseconds: 300));
         });
-        await manager.deleteYahrtzeit(yahrtzeit);
+        await _deleteYahrtzeitFromFile(yahrtzeit);
       }
     } catch (e) {
       print('Error deleting yahrtzeit: $e');
@@ -270,7 +325,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      AddYahrtzeitPage(yearsToSync: widget.yearsToSync),
+                      AddYahrtzeitPage(yearsToSync: widget.yearsToSync, syncSettings: widget.syncSettings,),
                 ),
               ).then((result) {
                 if (result == true) {
