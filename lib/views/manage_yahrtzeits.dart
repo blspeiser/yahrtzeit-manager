@@ -106,7 +106,6 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     });
   } catch (e) {
     print('Error fetching yahrtzeits: $e');
-    // Handle error state and hide loading indicator
     setState(() {
       isLoading = false;
     });
@@ -122,7 +121,6 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
       filteredList.add(YahrtzeitDate.fromYahrtzeit(yahrtzeit));
     }
   }
-
   return filteredList;
 }
 
@@ -140,18 +138,14 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
     final englishFormatter = DateFormat('MMMM d, yyyy');
     return '${date.getJewishDayOfMonth()} ${_getEnglishMonthName(date.getJewishMonth())}';
   }
-
   String _getEnglishMonthName(int month) {
     return hebrewMonths[month] ?? '';
   }
 
   Future<void> _editYahrtzeit(Yahrtzeit yahrtzeit) async {
     try {
-      // Delete the old Yahrtzeit from the file
       await _deleteYahrtzeitFromFile(yahrtzeit);
-
-      // Navigate to the edit page
-      final result = await Navigator.push(
+      final result = await Navigator.push(      // Navigate to the edit page
         context,
         MaterialPageRoute(
           builder: (context) => AddYahrtzeitPage(
@@ -164,14 +158,14 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
       );
 
       if (result != null && result is Yahrtzeit) {
-        // Add the new Yahrtzeit to the file
-        await _deleteYahrtzeitFromFile(yahrtzeit); // Delete old Yahrtzeit
+        await _deleteYahrtzeitFromFile(yahrtzeit); 
         await _addYahrtzeitToFile(result);
-        // Refresh the list
-        setState(() {
-          // **This line refreshes the UI to show the updated list**
-          fetchYahrtzeits();
-        });
+        // // Refresh the list
+        // setState(() {
+        //   // **This line refreshes the UI to show the updated list**
+        //   fetchYahrtzeits();
+        // });
+        
       }
     } catch (e) {
       print('Error editing Yahrtzeit: $e');
@@ -195,19 +189,13 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
     }
   }
 
+  
   Future<void> _deleteYahrtzeitFromFile(Yahrtzeit yahrtzeit) async {
     try {
-      // קריאה לנתונים מהקובץ
       List<Yahrtzeit> yahrtzeits = await readData();
-
-      // הדפסת ה־IDs הנוכחיים בקובץ
       print(
           'Current IDs in file: ${yahrtzeits.map((item) => item.id).toList()}');
-
-      // הדפסת ה־ID שמיועד למחיקה
       print('Attempting to delete Yahrtzeit with ID: ${yahrtzeit.id}');
-
-      // מחיקת ה־Yahrtzeit לפי ID
       yahrtzeits.removeWhere((element) {
         bool match = element.id == yahrtzeit.id;
         if (match) {
@@ -215,21 +203,17 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
         }
         return match;
       });
-
-      // הדפסת הנתונים החדשים לפני כתיבה לקובץ
       List<Map<String, dynamic>> jsonData =
           yahrtzeits.map((yahrtzeit) => yahrtzeit.toJson()).toList();
       print('Data to be written: ${json.encode(jsonData)}');
-
-      // כתיבה לקובץ
       final file = await _localFile;
       await file.writeAsString(json.encode(jsonData));
-
       print('Yahrtzeit deleted successfully');
     } catch (e) {
       print('Error deleting yahrtzeit: $e');
     }
   }
+  
 
   void _deleteYahrtzeit(Yahrtzeit yahrtzeit) async {
     try {
@@ -406,10 +390,6 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: () => _deleteYahrtzeit(yahrtzeitDate.yahrtzeit),
-              ),
               IconButton(
                 icon: Icon(Icons.edit, color: Colors.deepPurple),
                 onPressed: () => _editYahrtzeit(yahrtzeitDate.yahrtzeit),
