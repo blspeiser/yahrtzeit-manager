@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../localizations/app_localizations.dart';
 import '../main.dart';
 
@@ -41,21 +42,99 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  String? _language;
-  String? _jewishLanguage;
-  String? _calendar;
-  int? _years;
-  int? _days;
+  late bool _syncSettings;
+  late bool _notifications;
+  late String _language;
+  late String _jewishLanguage;
+  late String _calendar;
+  late int _years;
+  late int _days;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the local state with the values passed in
-    _language = widget.language;
-    _jewishLanguage = widget.jewishLanguage;
-    _calendar = widget.calendar;
-    _years = widget.years;
-    _days = widget.days;
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _syncSettings = prefs.getBool('syncSettings') ?? widget.syncSettings;
+      _notifications = prefs.getBool('notifications') ?? widget.notifications;
+      _language = prefs.getString('language') ?? widget.language;
+      _jewishLanguage =
+          prefs.getString('jewishLanguage') ?? widget.jewishLanguage;
+      _calendar = prefs.getString('calendar') ?? widget.calendar;
+      _years = prefs.getInt('years') ?? widget.years;
+      _days = prefs.getInt('days') ?? widget.days;
+    });
+  }
+
+  Future<void> _saveSettings() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('syncSettings', _syncSettings);
+    await prefs.setBool('notifications', _notifications);
+    await prefs.setString('language', _language);
+    await prefs.setString('jewishLanguage', _jewishLanguage);
+    await prefs.setString('calendar', _calendar);
+    await prefs.setInt('years', _years);
+    await prefs.setInt('days', _days);
+  }
+
+  void _toggleSyncSettings() {
+    setState(() {
+      _syncSettings = !_syncSettings;
+    });
+    _saveSettings();
+    widget.toggleSyncSettings();
+  }
+
+  void _toggleNotifications() {
+    setState(() {
+      _notifications = !_notifications;
+    });
+    _saveSettings();
+    widget.toggleNotifications();
+  }
+
+  void _changeLanguage(String lang) {
+    setState(() {
+      _language = lang;
+    });
+    _saveSettings();
+    widget.changeLanguage(lang);
+  }
+
+  void _changeJewishLanguage(String lang) {
+    setState(() {
+      _jewishLanguage = lang;
+    });
+    _saveSettings();
+    widget.changeJewishLanguage(lang);
+  }
+
+  void _changeCalendar(String cal) {
+    setState(() {
+      _calendar = cal;
+    });
+    _saveSettings();
+    widget.changeCalendar(cal);
+  }
+
+  void _changeYears(int year) {
+    setState(() {
+      _years = year;
+    });
+    _saveSettings();
+    widget.changeYears(year);
+  }
+
+  void _changeDays(int day) {
+    setState(() {
+      _days = day;
+    });
+    _saveSettings();
+    widget.changeDays(day);
   }
 
   @override
@@ -87,6 +166,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 if (newValue != null) {
                   Provider.of<LocaleProvider>(context, listen: false)
                       .setLocale(newValue);
+                  _changeLanguage(newValue.languageCode);
                 }
               },
             ),
@@ -111,21 +191,18 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ],
               onChanged: (value) {
-                setState(() {
-                  _jewishLanguage = value;
-                });
                 if (value != null) {
-                  widget.changeJewishLanguage(value);
+                  _changeJewishLanguage(value);
                 }
               },
             ),
           ),
           ListTile(
-            title: Text('Sync: ${widget.syncSettings ? 'on' : 'off'}'),
+            title: Text('Sync: ${_syncSettings ? 'on' : 'off'}'),
             trailing: Switch(
-              value: widget.syncSettings,
+              value: _syncSettings,
               onChanged: (value) {
-                widget.toggleSyncSettings();
+                _toggleSyncSettings();
               },
               activeColor: Colors.white,
               activeTrackColor: Colors.grey[600],
@@ -144,21 +221,18 @@ class _SettingsPageState extends State<SettingsPage> {
                 );
               }).toList(),
               onChanged: (value) {
-                setState(() {
-                  _years = value;
-                });
                 if (value != null) {
-                  widget.changeYears(value);
+                  _changeYears(value);
                 }
               },
             ),
           ),
           ListTile(
-            title: Text('Notifications: ${widget.notifications ? 'on' : 'off'}'),
+            title: Text('Notifications: ${_notifications ? 'on' : 'off'}'),
             trailing: Switch(
-              value: widget.notifications,
+              value: _notifications,
               onChanged: (value) {
-                widget.toggleNotifications();
+                _toggleNotifications();
               },
               activeColor: Colors.white,
               activeTrackColor: Colors.grey[600],
@@ -177,11 +251,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 );
               }).toList(),
               onChanged: (value) {
-                setState(() {
-                  _days = value;
-                });
                 if (value != null) {
-                  widget.changeDays(value);
+                  _changeDays(value);
                 }
               },
             ),
@@ -204,11 +275,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ],
               onChanged: (value) {
-                setState(() {
-                  _calendar = value;
-                });
                 if (value != null) {
-                  widget.changeCalendar(value);
+                  _changeCalendar(value);
                 }
               },
             ),

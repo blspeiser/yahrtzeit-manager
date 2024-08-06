@@ -6,6 +6,8 @@ import '../models/yahrtzeit.dart';
 import '../models/yahrtzeit_date.dart';
 import 'package:kosher_dart/kosher_dart.dart' as kj;
 import 'package:device_calendar/device_calendar.dart' as dc;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class YahrtzeitsManager {
   static final YahrtzeitsManager _instance = YahrtzeitsManager._internal();
@@ -69,14 +71,10 @@ class YahrtzeitsManager {
                   hebrewName: hebrewName,
                   day: event.start!.day,
                   month: event.start!.month,
-                  // year: event.start!.year,
-                  // gregorianDate: event.start!,
                 );
                 if (!_yahrtzeits.any((y) =>
                         y.englishName == yahrtzeit.englishName &&
-                        y.hebrewName == yahrtzeit.hebrewName
-                    // && y.gregorianDate == yahrtzeit.gregorianDate
-                    )) {
+                        y.hebrewName == yahrtzeit.hebrewName)) {
                   _yahrtzeits.add(yahrtzeit);
                 }
               }
@@ -89,29 +87,47 @@ class YahrtzeitsManager {
     } on PlatformException catch (e) {
       print('Error syncing with calendar: $e');
     }
+    await saveYahrtzeitsToPreferences(); // שמירה ל-SharedPreferences לאחר הסנכרון עם היומן
   }
 
-  Future<void> addYahrtzeit(Yahrtzeit yahrtzeit, int yearsToSync, bool syncSettings) async {
+  Future<void> saveYahrtzeitsToPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<Map<String, dynamic>> jsonData =
+        _yahrtzeits.map((yahrtzeit) => yahrtzeit.toJson()).toList();
+    await prefs.setString('yahrtzeit_data', json.encode(jsonData));
+  }
+
+  Future<void> loadYahrtzeitsFromPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? jsonString = prefs.getString('yahrtzeit_data');
+    if (jsonString != null) {
+      List<Map<String, dynamic>> jsonData =
+          List<Map<String, dynamic>>.from(json.decode(jsonString));
+      _yahrtzeits.clear();
+      _yahrtzeits.addAll(
+          jsonData.map((data) => Yahrtzeit.fromJson(data)).toList());
+    }
+  }
+
+  Future<void> addYahrtzeit(
+      Yahrtzeit yahrtzeit, int yearsToSync, bool syncSettings) async {
+    await loadYahrtzeitsFromPreferences();
     if (!_yahrtzeits.any((y) =>
             y.englishName == yahrtzeit.englishName &&
             y.hebrewName == y.hebrewName &&
             y.day == yahrtzeit.day &&
-            y.month == yahrtzeit.month
-        // && y.gregorianDate == yahrtzeit.gregorianDate
-        )) {
+            y.month == yahrtzeit.month)) {
       final newYahrtzeit = Yahrtzeit(
         englishName: yahrtzeit.englishName,
         hebrewName: yahrtzeit.hebrewName,
         day: yahrtzeit.day,
         month: yahrtzeit.month,
-        // year: yahrtzeit.year,
-        // gregorianDate: yahrtzeit.gregorianDate,
       );
       _yahrtzeits.add(newYahrtzeit);
-      if(syncSettings){
+      if (syncSettings) {
         await _addToCalendar(newYahrtzeit, yearsToSync);
       }
-      
+      await saveYahrtzeitsToPreferences(); // שמור את הנתונים ב-SharedPreferences
       print('Yahrtzeit added: ${newYahrtzeit.englishName}');
     } else {
       print('Yahrtzeit already exists: ${yahrtzeit.englishName}');
@@ -119,27 +135,23 @@ class YahrtzeitsManager {
     print('Current yahrtzeits: ${_yahrtzeits.length}');
   }
 
-  Future<void> updateYahrtzeit(
-      Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit, int yearsToSync, bool syncSettings) async {
+  Future<void> updateYahrtzeit(Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit,
+      int yearsToSync, bool syncSettings) async {
     await deleteYahrtzeit(oldYahrtzeit); // מחיקת היארצייט הישן
     await addYahrtzeit(newYahrtzeit, yearsToSync, syncSettings); // הוספת היארצייט החדש
-    await getUpcomingYahrtzeits();
     print('Yahrtzeit updated: ${newYahrtzeit.englishName}');
   }
 
   Future<void> deleteYahrtzeit(Yahrtzeit yahrtzeit) async {
     try {
-      final nextYearGregorianDate =
-          _getNextGregorianDate(yahrtzeit.day, yahrtzeit.month);
+      await loadYahrtzeitsFromPreferences();
       _yahrtzeits.removeWhere((y) =>
-              y.englishName == yahrtzeit.englishName &&
-              y.hebrewName == y.hebrewName &&
-              y.day == yahrtzeit.day &&
-              y.month == y.month
-          // && y.gregorianDate == nextYearGregorianDate
-          );
+          y.englishName == yahrtzeit.englishName &&
+          y.hebrewName == y.hebrewName &&
+          y.day == yahrtzeit.day &&
+          y.month == yahrtzeit.month);
+      await saveYahrtzeitsToPreferences(); // עדכן את הנתונים ב-SharedPreferences
       await _deleteFromCalendar(yahrtzeit);
-      await getUpcomingYahrtzeits();
       print('Yahrtzeit deleted: ${yahrtzeit.englishName}');
     } catch (e) {
       print('Error deleting yahrtzeit: $e');
@@ -147,13 +159,13 @@ class YahrtzeitsManager {
   }
 
   Future<List<Yahrtzeit>> getAllYahrtzeits() async {
-    await syncWithCalendar();
+    await loadYahrtzeitsFromPreferences(); // טען את הנתונים מ-SharedPreferences
     print('All yahrtzeits fetched: ${_yahrtzeits.length}');
     return _yahrtzeits;
   }
 
   Future<List<String>> getAllGroups() async {
-    await syncWithCalendar(); // Ensure the Yahrtzeits are up-to-date
+    await loadYahrtzeitsFromPreferences(); // טען את הנתונים מ-SharedPreferences
     Set<String> uniqueGroups = {};
     for (var yahrtzeit in _yahrtzeits) {
       if (yahrtzeit.group != null && yahrtzeit.group!.isNotEmpty) {
@@ -164,9 +176,9 @@ class YahrtzeitsManager {
   }
 
   Future<List<Yahrtzeit>> getUpcomingYahrtzeits({int days = 1000}) async {
-    final allYahrtzeits = await getAllYahrtzeits();
+    await loadYahrtzeitsFromPreferences(); // טען את הנתונים מ-SharedPreferences
     final now = tz.TZDateTime.now(tz.local);
-    final upcomingYahrtzeits = allYahrtzeits.where((yahrtzeit) {
+    final upcomingYahrtzeits = _yahrtzeits.where((yahrtzeit) {
       final yahrtzeitDate =
           tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local);
       final isUpcoming = yahrtzeitDate.isAfter(now) &&
@@ -195,11 +207,6 @@ class YahrtzeitsManager {
       if (calendarsResult?.isSuccess == true &&
           calendarsResult?.data!.isNotEmpty == true) {
         for (var calendar in calendarsResult!.data!) {
-          // final gregorianDate = DateTime(
-          //   yahrtzeit.gregorianDate.year,
-          //   yahrtzeit.gregorianDate.month,
-          //   yahrtzeit.gregorianDate.day,
-          // );
           for (int i = 0; i < yearsToSync; i++) {
             int year = JewishDate().getJewishYear() + i;
             JewishDate jewishDate = JewishDate.initDate(
@@ -305,9 +312,7 @@ class YahrtzeitsManager {
     for (var yahrtzeit in list1) {
       if (!list2.any((element) =>
               element.englishName == yahrtzeit.englishName &&
-              element.hebrewName == yahrtzeit.hebrewName
-          // && element.gregorianDate == yahrtzeit.gregorianDate
-          )) {
+              element.hebrewName == yahrtzeit.hebrewName)) {
         return false;
       }
     }
