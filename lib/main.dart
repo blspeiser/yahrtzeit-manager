@@ -1,37 +1,155 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:yahrtzeit_manager/model/shown_yahrtzeits.dart';
-import 'pages/home_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'localizations/app_localizations.dart';
+import 'localizations/global_material_localizations.dart';
+import 'settings/settings.dart';
+import 'views/upcoming_yahrtzeits.dart';
+import 'views/manage_yahrtzeits.dart';
+import 'home_page.dart';
 
-void main() {
-  runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? languageCode = prefs.getString('languageCode') ?? 'en';
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => LocaleProvider()..loadLocale(),
+      child: YahrtzeitManagerApp(initialLocale: Locale(languageCode)),
+    ),
+  );
 }
 
-class MyApp extends StatefulWidget {
-    _MyAppState createState() => _MyAppState();
+
+class YahrtzeitManagerApp extends StatefulWidget {
+  
+  final Locale initialLocale;
+
+  YahrtzeitManagerApp({required this.initialLocale});
+
+
+
+
+  @override
+  _YahrtzeitManagerAppState createState() => _YahrtzeitManagerAppState();
 }
 
-class _MyAppState extends State<MyApp> {
-  bool _isDarkMode = false;
+class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {
+   bool syncSettings = true;
+  bool notifications = true;
+  String language = 'en';
+  String jewishLanguage = 'he';
+  String calendar = 'device';
+  int years = 5;
+  int days = 10;
 
-  void _toggleDarkMode() {
+
+  void toggleSyncSettings(){
     setState(() {
-      _isDarkMode = !_isDarkMode;
+      syncSettings =!syncSettings;
+    });
+  }
+
+  void toggleNotifications(){
+    setState(() {
+      notifications =!notifications;
+    });
+  }
+
+  void changeLanguage(String lang){
+    setState(() {
+      language = lang;
+    });
+  }
+
+  void changeJewishLanguage(String lang){
+    setState(() {
+      jewishLanguage = lang;
+    });
+  }
+
+  void changeYears(int year){
+    setState(() {
+      years = year;
+    });
+  }
+
+  void changeDays(int day){
+    setState(() {
+      days = day;
+    });
+  }
+
+  void changeCalendar(String cal){
+    setState(() {
+      calendar = cal;
     });
   }
 
 
+// class YahrtzeitManagerApp extends StatelessWidget {
+
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ShownYahrtzeits(),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
-        home: HomePage(
-        isDarkMode: _isDarkMode,
-        toggleDarkMode: _toggleDarkMode,
-        ),
+    return Consumer<LocaleProvider>(
+      builder: (context, localeProvider, child) {
+        return MaterialApp(
+          title: 'Yahrtzeit Manager',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+            textTheme: TextTheme(
+              bodyLarge: TextStyle(color: const Color.fromARGB(221, 179, 108, 108)),
+              bodyMedium: TextStyle(color: Colors.black54),
+            ),
+          ),
+          home: HomePage(
+        syncSettings: syncSettings,
+        notifications: notifications,
+        language: language,
+        jewishLanguage: jewishLanguage,
+        years: years,
+        days: days,
+        calendar: calendar,
+        toggleSyncSettings: toggleSyncSettings,
+        toggleNotifications: toggleNotifications,
+        changeLanguage: changeLanguage,
+        changeJewishLanguage: changeJewishLanguage,
+        changeCalendar: changeCalendar,
+        changeYears: changeYears,
+        changeDays: changeDays,
       ),
+          locale: localeProvider.locale,
+          supportedLocales: [
+            Locale('en', 'US'),
+            Locale('he', 'IL'),
+          ],
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            HebrewMaterialLocalizations.delegate,
+          ],
+          localeResolutionCallback: (locale, supportedLocales) {
+            if (locale != null) {
+              for (var supportedLocale in supportedLocales) {
+                if (supportedLocale.languageCode == locale.languageCode) {
+                  return supportedLocale;
+                }
+              }
+            }
+            return supportedLocales.first;
+          },
+          debugShowCheckedModeBanner: false,
+          builder: (context, child) {
+            return Directionality(
+              textDirection: localeProvider.locale.languageCode == 'he'
+                  ? TextDirection.rtl
+                  : TextDirection.ltr,
+              child: child!,
+            );
+          },
+        );
+      },
     );
   }
 }
