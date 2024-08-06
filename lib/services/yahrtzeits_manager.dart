@@ -152,6 +152,17 @@ class YahrtzeitsManager {
     return _yahrtzeits;
   }
 
+  Future<List<String>> getAllGroups() async {
+    await syncWithCalendar(); // Ensure the Yahrtzeits are up-to-date
+    Set<String> uniqueGroups = {};
+    for (var yahrtzeit in _yahrtzeits) {
+      if (yahrtzeit.group != null && yahrtzeit.group!.isNotEmpty) {
+        uniqueGroups.add(yahrtzeit.group!);
+      }
+    }
+    return uniqueGroups.toList();
+  }
+
   Future<List<Yahrtzeit>> getUpcomingYahrtzeits({int days = 1000}) async {
     final allYahrtzeits = await getAllYahrtzeits();
     final now = tz.TZDateTime.now(tz.local);

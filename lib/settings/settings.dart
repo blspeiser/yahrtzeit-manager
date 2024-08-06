@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../localizations/app_localizations.dart';
@@ -63,7 +62,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.translate('settings'), style: TextStyle(color: Colors.white)),
+        title: Text(AppLocalizations.of(context)!.translate('settings'),
+            style: TextStyle(color: Colors.white)),
         backgroundColor: Color.fromARGB(255, 50, 4, 129),
         centerTitle: true,
       ),
@@ -85,13 +85,15 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
               onChanged: (Locale? newValue) {
                 if (newValue != null) {
-                  Provider.of<LocaleProvider>(context, listen: false).setLocale(newValue);
+                  Provider.of<LocaleProvider>(context, listen: false)
+                      .setLocale(newValue);
                 }
               },
             ),
           ),
           ListTile(
-            title: Text(AppLocalizations.of(context)!.translate('jewish_language')),
+            title: Text(
+                AppLocalizations.of(context)!.translate('jewish_language')),
             trailing: DropdownButton<String>(
               value: _jewishLanguage,
               items: [
@@ -119,7 +121,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           ListTile(
-            title: Text(AppLocalizations.of(context)!.translate('sync_settings')),
+            title: Text('Sync: ${widget.syncSettings ? 'on' : 'off'}'),
             trailing: Switch(
               value: widget.syncSettings,
               onChanged: (value) {
@@ -152,7 +154,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           ListTile(
-            title: Text(AppLocalizations.of(context)!.translate('notifications')),
+            title: Text('Notifications: ${widget.notifications ? 'on' : 'off'}'),
             trailing: Switch(
               value: widget.notifications,
               onChanged: (value) {
@@ -185,17 +187,20 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           ListTile(
-            title: Text(AppLocalizations.of(context)!.translate('calendar_settings')),
+            title: Text(
+                AppLocalizations.of(context)!.translate('calendar_settings')),
             trailing: DropdownButton<String>(
               value: _calendar,
               items: [
                 DropdownMenuItem(
                   value: 'google',
-                  child: Text(AppLocalizations.of(context)!.translate('Google Calendar')),
+                  child: Text(AppLocalizations.of(context)!
+                      .translate('Google Calendar')),
                 ),
                 DropdownMenuItem(
                   value: 'device',
-                  child: Text(AppLocalizations.of(context)!.translate('Device Calendar')),
+                  child: Text(AppLocalizations.of(context)!
+                      .translate('Device Calendar')),
                 ),
               ],
               onChanged: (value) {
