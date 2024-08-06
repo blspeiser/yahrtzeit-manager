@@ -10,10 +10,13 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 class ManageYahrtzeits extends StatefulWidget {
-  int yearsToSync;
-  bool syncSettings;
+  final int yearsToSync;
+  final bool syncSettings;
 
-  ManageYahrtzeits({required this.yearsToSync, required this.syncSettings});
+  const ManageYahrtzeits(
+      {required this.yearsToSync, required this.syncSettings, Key? key})
+      : super(key: key);
+
   @override
   _ManageYahrtzeitsState createState() => _ManageYahrtzeitsState();
 }
@@ -56,8 +59,13 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   }
 
   Future<void> writeData(List<Map<String, dynamic>> data) async {
-    final file = await _localFile;
-    await file.writeAsString(json.encode(data));
+    try {
+      final file = await _localFile;
+      await file.writeAsString(json.encode(data));
+      print('Data written successfully');
+    } catch (e) {
+      print('Error writing JSON file: $e');
+    }
   }
 
   Future<List<Yahrtzeit>> readData() async {
@@ -65,7 +73,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       final file = await _localFile;
       if (await file.exists()) {
         final contents = await file.readAsString();
-        List<Map<String, dynamic>> jsonData = List<Map<String, dynamic>>.from(json.decode(contents));
+        List<Map<String, dynamic>> jsonData =
+            List<Map<String, dynamic>>.from(json.decode(contents));
         return jsonData.map((data) => Yahrtzeit.fromJson(data)).toList();
       } else {
         return [];
@@ -77,40 +86,46 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   }
 
   Future<void> fetchYahrtzeits() async {
-    try {
-      final fetchedYahrtzeits = await readData();
-      setState(() {
-        yahrtzeitDates = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
-        isLoading = false;
-      });
+  try {
+    // Read data from the file
+    final fetchedYahrtzeits = await readData();
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Update state with the fetched data and hide loading indicator
+    setState(() {
+      yahrtzeitDates = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
+      isLoading = false;
+    });
+
+    // Use post-frame callback to ensure UI updates after frame is rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_listKey.currentState != null) {
         for (var i = 0; i < yahrtzeitDates.length; i++) {
-          if (_listKey.currentState != null && i < yahrtzeitDates.length) {
-            _listKey.currentState?.insertItem(i);
-          }
+          _listKey.currentState?.insertItem(i);
         }
-      });
-    } catch (e) {
-      print('Error fetching yahrtzeits: $e');
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
-    final uniqueNames = <String>{};
-    final filteredList = <YahrtzeitDate>[];
-
-    for (var yahrtzeit in yahrtzeits) {
-      if (uniqueNames.add(yahrtzeit.englishName)) {
-        filteredList.add(YahrtzeitDate.fromYahrtzeit(yahrtzeit));
       }
-    }
-
-    return filteredList;
+    });
+  } catch (e) {
+    print('Error fetching yahrtzeits: $e');
+    // Handle error state and hide loading indicator
+    setState(() {
+      isLoading = false;
+    });
   }
+}
+
+List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
+  final uniqueNames = <String>{};
+  final filteredList = <YahrtzeitDate>[];
+
+  for (var yahrtzeit in yahrtzeits) {
+    if (yahrtzeit.englishName != null && uniqueNames.add(yahrtzeit.englishName!)) {
+      filteredList.add(YahrtzeitDate.fromYahrtzeit(yahrtzeit));
+    }
+  }
+
+  return filteredList;
+}
+
 
   String _getHebrewDateString(JewishDate date) {
     final hebrewFormatter = HebrewDateFormatter()
@@ -127,54 +142,44 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   }
 
   String _getEnglishMonthName(int month) {
-    switch (month) {
-      case JewishDate.NISSAN:
-        return 'Nissan';
-      case JewishDate.IYAR:
-        return 'Iyar';
-      case JewishDate.SIVAN:
-        return 'Sivan';
-      case JewishDate.TAMMUZ:
-        return 'Tammuz';
-      case JewishDate.AV:
-        return 'Av';
-      case JewishDate.ELUL:
-        return 'Elul';
-      case JewishDate.TISHREI:
-        return 'Tishrei';
-      case JewishDate.CHESHVAN:
-        return 'Cheshvan';
-      case JewishDate.KISLEV:
-        return 'Kislev';
-      case JewishDate.TEVES:
-        return 'Teves';
-      case JewishDate.SHEVAT:
-        return 'Shevat';
-      case JewishDate.ADAR:
-        return 'Adar';
-      case JewishDate.ADAR_II:
-        return 'Adar II';
-      default:
-        return '';
-    }
+    return hebrewMonths[month] ?? '';
   }
 
-  void _editYahrtzeit(Yahrtzeit yahrtzeit) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddYahrtzeitPage(
-          yearsToSync: widget.yearsToSync,
-          yahrtzeit: yahrtzeit,
-          isEditing: true,
-          syncSettings: widget.syncSettings,
+  Future<void> _editYahrtzeit(Yahrtzeit yahrtzeit) async {
+    try {
+      // Delete the old Yahrtzeit from the file
+      await _deleteYahrtzeitFromFile(yahrtzeit);
+
+      // Navigate to the edit page
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AddYahrtzeitPage(
+            yearsToSync: widget.yearsToSync,
+            yahrtzeit: yahrtzeit,
+            isEditing: true,
+            syncSettings: widget.syncSettings,
+          ),
         ),
-      ),
-    );
-    if (result != null && result is Yahrtzeit) {
-      // await manager.deleteYahrtzeit(yahrtzeit);
-      // await manager.addYahrtzeit(result, widget.yearsToSync);
-      fetchYahrtzeits();
+      );
+
+      if (result != null && result is Yahrtzeit) {
+        // Add the new Yahrtzeit to the file
+        await _deleteYahrtzeitFromFile(yahrtzeit); // Delete old Yahrtzeit
+        await _addYahrtzeitToFile(result);
+        // Refresh the list
+        setState(() {
+          // **This line refreshes the UI to show the updated list**
+          fetchYahrtzeits();
+        });
+      }
+    } catch (e) {
+      print('Error editing Yahrtzeit: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.translate('edit_failed')),
+        ),
+      );
     }
   }
 
@@ -182,7 +187,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     try {
       List<Yahrtzeit> yahrtzeits = await readData();
       yahrtzeits.add(yahrtzeit);
-      List<Map<String, dynamic>> jsonData = yahrtzeits.map((yahrtzeit) => yahrtzeit.toJson()).toList();
+      List<Map<String, dynamic>> jsonData =
+          yahrtzeits.map((yahrtzeit) => yahrtzeit.toJson()).toList();
       await writeData(jsonData);
     } catch (e) {
       print('Error adding yahrtzeit: $e');
@@ -191,92 +197,38 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
 
   Future<void> _deleteYahrtzeitFromFile(Yahrtzeit yahrtzeit) async {
     try {
+      // קריאה לנתונים מהקובץ
       List<Yahrtzeit> yahrtzeits = await readData();
-      yahrtzeits.removeWhere((element) => element.id == yahrtzeit.id);
-      List<Map<String, dynamic>> jsonData = yahrtzeits.map((yahrtzeit) => yahrtzeit.toJson()).toList();
-      await writeData(jsonData);
+
+      // הדפסת ה־IDs הנוכחיים בקובץ
+      print(
+          'Current IDs in file: ${yahrtzeits.map((item) => item.id).toList()}');
+
+      // הדפסת ה־ID שמיועד למחיקה
+      print('Attempting to delete Yahrtzeit with ID: ${yahrtzeit.id}');
+
+      // מחיקת ה־Yahrtzeit לפי ID
+      yahrtzeits.removeWhere((element) {
+        bool match = element.id == yahrtzeit.id;
+        if (match) {
+          print('Removing Yahrtzeit with ID: ${element.id}');
+        }
+        return match;
+      });
+
+      // הדפסת הנתונים החדשים לפני כתיבה לקובץ
+      List<Map<String, dynamic>> jsonData =
+          yahrtzeits.map((yahrtzeit) => yahrtzeit.toJson()).toList();
+      print('Data to be written: ${json.encode(jsonData)}');
+
+      // כתיבה לקובץ
+      final file = await _localFile;
+      await file.writeAsString(json.encode(jsonData));
+
+      print('Yahrtzeit deleted successfully');
     } catch (e) {
       print('Error deleting yahrtzeit: $e');
     }
-  }
-
-  Widget _buildYahrtzeitTile(YahrtzeitDate yahrtzeitDate) {
-    String hebrewDate = _getHebrewDateString(yahrtzeitDate.hebrewDate);
-    String englishDate = _getEnglishDateString(yahrtzeitDate.hebrewDate);
-
-    return Dismissible(
-        key: Key(yahrtzeitDate.yahrtzeit.id.toString()),
-        direction: DismissDirection.endToStart,
-        onDismissed: (direction) {
-          _deleteYahrtzeit(yahrtzeitDate.yahrtzeit);
-        },
-        background: Container(
-          color: Colors.red,
-          alignment: Alignment.centerRight,
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Icon(Icons.delete, color: Colors.white),
-        ),
-        child: Card(
-          elevation: 5,
-          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: ListTile(
-            contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      yahrtzeitDate.yahrtzeit.englishName,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      englishDate,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      yahrtzeitDate.yahrtzeit.hebrewName,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      hebrewDate,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            trailing: IconButton(
-              icon: Icon(Icons.edit, color: Colors.deepPurple),
-              onPressed: () => _editYahrtzeit(yahrtzeitDate.yahrtzeit),
-            ),
-          ),
-        ));
   }
 
   void _deleteYahrtzeit(Yahrtzeit yahrtzeit) async {
@@ -287,9 +239,12 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
         setState(() {
           yahrtzeitDates.removeAt(index);
           _listKey.currentState?.removeItem(index, (context, animation) {
-            return SizeTransition(
-              sizeFactor: animation,
-              child: SizedBox.shrink(),
+            return SlideTransition(
+              position: animation.drive(Tween<Offset>(
+                begin: Offset(0, 0),
+                end: Offset(1, 0),
+              ).chain(CurveTween(curve: Curves.easeInOut))),
+              child: _buildYahrtzeitTile(yahrtzeitDates[index]),
             );
           }, duration: Duration(milliseconds: 300));
         });
@@ -324,8 +279,10 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      AddYahrtzeitPage(yearsToSync: widget.yearsToSync, syncSettings: widget.syncSettings,),
+                  builder: (context) => AddYahrtzeitPage(
+                    yearsToSync: widget.yearsToSync,
+                    syncSettings: widget.syncSettings,
+                  ),
                 ),
               ).then((result) {
                 if (result == true) {
@@ -365,6 +322,101 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                       );
                     },
                   ),
+      ),
+    );
+  }
+
+  Widget _buildYahrtzeitTile(YahrtzeitDate yahrtzeitDate) {
+    String hebrewDate = _getHebrewDateString(yahrtzeitDate.hebrewDate);
+    String englishDate = _getEnglishDateString(yahrtzeitDate.hebrewDate);
+
+    return Dismissible(
+      key: Key(yahrtzeitDate.yahrtzeit.id.toString()),
+      direction: DismissDirection.endToStart,
+      onDismissed: (direction) {
+        _deleteYahrtzeit(yahrtzeitDate.yahrtzeit);
+      },
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Icon(Icons.delete, color: Colors.white),
+            SizedBox(width: 20),
+          ],
+        ),
+      ),
+      child: Card(
+        elevation: 5,
+        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: ListTile(
+          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    yahrtzeitDate.yahrtzeit.englishName!,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    englishDate,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    yahrtzeitDate.yahrtzeit.hebrewName,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    hebrewDate,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(Icons.delete, color: Colors.red),
+                onPressed: () => _deleteYahrtzeit(yahrtzeitDate.yahrtzeit),
+              ),
+              IconButton(
+                icon: Icon(Icons.edit, color: Colors.deepPurple),
+                onPressed: () => _editYahrtzeit(yahrtzeitDate.yahrtzeit),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

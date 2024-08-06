@@ -33,7 +33,7 @@ class YahrtzeitTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  yahrtzeitDate.yahrtzeit.englishName,
+                  yahrtzeitDate.yahrtzeit.englishName!,
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
