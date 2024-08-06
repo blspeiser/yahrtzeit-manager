@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'localizations/app_localizations.dart';
 import 'localizations/global_material_localizations.dart';
+import 'services/notification_service.dart';
 import 'settings/settings.dart';
 import 'views/upcoming_yahrtzeits.dart';
 import 'views/manage_yahrtzeits.dart';
@@ -12,10 +13,13 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? languageCode = prefs.getString('languageCode') ?? 'en';
-  runApp(
+ runApp(
     ChangeNotifierProvider(
       create: (context) => LocaleProvider()..loadLocale(),
-      child: YahrtzeitManagerApp(initialLocale: Locale(languageCode)),
+      child: NotificationProvider(
+        child: YahrtzeitManagerApp(initialLocale: Locale(languageCode)),
+        numOfdays: 10, // Pass the number of days for notifications (example value)
+      ),
     ),
   );
 }

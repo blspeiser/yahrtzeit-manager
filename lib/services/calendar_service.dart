@@ -1,3 +1,4 @@
+
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/services.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -32,6 +33,7 @@ class CalendarService {
       return [];
     }
   }
+
   Future<List<Event>> retrieveEventsForToday(String calendarId) async {
     try {
       final now = tz.TZDateTime.now(tz.local);
@@ -53,6 +55,10 @@ class CalendarService {
   }
 
   Future<void> addEventToCalendar(String calendarId, Event event) async {
+    // Adding a reminder 10 minutes before the event
+    event.reminders = [Reminder(minutes: 10)];
     await _deviceCalendarPlugin.createOrUpdateEvent(event);
   }
 }
+
+
