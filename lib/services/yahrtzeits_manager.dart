@@ -359,10 +359,8 @@ class YahrtzeitsManager {
 
   Future<void> syncYahrtzeits(
       List<Yahrtzeit> yahrtzeits, int yearsToSync) async {
-    // שלב 1: קבלת כל האירועים של Yahrtzeit Manager
     List<Event> yahrtzeitManagerEvents = await fetchYahrtzeitManagerEvents();
 
-    // שלב 2: מעבר על כל היורצייטים ובדיקת קיומם ביומן
     for (Yahrtzeit yahrtzeit in yahrtzeits) {
       bool existsInCalendar = false;
 
@@ -377,73 +375,15 @@ class YahrtzeitsManager {
 
         if (exists(yahrtzeit, hebrewDate, yahrtzeitManagerEvents)) {
           existsInCalendar = true;
-          break; // Break out of the inner loop if we found it in any year
+          break;
         }
       }
 
-      // אם האירוע לא קיים ביומן, להוסיף אותו
       if (!existsInCalendar) {
         await _addToCalendar(yahrtzeit, yearsToSync);
       }
     }
   }
-
-  // Future<void> _addToCalendar(Yahrtzeit yahrtzeit, int yearsToSync) async {
-  //   try {
-  //     var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
-  //     if (permissionsGranted?.isSuccess == true &&
-  //         permissionsGranted?.data == false) {
-  //       permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
-  //       if (permissionsGranted?.isSuccess == false ||
-  //           permissionsGranted?.data == false) {
-  //         return;
-  //       }
-  //     }
-
-  //     final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
-  //     if (calendarsResult?.isSuccess == true &&
-  //         calendarsResult?.data!.isNotEmpty == true) {
-  //       for (var calendar in calendarsResult!.data!) {
-  //         for (int i = 0; i < yearsToSync; i++) {
-  //           int year = JewishDate().getJewishYear() + i;
-  //           JewishDate jewishDate = JewishDate.initDate(
-  //               jewishYear: year,
-  //               jewishMonth: yahrtzeit.month,
-  //               jewishDayOfMonth: yahrtzeit.day);
-  //           DateTime gregorianDate = DateTime(
-  //               jewishDate.getGregorianYear(),
-  //               jewishDate.getGregorianMonth(),
-  //               jewishDate.getGregorianDayOfMonth());
-  //           // final event = dc.Event(
-  //           //   calendar.id!,
-  //           //   title: 'Yahrtzeit: ${yahrtzeit.englishName}',
-  //           //   description: '${yahrtzeit.hebrewName}',
-  //           //   start: tz.TZDateTime.from(gregorianDate, tz.local),
-  //           //   end: tz.TZDateTime.from(gregorianDate, tz.local)
-  //           //       .add(Duration(hours: 1)),
-  //           // );
-  //           final event = dc.Event(
-  //             calendar.id!,
-  //             title: 'Yahrtzeit: ${yahrtzeit.englishName}',
-  //             description:
-  //                 'Hebrew Name: ${yahrtzeit.hebrewName}, Date: ${jewishDate.getJewishDayOfMonth()}-${jewishDate.getJewishMonth()}-${jewishDate.getJewishYear()}',
-  //             start: tz.TZDateTime.from(gregorianDate, tz.local),
-  //             end: tz.TZDateTime.from(gregorianDate, tz.local)
-  //                 .add(Duration(hours: 1)),
-  //           );
-  //           final result =
-  //               await _deviceCalendarPlugin.createOrUpdateEvent(event);
-  //           if (result?.isSuccess == false) {
-  //             print(
-  //                 'Error creating or updating event for ${calendar.name}: ${result?.data}');
-  //           }
-  //         }
-  //       }
-  //     }
-  //   } on PlatformException catch (e) {
-  //     print('Error adding event to calendar: $e');
-  //   }
-  // }
 
   Future<void> _addToCalendar(Yahrtzeit yahrtzeit, int yearsToSync) async {
   try {

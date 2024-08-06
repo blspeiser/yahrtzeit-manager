@@ -501,12 +501,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // IconButton(
-              //   icon: Icon(Icons.delete, color: Colors.red),
-              //   onPressed: () => _deleteYahrtzeit(yahrtzeitDate.yahrtzeit),
-              // ),
               IconButton(
-                // icon: Icon(Icons.edit, color: Colors.deepPurple),
                 icon: Icon(
                   Icons.edit,
                   color: Colors.grey[600],
