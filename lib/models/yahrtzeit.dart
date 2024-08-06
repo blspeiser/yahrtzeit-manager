@@ -41,13 +41,22 @@ class Yahrtzeit {
       group: json['group'],
     )..selected = json['selected'] ?? false;
   }
-  
-    DateTime getGregorianDate() {
+
+  DateTime getGregorianDate() {
     int year = JewishDate().getJewishYear();
     JewishDate jewishDate = JewishDate.initDate(
         jewishYear: year, jewishMonth: month, jewishDayOfMonth: day);
     final gregorianDate = DateTime(jewishDate.getGregorianYear(),
         jewishDate.getGregorianMonth(), jewishDate.getGregorianDayOfMonth());
+    DateTime currentDate = DateTime.now();
+    if (gregorianDate.isBefore(currentDate)) {
+      year += 1;
+      JewishDate jewishDate = JewishDate.initDate(
+          jewishYear: year, jewishMonth: month, jewishDayOfMonth: day);
+      final gregorianDate = DateTime(jewishDate.getGregorianYear(),
+          jewishDate.getGregorianMonth(), jewishDate.getGregorianDayOfMonth());
+      return gregorianDate;
+    }
     return gregorianDate;
   }
 }
