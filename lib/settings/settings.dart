@@ -143,7 +143,8 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.translate('settings'),
             style: TextStyle(color: Colors.white)),
-        backgroundColor: Color.fromARGB(255, 50, 4, 129),
+        // backgroundColor: Color.fromARGB(255, 50, 4, 129),
+        backgroundColor: Colors.grey[600],
         centerTitle: true,
       ),
       body: ListView(

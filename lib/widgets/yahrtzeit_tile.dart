@@ -11,7 +11,8 @@ import 'package:intl/intl.dart';
 class YahrtzeitTile extends StatelessWidget {
   final YahrtzeitDate yahrtzeitDate;
 
-  const YahrtzeitTile({Key? key, required this.yahrtzeitDate}) : super(key: key);
+  const YahrtzeitTile({Key? key, required this.yahrtzeitDate})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -34,11 +35,11 @@ class YahrtzeitTile extends StatelessWidget {
               children: [
                 Text(
                   yahrtzeitDate.yahrtzeit.englishName!,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   gregorianFormatter.format(yahrtzeitDate.gregorianDate),
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -47,27 +48,28 @@ class YahrtzeitTile extends StatelessWidget {
               children: [
                 Text(
                   yahrtzeitDate.yahrtzeit.hebrewName,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   hebrewFormatter.format(yahrtzeitDate.hebrewDate),
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),
           ],
         ),
-        trailing: IconButton(
-          icon: Icon(Icons.share),
-          onPressed: () async {
-            await _shareYahrtzeit(yahrtzeitDate);
-          },
-        ),
+        // trailing: IconButton(
+        //   icon: Icon(Icons.share),
+        //   onPressed: () async {
+        //     await _shareYahrtzeit(yahrtzeitDate);
+        //   },
+        // ),
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => YahrtzeitDetailsPage(yahrtzeitDate: yahrtzeitDate),
+              builder: (context) =>
+                  YahrtzeitDetailsPage(yahrtzeitDate: yahrtzeitDate),
             ),
           );
         },
@@ -88,10 +90,12 @@ class YahrtzeitTile extends StatelessWidget {
 
   String _createICSContent(YahrtzeitDate yahrtzeitDate) {
     final start = _formatDateTime(yahrtzeitDate.gregorianDate);
-    final end = _formatDateTime(yahrtzeitDate.gregorianDate.add(Duration(hours: 1)));
+    final end =
+        _formatDateTime(yahrtzeitDate.gregorianDate.add(Duration(hours: 1)));
     final now = _formatDateTime(DateTime.now());
-    final uid = '${yahrtzeitDate.gregorianDate.microsecondsSinceEpoch}@yourdomain.com';
-    
+    final uid =
+        '${yahrtzeitDate.gregorianDate.microsecondsSinceEpoch}@yourdomain.com';
+
     return '''
 BEGIN:VCALENDAR
 VERSION:2.0
@@ -112,6 +116,12 @@ END:VCALENDAR
   }
 
   String _formatDateTime(DateTime dateTime) {
-    return dateTime.toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '').split('.')[0] + 'Z';
+    return dateTime
+            .toUtc()
+            .toIso8601String()
+            .replaceAll('-', '')
+            .replaceAll(':', '')
+            .split('.')[0] +
+        'Z';
   }
 }
