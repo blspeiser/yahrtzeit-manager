@@ -44,7 +44,7 @@ class YahrtzeitDetailsPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildDetailRow('English Name', yahrtzeitDate.yahrtzeit.englishName),
+                _buildDetailRow('English Name', yahrtzeitDate.yahrtzeit.englishName!),
                 _buildDetailRow('Hebrew Name', yahrtzeitDate.yahrtzeit.hebrewName),
                 _buildDetailRow('Gregorian Date', gregorianFormatter.format(yahrtzeitDate.gregorianDate)),
                 _buildDetailRow('Hebrew Date', hebrewFormatter.format(yahrtzeitDate.hebrewDate)),

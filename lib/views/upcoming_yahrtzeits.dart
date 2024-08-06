@@ -44,7 +44,7 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
     final filteredList = <YahrtzeitDate>[];
 
     for (var yahrtzeitDate in yahrtzeits) {
-      if (uniqueNames.add(yahrtzeitDate.yahrtzeit.englishName)) {
+      if (uniqueNames.add(yahrtzeitDate.yahrtzeit.englishName!)) {
         filteredList.add(yahrtzeitDate);
       }
     }

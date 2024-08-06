@@ -53,7 +53,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
   void initState() {
     super.initState();
     if (widget.isEditing && widget.yahrtzeit != null) {
-      _englishNameController.text = widget.yahrtzeit!.englishName;
+      _englishNameController.text = widget.yahrtzeit!.englishName!;
       _hebrewNameController.text = widget.yahrtzeit!.hebrewName;
       _selectedDay = widget.yahrtzeit!.day;
       _selectedMonth = widget.yahrtzeit!.month;
