@@ -15,8 +15,11 @@ class UpcomingYahrtzeits extends StatefulWidget {
 class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   final YahrtzeitsManager manager = YahrtzeitsManager();
   List<YahrtzeitDate> yahrtzeitDates = [];
+  List<YahrtzeitDate> filteredYahrtzeitDates = [];
+  List<String> groups = [];
   bool isLoading = true;
-  
+  String searchQuery = '';
+
   // משתנים לאחסון ההגדרות
   late bool _syncSettings;
   late bool _notifications;
@@ -31,6 +34,7 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
     super.initState();
     fetchYahrtzeits();
     _loadSettings();
+    fetchGroups();
   }
 
   Future<void> fetchYahrtzeits() async {
@@ -39,7 +43,7 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
       print('Fetched yahrtzeits: ${yahrtzeits.length}');
       setState(() {
         yahrtzeitDates = manager.nextMultiple(yahrtzeits);
-            // _filterDuplicateYahrtzeits(manager.nextMultiple(yahrtzeits));
+        filteredYahrtzeitDates = yahrtzeitDates;
         isLoading = false;
       });
     } catch (e) {
@@ -47,6 +51,17 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> fetchGroups() async {
+    try {
+      final fetchedGroups = await manager.getAllGroups();
+      setState(() {
+        groups = fetchedGroups;
+      });
+    } catch (e) {
+      print('Error fetching groups: $e');
     }
   }
 
@@ -77,6 +92,20 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
     return filteredList;
   }
 
+  void _filterYahrtzeits(String query) {
+    setState(() {
+      searchQuery = query;
+      if (query.isEmpty) {
+        filteredYahrtzeitDates = yahrtzeitDates;
+      } else {
+        filteredYahrtzeitDates = yahrtzeitDates.where((yahrtzeitDate) {
+          return yahrtzeitDate.yahrtzeit.group != null &&
+                 yahrtzeitDate.yahrtzeit.group!.toLowerCase().contains(query.toLowerCase());
+        }).toList();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,7 +115,6 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
           style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
-        // backgroundColor: Color.fromARGB(255, 50, 4, 129),
         backgroundColor: Colors.grey[600],
         elevation: 0,
         actionsIconTheme: IconThemeData(color: Colors.white),
@@ -96,25 +124,64 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
         child: isLoading
             ? Center(
                 child: CircularProgressIndicator(
-                  // valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
                 ),
               )
-            : yahrtzeitDates.isEmpty
-                ? Center(
-                    child: Text(
-                      AppLocalizations.of(context)!
-                          .translate('no_upcoming_yahrtzeits_found'),
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
+            : Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Autocomplete<String>(
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        if (textEditingValue.text.isEmpty) {
+                          return const Iterable<String>.empty();
+                        }
+                        return groups.where((String group) {
+                          return group
+                              .toLowerCase()
+                              .contains(textEditingValue.text.toLowerCase());
+                        });
+                      },
+                      onSelected: (String selection) {
+                        _filterYahrtzeits(selection);
+                      },
+                      fieldViewBuilder: (BuildContext context,
+                          TextEditingController textEditingController,
+                          FocusNode focusNode,
+                          VoidCallback onFieldSubmitted) {
+                        return TextField(
+                          controller: textEditingController,
+                          focusNode: focusNode,
+                          onChanged: _filterYahrtzeits,
+                          decoration: InputDecoration(
+                            labelText: 'חפש קבוצה',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  )
-                : ListView.builder(
-                    itemCount: yahrtzeitDates.length,
-                    itemBuilder: (context, index) {
-                      final yahrtzeitDate = yahrtzeitDates[index];
-                      return YahrtzeitTile(yahrtzeitDate: yahrtzeitDate);
-                    },
                   ),
+                  Expanded(
+                    child: filteredYahrtzeitDates.isEmpty
+                        ? Center(
+                            child: Text(
+                              AppLocalizations.of(context)!.translate('no_upcoming_yahrtzeits_found'),
+                              style: TextStyle(fontSize: 14, color: Colors.grey),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: filteredYahrtzeitDates.length,
+                            itemBuilder: (context, index) {
+                              final yahrtzeitDate = filteredYahrtzeitDates[index];
+                              return YahrtzeitTile(yahrtzeitDate: yahrtzeitDate);
+                            },
+                          ),
+                  ),
+                ],
+              ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -173,11 +240,10 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
             }
           });
         },
-        // backgroundColor: Color.fromARGB(255, 50, 4, 129), // צבע הרקע של הכפתור
         backgroundColor: Colors.grey[600],
-        foregroundColor: Colors.white, // צבע האייקון (הפלוס)
+        foregroundColor: Colors.white,
         child: Icon(Icons.add),
-        shape: CircleBorder(), // מוודא שהכפתור יהיה עגול
+        shape: CircleBorder(),
       ),
     );
   }
