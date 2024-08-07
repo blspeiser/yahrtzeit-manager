@@ -18,6 +18,7 @@ class AddYahrtzeitPage extends StatefulWidget {
   final String calendar;
   final int years;
   final int days;
+  int months;
   final VoidCallback toggleSyncSettings;
   final VoidCallback toggleNotifications;
   final Function(String) changeLanguage;
@@ -25,6 +26,7 @@ class AddYahrtzeitPage extends StatefulWidget {
   final Function(String) changeCalendar;
   final Function(int) changeYears;
   final Function(int) changeDays;
+  final Function(int) changeMonths;
 
   AddYahrtzeitPage({
     this.yahrtzeit,
@@ -37,6 +39,7 @@ class AddYahrtzeitPage extends StatefulWidget {
     required this.calendar,
     required this.years,
     required this.days,
+    required this.months,
     required this.toggleSyncSettings,
     required this.toggleNotifications,
     required this.changeLanguage,
@@ -44,6 +47,7 @@ class AddYahrtzeitPage extends StatefulWidget {
     required this.changeCalendar,
     required this.changeYears,
     required this.changeDays,
+    required this.changeMonths,
   });
 
   @override
@@ -175,6 +179,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
               jewishLanguage: widget.jewishLanguage,
               years: widget.years,
               days: widget.days,
+              months: widget.months,
               calendar: widget.calendar,
               toggleSyncSettings: widget.toggleSyncSettings,
               toggleNotifications: widget.toggleNotifications,
@@ -183,6 +188,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
               changeCalendar: widget.changeCalendar,
               changeYears: widget.changeYears,
               changeDays: widget.changeDays,
+              changeMonths: widget.changeMonths,
             ),
           ),
         );

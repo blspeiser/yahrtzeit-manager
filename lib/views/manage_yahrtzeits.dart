@@ -19,6 +19,7 @@ class ManageYahrtzeits extends StatefulWidget {
   final String calendar;
   final int years;
   final int days;
+  final int months;
   final VoidCallback toggleSyncSettings;
   final VoidCallback toggleNotifications;
   final Function(String) changeLanguage;
@@ -26,6 +27,7 @@ class ManageYahrtzeits extends StatefulWidget {
   final Function(String) changeCalendar;
   final Function(int) changeYears;
   final Function(int) changeDays;
+  final Function(int) changeMonths;
 
   const ManageYahrtzeits({
     required this.yearsToSync,
@@ -36,6 +38,7 @@ class ManageYahrtzeits extends StatefulWidget {
     required this.calendar,
     required this.years,
     required this.days,
+    required this.months,
     required this.toggleSyncSettings,
     required this.toggleNotifications,
     required this.changeLanguage,
@@ -43,6 +46,7 @@ class ManageYahrtzeits extends StatefulWidget {
     required this.changeCalendar,
     required this.changeYears,
     required this.changeDays,
+    required this.changeMonths,
     Key? key,
   }) : super(key: key);
 
@@ -198,6 +202,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
             calendar: widget.calendar,
             years: widget.years,
             days: widget.days,
+            months: widget.months,
             toggleSyncSettings: widget.toggleSyncSettings,
             toggleNotifications: widget.toggleNotifications,
             changeLanguage: widget.changeLanguage,
@@ -205,6 +210,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
             changeCalendar: widget.changeCalendar,
             changeYears: widget.changeYears,
             changeDays: widget.changeDays,
+            changeMonths: widget.changeMonths,
           ),
         ),
       );
@@ -370,6 +376,7 @@ Widget build(BuildContext context) {
                     calendar: widget.calendar,
                     years: widget.years,
                     days: widget.days,
+                    months: widget.months,
                     toggleSyncSettings: widget.toggleSyncSettings,
                     toggleNotifications: widget.toggleNotifications,
                     changeLanguage: widget.changeLanguage,
@@ -377,6 +384,7 @@ Widget build(BuildContext context) {
                     changeCalendar: widget.changeCalendar,
                     changeYears: widget.changeYears,
                     changeDays: widget.changeDays,
+                    changeMonths: widget.changeMonths,
                   ),
                 ),
               ).then((result) {

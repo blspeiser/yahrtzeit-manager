@@ -8,6 +8,8 @@ import '../widgets/yahrtzeit_tile.dart';
 import 'add_yahrtzeit.dart';
 
 class UpcomingYahrtzeits extends StatefulWidget {
+  // int months;
+  // UpcomingYahrtzeits({required this.months});
   @override
   _UpcomingYahrtzeitsState createState() => _UpcomingYahrtzeitsState();
 }
@@ -28,6 +30,7 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   late String _calendar;
   late int _years;
   late int _days;
+  late int _months;
 
   @override
   void initState() {
@@ -39,11 +42,11 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
 
   Future<void> fetchYahrtzeits() async {
     try {
-      final yahrtzeits = await manager.getAllYahrtzeits(); // טען את כל היארצייטים מ-SharedPreferences
+      final yahrtzeits = await manager.getAllYahrtzeits();
       print('Fetched yahrtzeits: ${yahrtzeits.length}');
       setState(() {
         yahrtzeitDates = manager.nextMultiple(yahrtzeits);
-        filteredYahrtzeitDates = yahrtzeitDates;
+        // filteredYahrtzeitDates = manager.filterUpcomingByMonths(yahrtzeitDates, widget.months);
         isLoading = false;
       });
     } catch (e) {
@@ -75,6 +78,7 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
       _calendar = prefs.getString('calendar') ?? 'google';
       _years = prefs.getInt('years') ?? 1;
       _days = prefs.getInt('days') ?? 0;
+      _months = prefs.getInt('months') ?? 6;
     });
   }
 
@@ -197,6 +201,8 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                 calendar: _calendar,
                 years: _years,
                 days: _days,
+                months: _months,
+                // months: widget.months,
                 toggleSyncSettings: () {
                   setState(() {
                     _syncSettings = !_syncSettings;
@@ -230,6 +236,12 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                 changeDays: (int day) {
                   setState(() {
                     _days = day;
+                  });
+                },
+                changeMonths: (int months) {
+                  setState(() {
+                    months = months;
+                    // _months = months;
                   });
                 },
               ),

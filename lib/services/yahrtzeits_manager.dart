@@ -246,6 +246,74 @@ class YahrtzeitsManager {
     return dates;
   }
 
+  // List<YahrtzeitDate> filterUpcomingByMonths(List<YahrtzeitDate> yahrtzeits, int months) {
+  //   final dates = yahrtzeits
+  //       .map((yahrtzeit) => ...
+
+  //   dates.sort((a, b) => a.gregorianDate.compareTo(b.gregorianDate));
+  //   print(
+  //       'Sorted yahrtzeit dates: ${dates.map((d) => d.gregorianDate).toList()}');
+  //   return dates;
+  // }
+
+
+// List<YahrtzeitDate> filterUpcomingByMonths(List<YahrtzeitDate> yahrtzeits, int months) {
+//   final currentDate = DateTime.now();
+//   final futureDate = DateTime(
+//     currentDate.year,
+//     currentDate.month + months,
+//     currentDate.day,
+//   );
+
+//   final dates = yahrtzeits
+//       .where((yahrtzeit) {
+//         // הנחה שהתאריך הגרגוריאני של yahrtzeit הוא מסוג DateTime
+//         final gregorianDate = yahrtzeit.gregorianDate;
+//         if (gregorianDate != null) {
+//           return gregorianDate.isBefore(futureDate) && gregorianDate.isAfter(currentDate);
+//         }
+//         return false;
+//       }).toList();
+//       dates.sort((a, b) => a.gregorianDate.compareTo(b.gregorianDate));
+
+//   return dates;
+// }
+
+
+List<YahrtzeitDate> filterUpcomingByMonths(List<YahrtzeitDate> yahrtzeits, int months) {
+  final futureDate = DateTime(
+    DateTime.now().year,
+    (DateTime.now().month + months),
+    DateTime.now().day,
+  );
+
+  // סינון התאריכים לפי התאריך הגרגוריאני
+  final filteredDates = yahrtzeits
+      .where((yahrtzeitDate) {
+        final gregorianDate = yahrtzeitDate.gregorianDate;
+        if (gregorianDate != null) {
+          return gregorianDate.isBefore(futureDate);
+        }
+        return false;
+      })
+      .toList();
+
+  // מיון התאריכים לפי התאריך הגרגוריאני
+  filteredDates.sort((a, b) => a.gregorianDate.compareTo(b.gregorianDate));
+
+  return filteredDates;
+}
+
+
+
+  // DateTime getGregorianDate() {
+  //   DateTime monthsLastDate = DateTime.now();
+  //   monthsLastDate.month += months;
+  //   if (gregorianDate.isBefore(monthsLastDate)) {
+      
+  //   }
+  // }
+
   String _extractHebrewName(String description) {
     final regex = RegExp(r'\((.*?)\)');
     final match = regex.firstMatch(description);
