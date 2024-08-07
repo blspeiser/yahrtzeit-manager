@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'services/event_checker.dart';
 import 'settings/settings.dart';
@@ -63,9 +62,23 @@ class _HomePageState extends State<HomePage> {
         index: _selectedIndex,
         children: <Widget>[
           UpcomingYahrtzeits(),
-          // AddYahrtzeitPage(yearsToSync: widget.years, syncSettings: widget.syncSettings,),
-         ManageYahrtzeits(yearsToSync: widget.years, syncSettings: widget.syncSettings,),
-          // GroupsPage(),
+          ManageYahrtzeits(
+            yearsToSync: widget.years,
+            syncSettings: widget.syncSettings,
+            notifications: widget.notifications,
+            language: widget.language,
+            jewishLanguage: widget.jewishLanguage,
+            calendar: widget.calendar,
+            years: widget.years,
+            days: widget.days,
+            toggleSyncSettings: widget.toggleSyncSettings,
+            toggleNotifications: widget.toggleNotifications,
+            changeLanguage: widget.changeLanguage,
+            changeJewishLanguage: widget.changeJewishLanguage,
+            changeCalendar: widget.changeCalendar,
+            changeYears: widget.changeYears,
+            changeDays: widget.changeDays,
+          ),
           SettingsPage(
             syncSettings: widget.syncSettings,
             notifications: widget.notifications,
