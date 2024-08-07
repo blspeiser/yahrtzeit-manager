@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../home_page.dart';
 import '../localizations/app_localizations.dart';
-import '../main.dart';
 import '../models/yahrtzeit.dart';
 import '../services/yahrtzeits_manager.dart';
 import 'package:kosher_dart/kosher_dart.dart';
@@ -66,7 +64,13 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
   final YahrtzeitsManager manager = YahrtzeitsManager();
   List<String> groups = [];
 
-  static const Map<int, String> hebrewMonths = {
+  static const Map<int, String> englishMonths = {
+    JewishDate.NISSAN: 'Nissan',
+    JewishDate.IYAR: 'Iyar',
+    JewishDate.SIVAN: 'Sivan',
+    JewishDate.TAMMUZ: 'Tammuz',
+    JewishDate.AV: 'Av',
+    JewishDate.ELUL: 'Elul',
     JewishDate.TISHREI: 'Tishrei',
     JewishDate.CHESHVAN: 'Cheshvan',
     JewishDate.KISLEV: 'Kislev',
@@ -74,12 +78,22 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     JewishDate.SHEVAT: 'Shevat',
     JewishDate.ADAR: 'Adar',
     JewishDate.ADAR_II: 'Adar II',
-    JewishDate.NISSAN: 'Nissan',
-    JewishDate.IYAR: 'Iyar',
-    JewishDate.SIVAN: 'Sivan',
-    JewishDate.TAMMUZ: 'Tammuz',
-    JewishDate.AV: 'Av',
-    JewishDate.ELUL: 'Elul',
+  };
+
+  static const Map<int, String> hebrewMonths = {
+    JewishDate.NISSAN: 'ניסן',
+    JewishDate.IYAR: 'אייר',
+    JewishDate.SIVAN: 'סיוון',
+    JewishDate.TAMMUZ: 'תמוז',
+    JewishDate.AV: 'אב',
+    JewishDate.ELUL: 'אלול',
+    JewishDate.TISHREI: 'תשרי',
+    JewishDate.CHESHVAN: 'חשוון',
+    JewishDate.KISLEV: 'כסלו',
+    JewishDate.TEVES: 'טבת',
+    JewishDate.SHEVAT: 'שבט',
+    JewishDate.ADAR: 'אדר',
+    JewishDate.ADAR_II: 'אדר ב׳',
   };
 
   @override
@@ -231,6 +245,12 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     }
   }
 
+  String _getMonthName(int month) {
+    return Localizations.localeOf(context).languageCode == 'he'
+        ? hebrewMonths[month] ?? ''
+        : englishMonths[month] ?? '';
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -342,6 +362,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                 ),
               ],
             ),
+
           ),
         ),
       ),

@@ -20,7 +20,7 @@
     "Edit Yahrtzeit":"עריכה",
     "Details":"פרטים",
     "Groups":"קבוצות",
-    "Jewish Name":"שם יהודי",
+    "Jewish Name":"שם עיברי",
     "Full Name":"שם מלא ",
     "days_before":"מספר ימים לפני קבלת ההתראה",
     "years":"שנים",
@@ -32,6 +32,31 @@
     "Please select a month":"נא לבחור חודש",
     "Select Day":"בחר יום",
     "Please enter a day":"נא לבחור יום",
-    "Please enter a valid day":"נא להכניס יום חוקי"
+    "Please enter a valid day":"נא להכניס יום חוקי",
+    "Sync":"סינכרון",
+    "on":"דלוק ",
+    "off":"כבוי",
+    "Notifications":"התראות",
+    "you_have_not_added_any_yahrtzeits_yet":"עדיין לא הוספת שום יארטצייט",
+    "no_upcoming_yahrtzeits_found":"לא נמצאו יארצטיים קרובים",
+    "Tishrei":"תשרי",
+    "day":"יום",
+    "month":"חודש",
+    "Group Name":"שם קבוצה",
+    "Yahrtzeit details": "פרטי יארצייט",
+ 
+    "hebrew_gate": "תאריך עברי",
+    "details":"פרטים",
+    "gregorian_date":"תאריך לועזי",
+    "English":"English",
+    "Hebrew":"עברית",
+    "Main language":"שפה עיקרית"
+
+     
+    
+
+    
+
+
   }
   

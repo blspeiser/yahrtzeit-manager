@@ -549,7 +549,7 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         children: [
           ListTile(
-            title: Text(AppLocalizations.of(context)!.translate('language')),
+            title: Text(AppLocalizations.of(context)!.translate('Main language')),
             trailing: DropdownButton<Locale>(
               value: Localizations.localeOf(context),
               items: [
@@ -579,16 +579,13 @@ class _SettingsPageState extends State<SettingsPage> {
               items: [
                 DropdownMenuItem(
                   value: 'en',
-                  child: Text('English'),
+                  child: Text( AppLocalizations.of(context)!.translate('English')),
                 ),
                 DropdownMenuItem(
                   value: 'he',
-                  child: Text('Hebrew'),
+                  child: Text( AppLocalizations.of(context)!.translate('Hebrew')),
                 ),
-                DropdownMenuItem(
-                  value: 'es',
-                  child: Text('Spanish'),
-                ),
+                
               ],
               onChanged: (value) {
                 if (value != null) {
@@ -598,7 +595,10 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           ListTile(
-            title: Text('Sync: ${_syncSettings ? 'on' : 'off'}'),
+            // AppLocalizations.of(context)!.translate('settings')
+            // title: Text('Sync: ${_syncSettings ? 'on' : 'off'}'),
+            title: Text('${AppLocalizations.of(context)!.translate('Sync')}: ${widget.syncSettings ? AppLocalizations.of(context)!.translate('on') : AppLocalizations.of(context)!.translate('off')}'),
+
             trailing: Switch(
               value: _syncSettings,
               onChanged: (value) {
@@ -628,7 +628,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           ListTile(
-            title: Text('Notifications: ${_notifications ? 'on' : 'off'}'),
+            title: Text('${AppLocalizations.of(context)!.translate('Notifications')}: ${widget.notifications ? AppLocalizations.of(context)!.translate('on') : AppLocalizations.of(context)!.translate('off')}'),
+
             trailing: Switch(
               value: _notifications,
               onChanged: (value) {
