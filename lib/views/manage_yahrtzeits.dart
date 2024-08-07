@@ -9,6 +9,7 @@ import '../models/yahrtzeit_date.dart';
 import 'add_yahrtzeit.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../settings/settings.dart';
 
 class ManageYahrtzeits extends StatefulWidget {
   final int yearsToSync;
@@ -19,7 +20,9 @@ class ManageYahrtzeits extends StatefulWidget {
   final String calendar;
   final int years;
   final int days;
+
   final int months;
+
   final VoidCallback toggleSyncSettings;
   final VoidCallback toggleNotifications;
   final Function(String) changeLanguage;
@@ -27,7 +30,9 @@ class ManageYahrtzeits extends StatefulWidget {
   final Function(String) changeCalendar;
   final Function(int) changeYears;
   final Function(int) changeDays;
+
   final Function(int) changeMonths;
+
 
   const ManageYahrtzeits({
     required this.yearsToSync,
@@ -38,7 +43,9 @@ class ManageYahrtzeits extends StatefulWidget {
     required this.calendar,
     required this.years,
     required this.days,
+
     required this.months,
+
     required this.toggleSyncSettings,
     required this.toggleNotifications,
     required this.changeLanguage,
@@ -46,7 +53,9 @@ class ManageYahrtzeits extends StatefulWidget {
     required this.changeCalendar,
     required this.changeYears,
     required this.changeDays,
+
     required this.changeMonths,
+
     Key? key,
   }) : super(key: key);
 
@@ -58,18 +67,17 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   List<YahrtzeitDate> yahrtzeitDates = [];
   bool isLoading = true;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+
+
+  static const Map<int, String> hebrewMonths = {
+
   final YahrtzeitsManager manager = YahrtzeitsManager();
   List<YahrtzeitDate> filteredYahrtzeitDates = [];
   List<String> groups = [];
   String searchQuery = '';
 
   static const Map<int, String> hebrewMonths = {
-    JewishDate.NISSAN: 'Nissan',
-    JewishDate.IYAR: 'Iyar',
-    JewishDate.SIVAN: 'Sivan',
-    JewishDate.TAMMUZ: 'Tammuz',
-    JewishDate.AV: 'Av',
-    JewishDate.ELUL: 'Elul',
+
     JewishDate.TISHREI: 'Tishrei',
     JewishDate.CHESHVAN: 'Cheshvan',
     JewishDate.KISLEV: 'Kislev',
@@ -77,6 +85,13 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     JewishDate.SHEVAT: 'Shevat',
     JewishDate.ADAR: 'Adar',
     JewishDate.ADAR_II: 'Adar II',
+    JewishDate.NISSAN: 'Nissan',
+    JewishDate.IYAR: 'Iyar',
+    JewishDate.SIVAN: 'Sivan',
+    JewishDate.TAMMUZ: 'Tammuz',
+    JewishDate.AV: 'Av',
+    JewishDate.ELUL: 'Elul',
+
   };
 
   @override
@@ -102,30 +117,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     }
   }
 
-  // Future<void> fetchYahrtzeits() async {
-  //   try {
-  //     final fetchedYahrtzeits = await readData();
 
-  //     setState(() {
-  //       yahrtzeitDates = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
-  //       isLoading = false;
-  //     });
-
-  //     WidgetsBinding.instance.addPostFrameCallback((_) {
-  //       if (_listKey.currentState != null) {
-  //         for (var i = 0; i < yahrtzeitDates.length; i++) {
-  //           _listKey.currentState?.insertItem(i);
-  //         }
-  //       }
-  //     });
-  //   } catch (e) {
-  //     print('Error fetching yahrtzeits: $e');
-  //     setState(() {
-  //       isLoading = false;
-  //     });
-  //   }
-  // }
-
+ 
   Future<void> fetchYahrtzeits() async {
   try {
     final fetchedYahrtzeits = await readData();
@@ -150,6 +143,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     });
   }
 }
+
 
 
   List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
@@ -202,6 +196,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
             calendar: widget.calendar,
             years: widget.years,
             days: widget.days,
+
             months: widget.months,
             toggleSyncSettings: widget.toggleSyncSettings,
             toggleNotifications: widget.toggleNotifications,
@@ -211,6 +206,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
             changeYears: widget.changeYears,
             changeDays: widget.changeDays,
             changeMonths: widget.changeMonths,
+
           ),
         ),
       );
@@ -332,6 +328,9 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       },
     );
   }
+
+
+// עובד חוץ ממקרהקוד גיפיטי
 
 
 void _filterYahrtzeits(String query) {
@@ -497,6 +496,15 @@ Widget build(BuildContext context) {
     String hebrewDate = _getHebrewDateString(yahrtzeitDate.hebrewDate);
     String englishDate = _getEnglishDateString(yahrtzeitDate.hebrewDate);
 
+    // Check language preferences
+    bool isBothEnglish =
+        widget.language == 'en' && widget.jewishLanguage == 'en';
+    bool isBothHebrew =
+        widget.language == 'he' && widget.jewishLanguage == 'he';
+    bool isEnglishAndHebrew =
+        (widget.language == 'en' && widget.jewishLanguage == 'he') ||
+            (widget.language == 'he' && widget.jewishLanguage == 'en');
+
     return Dismissible(
       key: Key(yahrtzeitDate.yahrtzeit.id.toString()),
       direction: DismissDirection.endToStart,
@@ -523,57 +531,60 @@ Widget build(BuildContext context) {
         ),
         child: ListTile(
           contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    yahrtzeitDate.yahrtzeit.englishName!,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    englishDate,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
+              Text(
+                yahrtzeitDate.yahrtzeit.englishName!,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    yahrtzeitDate.yahrtzeit.hebrewName,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+              SizedBox(height: 5),
+              // Display dates based on language settings
+              if (isBothHebrew) ...[
+                Text(
+                  hebrewDate,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
                   ),
-                  SizedBox(height: 5),
-                  Text(
-                    hebrewDate,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
+                ),
+              ] else if (isBothEnglish) ...[
+                Text(
+                  englishDate,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
                   ),
-                ],
-              ),
+                ),
+              ] else if (isEnglishAndHebrew) ...[
+                Text(
+                  englishDate,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  hebrewDate,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+
             ],
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
+
                 icon: Icon(
                   Icons.edit,
                   color: Colors.grey[600],

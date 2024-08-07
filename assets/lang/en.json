@@ -32,7 +32,26 @@
     "Please select a month":"Please select a month",
     "Select Day":"Select Day",
     "Please enter a day":"Please enter a day",
-    "Please enter a valid day":"Please enter a valid day"
+    "Please enter a valid day":"Please enter a valid day",
+    "Sync":"Sync",
+    "on":"on",
+    "off":"off",
+    "Notifications":"Notifications",
+    "you_have_not_added_any_yahrtzeits_yet":"you_have_not_added_any_yahrtzeits_yet",
+    "no_upcoming_yahrtzeits_found":"no_upcoming_yahrtzeits_found",
+    "Tishrei":"Tishrei",
+    "day":"day",
+    "month":"month",
+    "Group Name":"Group Name",
+    "Yahrtzeit details": "Yahrtzeit details",
+    
+    "hebrew_gate":"Hebrew date",
+    "details":"details",
+    "gregorian_date": "Gregorian date",
+    "English":"English",
+    "Hebrew":"Hebrew",
+    "Main language":"Main language"
+    
 
     
   }
