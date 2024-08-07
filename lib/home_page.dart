@@ -14,6 +14,7 @@ class HomePage extends StatefulWidget {
   String calendar;
   int years;
   int days;
+  int months;
   final VoidCallback toggleSyncSettings;
   final VoidCallback toggleNotifications;
   final Function(String) changeLanguage;
@@ -21,6 +22,7 @@ class HomePage extends StatefulWidget {
   final Function(String) changeCalendar;
   final Function(int) changeYears;
   final Function(int) changeDays;
+  final Function(int) changeMonths;
 
   HomePage({
     required this.syncSettings,
@@ -30,6 +32,7 @@ class HomePage extends StatefulWidget {
     required this.calendar,
     required this.years,
     required this.days,
+    required this.months,
     required this.toggleSyncSettings,
     required this.toggleNotifications,
     required this.changeLanguage,
@@ -37,6 +40,7 @@ class HomePage extends StatefulWidget {
     required this.changeCalendar,
     required this.changeYears,
     required this.changeDays,
+    required this.changeMonths,
   });
 
   @override
@@ -61,6 +65,7 @@ class _HomePageState extends State<HomePage> {
       body: IndexedStack(
         index: _selectedIndex,
         children: <Widget>[
+          // UpcomingYahrtzeits(months: widget.months,),
           UpcomingYahrtzeits(),
           ManageYahrtzeits(
             yearsToSync: widget.years,
@@ -71,6 +76,7 @@ class _HomePageState extends State<HomePage> {
             calendar: widget.calendar,
             years: widget.years,
             days: widget.days,
+            months: widget.months,
             toggleSyncSettings: widget.toggleSyncSettings,
             toggleNotifications: widget.toggleNotifications,
             changeLanguage: widget.changeLanguage,
@@ -78,6 +84,7 @@ class _HomePageState extends State<HomePage> {
             changeCalendar: widget.changeCalendar,
             changeYears: widget.changeYears,
             changeDays: widget.changeDays,
+            changeMonths: widget.changeMonths,
           ),
           SettingsPage(
             syncSettings: widget.syncSettings,
@@ -87,6 +94,7 @@ class _HomePageState extends State<HomePage> {
             calendar: widget.calendar,
             years: widget.years,
             days: widget.days,
+            months: widget.months,
             toggleSyncSettings: widget.toggleSyncSettings,
             toggleNotifications: widget.toggleNotifications,
             changeLanguage: widget.changeLanguage,
@@ -94,6 +102,7 @@ class _HomePageState extends State<HomePage> {
             changeCalendar: widget.changeCalendar,
             changeYears: widget.changeYears,
             changeDays: widget.changeDays,
+            changeMonths: widget.changeMonths,
           ),
         ],
       ),

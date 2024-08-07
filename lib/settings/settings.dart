@@ -12,6 +12,7 @@ class SettingsPage extends StatefulWidget {
   final String calendar;
   final int years;
   final int days;
+  final int months;
   final VoidCallback toggleSyncSettings;
   final VoidCallback toggleNotifications;
   final Function(String) changeLanguage;
@@ -19,6 +20,7 @@ class SettingsPage extends StatefulWidget {
   final Function(String) changeCalendar;
   final Function(int) changeYears;
   final Function(int) changeDays;
+  final Function(int) changeMonths;
 
   SettingsPage({
     required this.syncSettings,
@@ -28,6 +30,7 @@ class SettingsPage extends StatefulWidget {
     required this.calendar,
     required this.years,
     required this.days,
+    required this.months,
     required this.toggleSyncSettings,
     required this.toggleNotifications,
     required this.changeLanguage,
@@ -35,6 +38,7 @@ class SettingsPage extends StatefulWidget {
     required this.changeCalendar,
     required this.changeYears,
     required this.changeDays,
+    required this.changeMonths,
   });
 
   @override
@@ -49,6 +53,7 @@ class _SettingsPageState extends State<SettingsPage> {
   late String _calendar;
   late int _years;
   late int _days;
+  late int _months;
 
   @override
   void initState() {
@@ -60,6 +65,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _calendar = widget.calendar;
     _years = widget.years;
     _days = widget.days;
+    _months = widget.months;
     _loadSettings();
   }
 
@@ -74,6 +80,7 @@ class _SettingsPageState extends State<SettingsPage> {
       _calendar = prefs.getString('calendar') ?? widget.calendar;
       _years = prefs.getInt('years') ?? widget.years;
       _days = prefs.getInt('days') ?? widget.days;
+      _months = prefs.getInt('months') ?? widget.months;
     });
   }
 
@@ -86,6 +93,7 @@ class _SettingsPageState extends State<SettingsPage> {
     await prefs.setString('calendar', _calendar);
     await prefs.setInt('years', _years);
     await prefs.setInt('days', _days);
+    await prefs.setInt('months', _months);
   }
 
   void _toggleSyncSettings() {
@@ -142,6 +150,14 @@ class _SettingsPageState extends State<SettingsPage> {
     });
     _saveSettings();
     widget.changeDays(day);
+  }
+
+  void _changeMonths(int month) {
+    setState(() {
+      _months = month;
+    });
+    _saveSettings();
+    widget.changeMonths(month);
   }
 
   @override
@@ -261,6 +277,23 @@ class _SettingsPageState extends State<SettingsPage> {
               onChanged: (value) {
                 if (value != null) {
                   _changeDays(value);
+                }
+              },
+            ),
+          ),
+          ListTile(
+            title: Text(AppLocalizations.of(context)!.translate('months_filter')),
+            trailing: DropdownButton<int>(
+              value: _months,
+              items: List.generate(12, (index) => index + 1).map((int value) {
+                return DropdownMenuItem<int>(
+                  value: value,
+                  child: Text(value.toString()),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  _changeMonths(value);
                 }
               },
             ),
