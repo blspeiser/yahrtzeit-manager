@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'localizations/app_localizations.dart';
 import 'localizations/global_material_localizations.dart';
+import 'services/notification_service.dart';
 import 'settings/settings.dart';
 import 'views/upcoming_yahrtzeits.dart';
 import 'views/manage_yahrtzeits.dart';
@@ -15,80 +16,83 @@ void main() async {
   runApp(
     ChangeNotifierProvider(
       create: (context) => LocaleProvider()..loadLocale(),
-      child: YahrtzeitManagerApp(initialLocale: Locale(languageCode)),
+      child: NotificationProvider(
+        child: YahrtzeitManagerApp(initialLocale: Locale(languageCode)),
+        numOfdays:
+            10, // Pass the number of days for notifications (example value)
+      ),
     ),
   );
 }
 
-
 class YahrtzeitManagerApp extends StatefulWidget {
-  
   final Locale initialLocale;
 
   YahrtzeitManagerApp({required this.initialLocale});
-
-
-
 
   @override
   _YahrtzeitManagerAppState createState() => _YahrtzeitManagerAppState();
 }
 
 class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {
-   bool syncSettings = true;
+  bool syncSettings = true;
   bool notifications = true;
   String language = 'en';
   String jewishLanguage = 'he';
   String calendar = 'device';
   int years = 5;
   int days = 10;
+  int months = 6;
 
-
-  void toggleSyncSettings(){
+  void toggleSyncSettings() {
     setState(() {
-      syncSettings =!syncSettings;
+      syncSettings = !syncSettings;
     });
   }
 
-  void toggleNotifications(){
+  void toggleNotifications() {
     setState(() {
-      notifications =!notifications;
+      notifications = !notifications;
     });
   }
 
-  void changeLanguage(String lang){
+  void changeLanguage(String lang) {
     setState(() {
       language = lang;
     });
   }
 
-  void changeJewishLanguage(String lang){
+  void changeJewishLanguage(String lang) {
     setState(() {
       jewishLanguage = lang;
     });
   }
 
-  void changeYears(int year){
+  void changeYears(int year) {
     setState(() {
       years = year;
     });
   }
 
-  void changeDays(int day){
+  void changeDays(int day) {
     setState(() {
       days = day;
     });
   }
 
-  void changeCalendar(String cal){
+  void changeCalendar(String cal) {
     setState(() {
       calendar = cal;
     });
   }
 
+  void changeMonths(int month) {
+    setState(() {
+      months = month;
+    });
+  }
 
 // class YahrtzeitManagerApp extends StatelessWidget {
-
 
   @override
   Widget build(BuildContext context) {
@@ -100,26 +104,29 @@ class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {
             primarySwatch: Colors.blue,
             visualDensity: VisualDensity.adaptivePlatformDensity,
             textTheme: TextTheme(
-              bodyLarge: TextStyle(color: const Color.fromARGB(221, 179, 108, 108)),
+              bodyLarge:
+                  TextStyle(color: const Color.fromARGB(221, 179, 108, 108)),
               bodyMedium: TextStyle(color: Colors.black54),
             ),
           ),
           home: HomePage(
-        syncSettings: syncSettings,
-        notifications: notifications,
-        language: language,
-        jewishLanguage: jewishLanguage,
-        years: years,
-        days: days,
-        calendar: calendar,
-        toggleSyncSettings: toggleSyncSettings,
-        toggleNotifications: toggleNotifications,
-        changeLanguage: changeLanguage,
-        changeJewishLanguage: changeJewishLanguage,
-        changeCalendar: changeCalendar,
-        changeYears: changeYears,
-        changeDays: changeDays,
-      ),
+            syncSettings: syncSettings,
+            notifications: notifications,
+            language: language,
+            jewishLanguage: jewishLanguage,
+            years: years,
+            days: days,
+            months: months,
+            calendar: calendar,
+            toggleSyncSettings: toggleSyncSettings,
+            toggleNotifications: toggleNotifications,
+            changeLanguage: changeLanguage,
+            changeJewishLanguage: changeJewishLanguage,
+            changeCalendar: changeCalendar,
+            changeYears: changeYears,
+            changeDays: changeDays,
+            changeMonths: changeMonths,
+          ),
           locale: localeProvider.locale,
           supportedLocales: [
             Locale('en', 'US'),

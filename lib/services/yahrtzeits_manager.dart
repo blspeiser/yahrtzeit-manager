@@ -73,8 +73,8 @@ class YahrtzeitsManager {
                   month: event.start!.month,
                 );
                 if (!_yahrtzeits.any((y) =>
-                        y.englishName == yahrtzeit.englishName &&
-                        y.hebrewName == yahrtzeit.hebrewName)) {
+                    y.englishName == yahrtzeit.englishName &&
+                    y.hebrewName == yahrtzeit.hebrewName)) {
                   _yahrtzeits.add(yahrtzeit);
                 }
               }
@@ -104,8 +104,8 @@ class YahrtzeitsManager {
       List<Map<String, dynamic>> jsonData =
           List<Map<String, dynamic>>.from(json.decode(jsonString));
       _yahrtzeits.clear();
-      _yahrtzeits.addAll(
-          jsonData.map((data) => Yahrtzeit.fromJson(data)).toList());
+      _yahrtzeits
+          .addAll(jsonData.map((data) => Yahrtzeit.fromJson(data)).toList());
     }
   }
 
@@ -113,10 +113,10 @@ class YahrtzeitsManager {
       Yahrtzeit yahrtzeit, int yearsToSync, bool syncSettings) async {
     await loadYahrtzeitsFromPreferences();
     if (!_yahrtzeits.any((y) =>
-            y.englishName == yahrtzeit.englishName &&
-            y.hebrewName == y.hebrewName &&
-            y.day == yahrtzeit.day &&
-            y.month == yahrtzeit.month)) {
+        y.englishName == yahrtzeit.englishName &&
+        y.hebrewName == y.hebrewName &&
+        y.day == yahrtzeit.day &&
+        y.month == yahrtzeit.month)) {
       final newYahrtzeit = Yahrtzeit(
         englishName: yahrtzeit.englishName,
         hebrewName: yahrtzeit.hebrewName,
@@ -124,9 +124,9 @@ class YahrtzeitsManager {
         month: yahrtzeit.month,
       );
       _yahrtzeits.add(newYahrtzeit);
-      if (syncSettings) {
-        await _addToCalendar(newYahrtzeit, yearsToSync);
-      }
+      // if (syncSettings) {
+      //   await _addToCalendar(newYahrtzeit, yearsToSync);
+      // }
       await saveYahrtzeitsToPreferences(); // שמור את הנתונים ב-SharedPreferences
       print('Yahrtzeit added: ${newYahrtzeit.englishName}');
     } else {
@@ -138,7 +138,8 @@ class YahrtzeitsManager {
   Future<void> updateYahrtzeit(Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit,
       int yearsToSync, bool syncSettings) async {
     await deleteYahrtzeit(oldYahrtzeit); // מחיקת היארצייט הישן
-    await addYahrtzeit(newYahrtzeit, yearsToSync, syncSettings); // הוספת היארצייט החדש
+    await addYahrtzeit(
+        newYahrtzeit, yearsToSync, syncSettings); // הוספת היארצייט החדש
     print('Yahrtzeit updated: ${newYahrtzeit.englishName}');
   }
 
@@ -189,54 +190,6 @@ class YahrtzeitsManager {
     }).toList();
     print('Upcoming yahrtzeits fetched: ${upcomingYahrtzeits.length}');
     return upcomingYahrtzeits;
-  }
-
-  Future<void> _addToCalendar(Yahrtzeit yahrtzeit, int yearsToSync) async {
-    try {
-      var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
-      if (permissionsGranted?.isSuccess == true &&
-          permissionsGranted?.data == false) {
-        permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
-        if (permissionsGranted?.isSuccess == false ||
-            permissionsGranted?.data == false) {
-          return;
-        }
-      }
-
-      final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
-      if (calendarsResult?.isSuccess == true &&
-          calendarsResult?.data!.isNotEmpty == true) {
-        for (var calendar in calendarsResult!.data!) {
-          for (int i = 0; i < yearsToSync; i++) {
-            int year = JewishDate().getJewishYear() + i;
-            JewishDate jewishDate = JewishDate.initDate(
-                jewishYear: year,
-                jewishMonth: yahrtzeit.month,
-                jewishDayOfMonth: yahrtzeit.day);
-            DateTime gregorianDate = DateTime(
-                jewishDate.getGregorianYear(),
-                jewishDate.getGregorianMonth(),
-                jewishDate.getGregorianDayOfMonth());
-            final event = dc.Event(
-              calendar.id!,
-              title: 'Yahrtzeit: ${yahrtzeit.englishName}',
-              description: '${yahrtzeit.hebrewName}',
-              start: tz.TZDateTime.from(gregorianDate, tz.local),
-              end: tz.TZDateTime.from(gregorianDate, tz.local)
-                  .add(Duration(hours: 1)),
-            );
-            final result =
-                await _deviceCalendarPlugin.createOrUpdateEvent(event);
-            if (result?.isSuccess == false) {
-              print(
-                  'Error creating or updating event for ${calendar.name}: ${result?.data}');
-            }
-          }
-        }
-      }
-    } on PlatformException catch (e) {
-      print('Error adding event to calendar: $e');
-    }
   }
 
   Future<void> _deleteFromCalendar(Yahrtzeit yahrtzeit) async {
@@ -293,6 +246,74 @@ class YahrtzeitsManager {
     return dates;
   }
 
+  // List<YahrtzeitDate> filterUpcomingByMonths(List<YahrtzeitDate> yahrtzeits, int months) {
+  //   final dates = yahrtzeits
+  //       .map((yahrtzeit) => ...
+
+  //   dates.sort((a, b) => a.gregorianDate.compareTo(b.gregorianDate));
+  //   print(
+  //       'Sorted yahrtzeit dates: ${dates.map((d) => d.gregorianDate).toList()}');
+  //   return dates;
+  // }
+
+
+// List<YahrtzeitDate> filterUpcomingByMonths(List<YahrtzeitDate> yahrtzeits, int months) {
+//   final currentDate = DateTime.now();
+//   final futureDate = DateTime(
+//     currentDate.year,
+//     currentDate.month + months,
+//     currentDate.day,
+//   );
+
+//   final dates = yahrtzeits
+//       .where((yahrtzeit) {
+//         // הנחה שהתאריך הגרגוריאני של yahrtzeit הוא מסוג DateTime
+//         final gregorianDate = yahrtzeit.gregorianDate;
+//         if (gregorianDate != null) {
+//           return gregorianDate.isBefore(futureDate) && gregorianDate.isAfter(currentDate);
+//         }
+//         return false;
+//       }).toList();
+//       dates.sort((a, b) => a.gregorianDate.compareTo(b.gregorianDate));
+
+//   return dates;
+// }
+
+
+List<YahrtzeitDate> filterUpcomingByMonths(List<YahrtzeitDate> yahrtzeits, int months) {
+  final futureDate = DateTime(
+    DateTime.now().year,
+    (DateTime.now().month + months),
+    DateTime.now().day,
+  );
+
+  // סינון התאריכים לפי התאריך הגרגוריאני
+  final filteredDates = yahrtzeits
+      .where((yahrtzeitDate) {
+        final gregorianDate = yahrtzeitDate.gregorianDate;
+        if (gregorianDate != null) {
+          return gregorianDate.isBefore(futureDate);
+        }
+        return false;
+      })
+      .toList();
+
+  // מיון התאריכים לפי התאריך הגרגוריאני
+  filteredDates.sort((a, b) => a.gregorianDate.compareTo(b.gregorianDate));
+
+  return filteredDates;
+}
+
+
+
+  // DateTime getGregorianDate() {
+  //   DateTime monthsLastDate = DateTime.now();
+  //   monthsLastDate.month += months;
+  //   if (gregorianDate.isBefore(monthsLastDate)) {
+      
+  //   }
+  // }
+
   String _extractHebrewName(String description) {
     final regex = RegExp(r'\((.*?)\)');
     final match = regex.firstMatch(description);
@@ -311,8 +332,8 @@ class YahrtzeitsManager {
     }
     for (var yahrtzeit in list1) {
       if (!list2.any((element) =>
-              element.englishName == yahrtzeit.englishName &&
-              element.hebrewName == yahrtzeit.hebrewName)) {
+          element.englishName == yahrtzeit.englishName &&
+          element.hebrewName == yahrtzeit.hebrewName)) {
         return false;
       }
     }
@@ -334,5 +355,170 @@ class YahrtzeitsManager {
       print('Error converting date: $e');
       throw ArgumentError('Invalid Hebrew date provided.');
     }
+  }
+
+  Future<List<Event>> fetchYahrtzeitManagerEvents() async {
+    List<Event> yahrtzeitManagerEvents = [];
+
+    try {
+      var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
+      if (!permissionsGranted.isSuccess || !permissionsGranted.data!) {
+        permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
+        if (!permissionsGranted.isSuccess || !permissionsGranted.data!) {
+          print('Calendar permissions not granted');
+          return yahrtzeitManagerEvents;
+        }
+      }
+
+      final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
+      if (calendarsResult.isSuccess && calendarsResult.data != null) {
+        for (var calendar in calendarsResult.data!) {
+          final eventsResult = await _deviceCalendarPlugin.retrieveEvents(
+            calendar.id!,
+            RetrieveEventsParams(
+              startDate:
+                  tz.TZDateTime.now(tz.local).subtract(Duration(days: 365)),
+              endDate: tz.TZDateTime.now(tz.local).add(Duration(days: 365)),
+            ),
+          );
+          if (eventsResult.isSuccess && eventsResult.data != null) {
+            for (var event in eventsResult.data!) {
+              if (event.description?.startsWith('Yahrtzeit Manager') == true) {
+                yahrtzeitManagerEvents.add(event);
+              }
+            }
+          }
+        }
+      } else {
+        print('No calendars available or failed to retrieve calendars');
+      }
+    } on PlatformException catch (e) {
+      print('Error fetching events: $e');
+    }
+
+    return yahrtzeitManagerEvents;
+  }
+
+  // פונקציה שבודקת אם ישנו אירוע תואם
+  bool exists(Yahrtzeit yahrtzeit, String hebrewDate, List<Event> events) {
+  for (Event event in events) {
+    String? summary = event.title;
+    String? description = event.description;
+    if (summary == null || description == null || summary.isEmpty || description.isEmpty) continue;
+
+    if (isMatchingYahrtzeitEvent(summary, yahrtzeit, hebrewDate) ||
+        isMatchingYahrtzeitEvent(description, yahrtzeit, hebrewDate)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+  bool isMatchingYahrtzeitEvent(String summary, Yahrtzeit yahrtzeit, String hebrewDate) {
+  final String englishName = yahrtzeit.englishName ?? '';
+  final String hebrewName = yahrtzeit.hebrewName ?? '';
+
+  return summary.contains(englishName) ||
+         summary.contains(hebrewName) ||
+         summary.contains(hebrewDate);
+}
+
+
+  Future<void> syncYahrtzeits(
+      List<Yahrtzeit> yahrtzeits, int yearsToSync) async {
+    List<Event> yahrtzeitManagerEvents = await fetchYahrtzeitManagerEvents();
+
+    for (Yahrtzeit yahrtzeit in yahrtzeits) {
+      bool existsInCalendar = false;
+
+      for (int i = 0; i < yearsToSync; i++) {
+        int year = JewishDate().getJewishYear() + i;
+        JewishDate jewishDate = JewishDate.initDate(
+            jewishYear: year,
+            jewishMonth: yahrtzeit.month,
+            jewishDayOfMonth: yahrtzeit.day);
+        String hebrewDate =
+            "${jewishDate.getJewishYear()}-${jewishDate.getJewishMonth()}-${jewishDate.getJewishDayOfMonth()}";
+
+        if (exists(yahrtzeit, hebrewDate, yahrtzeitManagerEvents)) {
+          existsInCalendar = true;
+          break;
+        }
+      }
+
+      if (!existsInCalendar) {
+        await _addToCalendar(yahrtzeit, yearsToSync);
+      }
+    }
+  }
+
+  Future<void> _addToCalendar(Yahrtzeit yahrtzeit, int yearsToSync) async {
+  try {
+    var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
+    if (permissionsGranted?.isSuccess == true &&
+        permissionsGranted?.data == false) {
+      permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
+      if (permissionsGranted?.isSuccess == false ||
+          permissionsGranted?.data == false) {
+        return;
+      }
+    }
+
+    final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
+    if (calendarsResult?.isSuccess == true &&
+        calendarsResult?.data!.isNotEmpty == true) {
+      for (var calendar in calendarsResult!.data!) {
+        // Retrieve existing events to check for duplicates
+        final existingEventsResult = await _deviceCalendarPlugin.retrieveEvents(
+          calendar.id!,
+          dc.RetrieveEventsParams(
+            startDate: tz.TZDateTime.now(tz.local).subtract(Duration(days: 365)),
+            endDate: tz.TZDateTime.now(tz.local).add(Duration(days: 365)),
+          ),
+        );
+        
+        List<Event> existingEvents = [];
+        if (existingEventsResult?.isSuccess == true &&
+            existingEventsResult?.data != null) {
+          existingEvents = existingEventsResult!.data!;
+        }
+
+        for (int i = 0; i < yearsToSync; i++) {
+          int year = JewishDate().getJewishYear() + i;
+          JewishDate jewishDate = JewishDate.initDate(
+              jewishYear: year,
+              jewishMonth: yahrtzeit.month,
+              jewishDayOfMonth: yahrtzeit.day);
+          DateTime gregorianDate = DateTime(
+              jewishDate.getGregorianYear(),
+              jewishDate.getGregorianMonth(),
+              jewishDate.getGregorianDayOfMonth());
+          final event = dc.Event(
+            calendar.id!,
+            title: 'Yahrtzeit: ${yahrtzeit.englishName}',
+            description: 'Hebrew Name: ${yahrtzeit.hebrewName}, Date: ${jewishDate.getJewishDayOfMonth()}-${jewishDate.getJewishMonth()}-${jewishDate.getJewishYear()}',
+            start: tz.TZDateTime.from(gregorianDate, tz.local),
+            end: tz.TZDateTime.from(gregorianDate, tz.local)
+                .add(Duration(hours: 1)),
+          );
+
+          if (!exists(yahrtzeit, '${jewishDate.getJewishDayOfMonth()}-${jewishDate.getJewishMonth()}-${jewishDate.getJewishYear()}', existingEvents)) {
+            final result = await _deviceCalendarPlugin.createOrUpdateEvent(event);
+            if (result?.isSuccess == false) {
+              print('Error creating or updating event for ${calendar.name}: ${result?.data}');
+            }
+          }
+        }
+      }
+    }
+  } on PlatformException catch (e) {
+    print('Error adding event to calendar: $e');
+  }
+}
+
+
+  void onSyncButtonPressed(List<Yahrtzeit> yahrtzeits, int yearsToSync) async {
+    await syncYahrtzeits(yahrtzeits, yearsToSync);
   }
 }
