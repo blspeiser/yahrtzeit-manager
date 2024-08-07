@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'services/event_checker.dart';
 import 'settings/settings.dart';
 import 'views/add_yahrtzeit.dart';
 import 'views/manage_yahrtzeits.dart';
@@ -44,6 +45,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  final EventChecker eventChecker = EventChecker();
+
+    @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      eventChecker.checkForTodayEvents(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
