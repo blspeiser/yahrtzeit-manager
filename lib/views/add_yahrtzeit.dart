@@ -240,6 +240,10 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.isEditing ? 'Edit Yahrtzeit' : 'Add Yahrtzeit'),
+          centerTitle: true,
+        backgroundColor: Colors.grey[600],
+        elevation: 0,
+        actionsIconTheme: IconThemeData(color: Colors.white),
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),

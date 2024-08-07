@@ -350,6 +350,147 @@ void _filterYahrtzeits(String query) {
 
 
   @override
+// Widget build(BuildContext context) {
+//   return Scaffold(
+//     appBar: AppBar(
+//       title: Text(
+//         AppLocalizations.of(context)!.translate('manage_yahrzeits'),
+//         style: TextStyle(color: Colors.white),
+//       ),
+//       centerTitle: true,
+//       backgroundColor: Colors.grey[600],
+//       elevation: 0,
+//       actions: [
+//         IconButton(
+//           icon: Icon(Icons.add, color: Colors.white),
+//           onPressed: () {
+//               Navigator.push(
+//                 context,
+//                 MaterialPageRoute(
+//                   builder: (context) => AddYahrtzeitPage(
+//                     yearsToSync: widget.yearsToSync,
+//                     syncSettings: widget.syncSettings,
+//                     notifications: widget.notifications,
+//                     language: widget.language,
+//                     jewishLanguage: widget.jewishLanguage,
+//                     calendar: widget.calendar,
+//                     years: widget.years,
+//                     days: widget.days,
+//                     months: widget.months,
+//                     toggleSyncSettings: widget.toggleSyncSettings,
+//                     toggleNotifications: widget.toggleNotifications,
+//                     changeLanguage: widget.changeLanguage,
+//                     changeJewishLanguage: widget.changeJewishLanguage,
+//                     changeCalendar: widget.changeCalendar,
+//                     changeYears: widget.changeYears,
+//                     changeDays: widget.changeDays,
+//                     changeMonths: widget.changeMonths,
+//                   ),
+//                 ),
+//               ).then((result) {
+//                 if (result == true) {
+//                   fetchYahrtzeits();
+//                 }
+//               });
+//             },
+//           ),
+//         IconButton(
+//           icon: Icon(Icons.info, color: Colors.white),
+//           onPressed: _showStoredData,
+//         ),
+//       ],
+//     ),
+//     body: Column(
+//       children: [
+//         Padding(
+//           padding: const EdgeInsets.all(16.0),
+//           child: TextField(
+//             onChanged: (query) {
+//               setState(() {
+//                 searchQuery = query;
+//                 _filterYahrtzeits(query);
+//               });
+//             },
+//             decoration: InputDecoration(
+//               labelText: 'Search',
+//               border: OutlineInputBorder(),
+//               prefixIcon: Icon(Icons.search),
+//             ),
+//           ),
+//         ),
+//         Expanded(
+//           child: isLoading
+//               ? Center(
+//                   child: CircularProgressIndicator(
+//                     valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+//                   ),
+//                 )
+//               : filteredYahrtzeitDates.isEmpty
+//                   ? Center(
+//                       child: Text(
+//                         AppLocalizations.of(context)!
+//                             .translate('you_have_not_added_any_yahrtzeits_yet.'),
+//                         style: TextStyle(fontSize: 18, color: Colors.grey),
+//                       ),
+//                     )
+//                   : AnimatedList(
+//                       key: _listKey,
+//                       initialItemCount: filteredYahrtzeitDates.length,
+//                       itemBuilder: (context, index, animation) {
+//                         if (index >= filteredYahrtzeitDates.length) {
+//                           return SizedBox.shrink();
+//                         }
+//                         return FadeTransition(
+//                           opacity: animation,
+//                           child: _buildYahrtzeitTile(filteredYahrtzeitDates[index]),
+//                         );
+//                       },
+//                     ),
+//         ),
+//       ],
+//     ),
+//     floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+//     floatingActionButton: Padding(
+//       padding: const EdgeInsets.all(16.0),
+//       child: SizedBox(
+//         height: 50,
+//         width: double.infinity,
+//         child: ElevatedButton(
+//           onPressed: () async {
+//             try {
+//               List<Yahrtzeit> yahrtzeits = await readData();
+//               manager.onSyncButtonPressed(yahrtzeits, widget.yearsToSync);
+//               ScaffoldMessenger.of(context).showSnackBar(
+//                 SnackBar(
+//                   content: Text('Sync successful'),
+//                 ),
+//               );
+//             } catch (e) {
+//               print('Sync failed: $e');
+//               ScaffoldMessenger.of(context).showSnackBar(
+//                 SnackBar(
+//                   content: Text('Sync failed'),
+//                 ),
+//               );
+//             }
+//           },
+//           style: ElevatedButton.styleFrom(
+//             backgroundColor: Colors.grey[600],
+//             shape: RoundedRectangleBorder(
+//               borderRadius: BorderRadius.circular(12.0),
+//             ),
+//           ),
+//           child: Text(
+//             'Sync with calendar',
+//             style: TextStyle(color: Colors.white, fontSize: 18),
+//           ),
+//         ),
+//       ),
+//     ),
+//   );
+// }
+
+@override
 Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
@@ -364,36 +505,36 @@ Widget build(BuildContext context) {
         IconButton(
           icon: Icon(Icons.add, color: Colors.white),
           onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddYahrtzeitPage(
-                    yearsToSync: widget.yearsToSync,
-                    syncSettings: widget.syncSettings,
-                    notifications: widget.notifications,
-                    language: widget.language,
-                    jewishLanguage: widget.jewishLanguage,
-                    calendar: widget.calendar,
-                    years: widget.years,
-                    days: widget.days,
-                    months: widget.months,
-                    toggleSyncSettings: widget.toggleSyncSettings,
-                    toggleNotifications: widget.toggleNotifications,
-                    changeLanguage: widget.changeLanguage,
-                    changeJewishLanguage: widget.changeJewishLanguage,
-                    changeCalendar: widget.changeCalendar,
-                    changeYears: widget.changeYears,
-                    changeDays: widget.changeDays,
-                    changeMonths: widget.changeMonths,
-                  ),
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddYahrtzeitPage(
+                  yearsToSync: widget.yearsToSync,
+                  syncSettings: widget.syncSettings,
+                  notifications: widget.notifications,
+                  language: widget.language,
+                  jewishLanguage: widget.jewishLanguage,
+                  calendar: widget.calendar,
+                  years: widget.years,
+                  days: widget.days,
+                  months: widget.months,
+                  toggleSyncSettings: widget.toggleSyncSettings,
+                  toggleNotifications: widget.toggleNotifications,
+                  changeLanguage: widget.changeLanguage,
+                  changeJewishLanguage: widget.changeJewishLanguage,
+                  changeCalendar: widget.changeCalendar,
+                  changeYears: widget.changeYears,
+                  changeDays: widget.changeDays,
+                  changeMonths: widget.changeMonths,
                 ),
-              ).then((result) {
-                if (result == true) {
-                  fetchYahrtzeits();
-                }
-              });
-            },
-          ),
+              ),
+            ).then((result) {
+              if (result == true) {
+                fetchYahrtzeits();
+              }
+            });
+          },
+        ),
         IconButton(
           icon: Icon(Icons.info, color: Colors.white),
           onPressed: _showStoredData,
@@ -450,45 +591,48 @@ Widget build(BuildContext context) {
       ],
     ),
     floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-    floatingActionButton: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: SizedBox(
-        height: 50,
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () async {
-            try {
-              List<Yahrtzeit> yahrtzeits = await readData();
-              manager.onSyncButtonPressed(yahrtzeits, widget.yearsToSync);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Sync successful'),
+    floatingActionButton: widget.syncSettings
+        ? Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              height: 50,
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  try {
+                    List<Yahrtzeit> yahrtzeits = await readData();
+                    manager.onSyncButtonPressed(yahrtzeits, widget.yearsToSync);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Sync successful'),
+                      ),
+                    );
+                  } catch (e) {
+                    print('Sync failed: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Sync failed'),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
                 ),
-              );
-            } catch (e) {
-              print('Sync failed: $e');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Sync failed'),
+                child: Text(
+                  'Sync with calendar',
+                  style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
-              );
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey[600],
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.0),
+              ),
             ),
-          ),
-          child: Text(
-            'Sync with calendar',
-            style: TextStyle(color: Colors.white, fontSize: 18),
-          ),
-        ),
-      ),
-    ),
+          )
+        : null,
   );
 }
+
 
 
   Widget _buildYahrtzeitTile(YahrtzeitDate yahrtzeitDate) {
