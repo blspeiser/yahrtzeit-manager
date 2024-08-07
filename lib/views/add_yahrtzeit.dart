@@ -58,6 +58,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
   int? _selectedDay;
   int? _selectedMonth;
   final YahrtzeitsManager manager = YahrtzeitsManager();
+  List<String> groups = [];
 
   static const Map<int, String> hebrewMonths = {
     JewishDate.TISHREI: 'Tishrei',
@@ -83,6 +84,19 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
       _hebrewNameController.text = widget.yahrtzeit!.hebrewName;
       _selectedDay = widget.yahrtzeit!.day;
       _selectedMonth = widget.yahrtzeit!.month;
+      _groupController.text = widget.yahrtzeit!.group ?? '';
+    }
+    fetchGroups();
+  }
+
+  Future<void> fetchGroups() async {
+    try {
+      final fetchedGroups = await manager.getAllGroups();
+      setState(() {
+        groups = fetchedGroups;
+      });
+    } catch (e) {
+      print('Error fetching groups: $e');
     }
   }
 
@@ -194,91 +208,115 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.isEditing ? 'Edit Yahrtzeit' : 'Add Yahrtzeit'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: <Widget>[
-              TextFormField(
-                controller: _englishNameController,
-                decoration: InputDecoration(
-                    labelText:
-                        AppLocalizations.of(context)!.translate('English Name')),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter English name';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _hebrewNameController,
-                decoration: InputDecoration(
-                    labelText:
-                        AppLocalizations.of(context)!.translate('Hebrew Name')),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter Hebrew name';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                decoration: InputDecoration(
-                    labelText: AppLocalizations.of(context)!.translate('day')),
-                keyboardType: TextInputType.number,
-                onChanged: (value) {
-                  _selectedDay = int.tryParse(value);
-                },
-                validator: (value) {
-                  if (_selectedDay == null ||
-                      _selectedDay! < 1 ||
-                      _selectedDay! > 30) {
-                    return 'Please enter a valid day';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 10), // Add spacing between fields
-              DropdownButtonFormField<int>(
-                decoration: InputDecoration(
-                    labelText:
-                        AppLocalizations.of(context)!.translate('month')),
-                value: _selectedMonth,
-                items: hebrewMonths.entries.map((entry) {
-                  return DropdownMenuItem<int>(
-                    value: entry.key,
-                    child: Text(entry.value),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedMonth = value;
-                  });
-                },
-                validator: (value) {
-                  if (value == null) {
-                    return 'Please select a month';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _groupController,
-                decoration: InputDecoration(labelText: 'Group Name'),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submitForm,
-                child: Text(AppLocalizations.of(context)!
-                    .translate(widget.isEditing ? 'update' : 'save')),
-              ),
-            ],
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(new FocusNode());
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.isEditing ? 'Edit Yahrtzeit' : 'Add Yahrtzeit'),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: <Widget>[
+                TextFormField(
+                  controller: _englishNameController,
+                  decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.translate('English Name')),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter English name';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _hebrewNameController,
+                  decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.translate('Hebrew Name')),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter Hebrew name';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.translate('day')),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    _selectedDay = int.tryParse(value);
+                  },
+                  validator: (value) {
+                    if (_selectedDay == null ||
+                        _selectedDay! < 1 ||
+                        _selectedDay! > 30) {
+                      return 'Please enter a valid day';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 10), // Add spacing between fields
+                DropdownButtonFormField<int>(
+                  decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.translate('month')),
+                  value: _selectedMonth,
+                  items: hebrewMonths.entries.map((entry) {
+                    return DropdownMenuItem<int>(
+                      value: entry.key,
+                      child: Text(entry.value),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedMonth = value;
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Please select a month';
+                    }
+                    return null;
+                  },
+                ),
+                Autocomplete<String>(
+                  optionsBuilder: (TextEditingValue textEditingValue) {
+                    if (textEditingValue.text.isEmpty) {
+                      return const Iterable<String>.empty();
+                    }
+                    return groups.where((group) => group
+                        .toLowerCase()
+                        .contains(textEditingValue.text.toLowerCase()));
+                  },
+                  onSelected: (String selection) {
+                    _groupController.text = selection;
+                  },
+                  fieldViewBuilder: (BuildContext context,
+                      TextEditingController textEditingController,
+                      FocusNode focusNode,
+                      VoidCallback onFieldSubmitted) {
+                    _groupController.text = textEditingController.text;
+                    return TextFormField(
+                      controller: textEditingController,
+                      focusNode: focusNode,
+                      decoration: InputDecoration(
+                          labelText:
+                              AppLocalizations.of(context)!.translate('Group')),
+                    );
+                  },
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _submitForm,
+                  child: Text(AppLocalizations.of(context)!
+                      .translate(widget.isEditing ? 'update' : 'save')),
+                ),
+              ],
+            ),
           ),
         ),
       ),

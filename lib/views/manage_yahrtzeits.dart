@@ -54,7 +54,10 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   List<YahrtzeitDate> yahrtzeitDates = [];
   bool isLoading = true;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-  YahrtzeitsManager manager = YahrtzeitsManager();
+  final YahrtzeitsManager manager = YahrtzeitsManager();
+  List<YahrtzeitDate> filteredYahrtzeitDates = [];
+  List<String> groups = [];
+  String searchQuery = '';
 
   static const Map<int, String> hebrewMonths = {
     JewishDate.NISSAN: 'Nissan',
@@ -95,29 +98,55 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     }
   }
 
+  // Future<void> fetchYahrtzeits() async {
+  //   try {
+  //     final fetchedYahrtzeits = await readData();
+
+  //     setState(() {
+  //       yahrtzeitDates = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
+  //       isLoading = false;
+  //     });
+
+  //     WidgetsBinding.instance.addPostFrameCallback((_) {
+  //       if (_listKey.currentState != null) {
+  //         for (var i = 0; i < yahrtzeitDates.length; i++) {
+  //           _listKey.currentState?.insertItem(i);
+  //         }
+  //       }
+  //     });
+  //   } catch (e) {
+  //     print('Error fetching yahrtzeits: $e');
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
+
   Future<void> fetchYahrtzeits() async {
-    try {
-      final fetchedYahrtzeits = await readData();
+  try {
+    final fetchedYahrtzeits = await readData();
 
-      setState(() {
-        yahrtzeitDates = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
-        isLoading = false;
-      });
+    setState(() {
+      yahrtzeitDates = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
+      filteredYahrtzeitDates = yahrtzeitDates;
+      isLoading = false;
+    });
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_listKey.currentState != null) {
-          for (var i = 0; i < yahrtzeitDates.length; i++) {
-            _listKey.currentState?.insertItem(i);
-          }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_listKey.currentState != null) {
+        for (var i = 0; i < filteredYahrtzeitDates.length; i++) {
+          _listKey.currentState?.insertItem(i);
         }
-      });
-    } catch (e) {
-      print('Error fetching yahrtzeits: $e');
-      setState(() {
-        isLoading = false;
-      });
-    }
+      }
+    });
+  } catch (e) {
+    print('Error fetching yahrtzeits: $e');
+    setState(() {
+      isLoading = false;
+    });
   }
+}
+
 
   List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
     final uniqueNames = <String>{};
@@ -298,22 +327,37 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     );
   }
 
+
+void _filterYahrtzeits(String query) {
+    setState(() {
+      searchQuery = query;
+      if (query.isEmpty) {
+        filteredYahrtzeitDates = yahrtzeitDates;
+      } else {
+        filteredYahrtzeitDates = yahrtzeitDates.where((yahrtzeitDate) {
+          return yahrtzeitDate.yahrtzeit.group != null &&
+                 yahrtzeitDate.yahrtzeit.group!.toLowerCase().contains(query.toLowerCase());
+        }).toList();
+      }
+    });
+  }
+
+
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context)!.translate('manage_yahrzeits'),
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
-        // backgroundColor: Color.fromARGB(255, 50, 4, 129),
-        backgroundColor: Colors.grey[600],
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add, color: Colors.white),
-            onPressed: () {
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(
+        AppLocalizations.of(context)!.translate('manage_yahrzeits'),
+        style: TextStyle(color: Colors.white),
+      ),
+      centerTitle: true,
+      backgroundColor: Colors.grey[600],
+      elevation: 0,
+      actions: [
+        IconButton(
+          icon: Icon(Icons.add, color: Colors.white),
+          onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -342,84 +386,102 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
               });
             },
           ),
-          IconButton(
-            icon: Icon(Icons.info, color: Colors.white),
-            onPressed: _showStoredData,
-          ),
-        ],
-      ),
-      body: Container(
-        color: Colors.white,
-        child: isLoading
-            ? Center(
-                child: CircularProgressIndicator(
-                  // valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
-                ),
-              )
-            : yahrtzeitDates.isEmpty
-                ? Center(
-                    child: Text(
-                      AppLocalizations.of(context)!
-                          .translate('you_have_not_added_any_yahrtzeits_yet.'),
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                  )
-                : AnimatedList(
-                    key: _listKey,
-                    initialItemCount: yahrtzeitDates.length,
-                    itemBuilder: (context, index, animation) {
-                      if (index >= yahrtzeitDates.length) {
-                        return SizedBox.shrink();
-                      }
-                      return FadeTransition(
-                        opacity: animation,
-                        child: _buildYahrtzeitTile(yahrtzeitDates[index]),
-                      );
-                    },
-                  ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SizedBox(
-          height: 50,
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () async {
-              try {
-                List<Yahrtzeit> yahrtzeits = await readData();
-                manager.onSyncButtonPressed(yahrtzeits, widget.yearsToSync);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Sync successful'),
-                  ),
-                );
-              } catch (e) {
-                print('Sync failed: $e');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Sync failed'),
-                  ),
-                );
-              }
+        IconButton(
+          icon: Icon(Icons.info, color: Colors.white),
+          onPressed: _showStoredData,
+        ),
+      ],
+    ),
+    body: Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextField(
+            onChanged: (query) {
+              setState(() {
+                searchQuery = query;
+                _filterYahrtzeits(query);
+              });
             },
-            style: ElevatedButton.styleFrom(
-              // backgroundColor: Color.fromARGB(255, 50, 4, 129),
-              backgroundColor: Colors.grey[600],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-            ),
-            child: Text(
-              'Sync with calendar',
-              style: TextStyle(color: Colors.white, fontSize: 18),
+            decoration: InputDecoration(
+              labelText: 'Search',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.search),
             ),
           ),
         ),
+        Expanded(
+          child: isLoading
+              ? Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                  ),
+                )
+              : filteredYahrtzeitDates.isEmpty
+                  ? Center(
+                      child: Text(
+                        AppLocalizations.of(context)!
+                            .translate('you_have_not_added_any_yahrtzeits_yet.'),
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                      ),
+                    )
+                  : AnimatedList(
+                      key: _listKey,
+                      initialItemCount: filteredYahrtzeitDates.length,
+                      itemBuilder: (context, index, animation) {
+                        if (index >= filteredYahrtzeitDates.length) {
+                          return SizedBox.shrink();
+                        }
+                        return FadeTransition(
+                          opacity: animation,
+                          child: _buildYahrtzeitTile(filteredYahrtzeitDates[index]),
+                        );
+                      },
+                    ),
+        ),
+      ],
+    ),
+    floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    floatingActionButton: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: SizedBox(
+        height: 50,
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () async {
+            try {
+              List<Yahrtzeit> yahrtzeits = await readData();
+              manager.onSyncButtonPressed(yahrtzeits, widget.yearsToSync);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Sync successful'),
+                ),
+              );
+            } catch (e) {
+              print('Sync failed: $e');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Sync failed'),
+                ),
+              );
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.grey[600],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+          ),
+          child: Text(
+            'Sync with calendar',
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
+        ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildYahrtzeitTile(YahrtzeitDate yahrtzeitDate) {
     String hebrewDate = _getHebrewDateString(yahrtzeitDate.hebrewDate);
@@ -515,3 +577,4 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     );
   }
 }
+
