@@ -239,11 +239,14 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.isEditing ? 'Edit Yahrtzeit' : 'Add Yahrtzeit'),
+          title: Text(
+            widget.isEditing ? 'Edit Yahrtzeit' : 'Add Yahrtzeit',
+            style: TextStyle(color: Colors.white),
+          ),
           centerTitle: true,
-        backgroundColor: Colors.grey[600],
-        elevation: 0,
-        actionsIconTheme: IconThemeData(color: Colors.white),
+          backgroundColor: Colors.grey[600],
+          elevation: 0,
+          actionsIconTheme: IconThemeData(color: Colors.white),
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -254,9 +257,11 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                 TextFormField(
                   controller: _englishNameController,
                   decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.translate('English Name')),
+                      labelText: AppLocalizations.of(context)!
+                          .translate('English Name')),
                   validator: (value) {
-                    if (widget.language == 'en' && (value == null || value.isEmpty)) {
+                    if (widget.language == 'en' &&
+                        (value == null || value.isEmpty)) {
                       return 'Please enter English name';
                     }
                     return null;
@@ -265,9 +270,11 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                 TextFormField(
                   controller: _hebrewNameController,
                   decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.translate('Hebrew Name')),
+                      labelText: AppLocalizations.of(context)!
+                          .translate('Hebrew Name')),
                   validator: (value) {
-                    if (widget.language == 'he' && (value == null || value.isEmpty)) {
+                    if (widget.language == 'he' &&
+                        (value == null || value.isEmpty)) {
                       return 'Please enter Hebrew name';
                     }
                     return null;
@@ -278,16 +285,18 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                     Expanded(
                       child: TextFormField(
                         decoration: InputDecoration(
-                            labelText: AppLocalizations.of(context)!.translate('day')),
+                            labelText:
+                                AppLocalizations.of(context)!.translate('day')),
                         keyboardType: TextInputType.number,
                         onChanged: (value) {
                           _selectedDay = int.tryParse(value);
                         },
                         validator: (value) {
-                          if (_selectedDay == null ||
-                              _selectedDay! < 1 ||
-                              _selectedDay! > 30) {
-                            return 'Please enter a valid day';
+                          if (value != null && value.isNotEmpty) {
+                            final day = int.tryParse(value);
+                            if (day == null || day < 1 || day > 31) {
+                              return 'Please enter a valid day between 1 and 31';
+                            }
                           }
                           return null;
                         },
@@ -297,7 +306,8 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                     Expanded(
                       child: DropdownButtonFormField<int>(
                         decoration: InputDecoration(
-                            labelText: AppLocalizations.of(context)!.translate('month')),
+                            labelText: AppLocalizations.of(context)!
+                                .translate('month')),
                         value: _selectedMonth,
                         items: hebrewMonths.entries.map((entry) {
                           return DropdownMenuItem<int>(
@@ -310,8 +320,6 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                             _selectedMonth = value;
                           });
                         },
-                        validator: (value) =>
-                            value == null ? 'Please select a month' : null,
                       ),
                     ),
                   ],
@@ -319,17 +327,18 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                 TextFormField(
                   controller: _groupController,
                   decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.translate('Group')),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter group';
-                    }
-                    return null;
-                  },
+                      labelText:
+                          AppLocalizations.of(context)!.translate('Group')),
                 ),
+                SizedBox(height: 30), // Add spacing between the fields
                 ElevatedButton(
                   onPressed: _submitForm,
-                  child: Text(widget.isEditing ? 'Update Yahrtzeit' : 'Add Yahrtzeit'),
+                  child: Text(
+                      widget.isEditing ? 'Update Yahrtzeit' : 'Add Yahrtzeit',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20)),
                 ),
               ],
             ),
