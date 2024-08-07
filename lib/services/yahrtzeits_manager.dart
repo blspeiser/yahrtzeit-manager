@@ -436,8 +436,8 @@ List<YahrtzeitDate> filterUpcomingByMonths(List<YahrtzeitDate> yahrtzeits, int m
         int year = JewishDate().getJewishYear() + i;
         JewishDate jewishDate = JewishDate.initDate(
             jewishYear: year,
-            jewishMonth: yahrtzeit.month,
-            jewishDayOfMonth: yahrtzeit.day);
+            jewishMonth: yahrtzeit.month!,
+            jewishDayOfMonth: yahrtzeit.day!);
         String hebrewDate =
             "${jewishDate.getJewishYear()}-${jewishDate.getJewishMonth()}-${jewishDate.getJewishDayOfMonth()}";
 
@@ -488,8 +488,8 @@ List<YahrtzeitDate> filterUpcomingByMonths(List<YahrtzeitDate> yahrtzeits, int m
           int year = JewishDate().getJewishYear() + i;
           JewishDate jewishDate = JewishDate.initDate(
               jewishYear: year,
-              jewishMonth: yahrtzeit.month,
-              jewishDayOfMonth: yahrtzeit.day);
+              jewishMonth: yahrtzeit.month!,
+              jewishDayOfMonth: yahrtzeit.day!);
           DateTime gregorianDate = DateTime(
               jewishDate.getGregorianYear(),
               jewishDate.getGregorianMonth(),

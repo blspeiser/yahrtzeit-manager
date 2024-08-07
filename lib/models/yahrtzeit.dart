@@ -5,8 +5,8 @@ class Yahrtzeit {
   final String id;
   final String? englishName;
   final String hebrewName;
-  final int day;
-  final int month;
+  final int? day;
+  final int? month;
   final String? group;
   bool selected = false;
 
@@ -45,14 +45,14 @@ class Yahrtzeit {
   DateTime getGregorianDate() {
     int year = JewishDate().getJewishYear();
     JewishDate jewishDate = JewishDate.initDate(
-        jewishYear: year, jewishMonth: month, jewishDayOfMonth: day);
+        jewishYear: year, jewishMonth: month!, jewishDayOfMonth: day!);
     final gregorianDate = DateTime(jewishDate.getGregorianYear(),
         jewishDate.getGregorianMonth(), jewishDate.getGregorianDayOfMonth());
     DateTime currentDate = DateTime.now();
     if (gregorianDate.isBefore(currentDate)) {
       year += 1;
       JewishDate jewishDate = JewishDate.initDate(
-          jewishYear: year, jewishMonth: month, jewishDayOfMonth: day);
+          jewishYear: year, jewishMonth: month!, jewishDayOfMonth: day!);
       final gregorianDate = DateTime(jewishDate.getGregorianYear(),
           jewishDate.getGregorianMonth(), jewishDate.getGregorianDayOfMonth());
       return gregorianDate;
