@@ -53,6 +53,13 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
+    _syncSettings = widget.syncSettings;
+    _notifications = widget.notifications;
+    _language = widget.language;
+    _jewishLanguage = widget.jewishLanguage;
+    _calendar = widget.calendar;
+    _years = widget.years;
+    _days = widget.days;
     _loadSettings();
   }
 
