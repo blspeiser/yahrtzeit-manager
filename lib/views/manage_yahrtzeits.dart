@@ -1,5 +1,4 @@
 import 'package:cambium_project/services/yahrtzeits_manager.dart';
-import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kosher_dart/kosher_dart.dart';
@@ -9,7 +8,6 @@ import '../models/yahrtzeit_date.dart';
 import 'add_yahrtzeit.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../settings/settings.dart';
 
 class ManageYahrtzeits extends StatefulWidget {
   final int yearsToSync;
@@ -67,9 +65,6 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   List<YahrtzeitDate> yahrtzeitDates = [];
   bool isLoading = true;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-
-
-  static const Map<int, String> hebrewMonths = {
 
   final YahrtzeitsManager manager = YahrtzeitsManager();
   List<YahrtzeitDate> filteredYahrtzeitDates = [];
@@ -328,10 +323,6 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       },
     );
   }
-
-
-// עובד חוץ ממקרהקוד גיפיטי
-
 
 void _filterYahrtzeits(String query) {
     setState(() {
