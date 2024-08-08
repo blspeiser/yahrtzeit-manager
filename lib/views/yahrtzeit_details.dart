@@ -119,10 +119,11 @@ class YahrtzeitDetailsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            '${yahrtzeitDate.yahrtzeit.englishName} ${AppLocalizations.of(context)!.translate('Details')}',
+            '${yahrtzeitDate.yahrtzeit.englishName}',
             style: TextStyle(color: Colors.white)),
         centerTitle: true,
-        backgroundColor:Colors.grey,
+        backgroundColor: Colors.grey[600],
+
         elevation: 0,
         actionsIconTheme: IconThemeData(color: Colors.white),
         actions: [

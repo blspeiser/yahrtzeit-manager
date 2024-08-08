@@ -108,6 +108,8 @@
 //     }
 //   }
 
+
+
 //   void fetchYahrtzeits() async {
 //     try {
 //       final fetchedYahrtzeits = await readData();
@@ -261,12 +263,30 @@
 //     );
 //   }
 
+
+//   void _filterYahrtzeits(String query) {
+//     setState(() {
+//       searchQuery = query;
+//       if (query.isEmpty) {
+//         filteredYahrtzeitDates = yahrtzeitDates;
+//       } else {
+//         filteredYahrtzeitDates = yahrtzeitDates.where((yahrtzeitDate) {
+//           return yahrtzeitDate.yahrtzeit.group != null &&
+//               yahrtzeitDate.yahrtzeit.group!
+//                   .toLowerCase()
+//                   .contains(query.toLowerCase());
+//         }).toList();
+//       }
+//     });
+//   }
+
+
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
 //       appBar: AppBar(
 //         title: Text(
-//           AppLocalizations.of(context)!.translate('manage_yahrtzeits'),
+//           AppLocalizations.of(context)!.translate('manage_yahrzeits'),
 //           style: TextStyle(color: Colors.white),
 //         ),
 //         centerTitle: true,
@@ -301,6 +321,7 @@
 //                     changeMonths: widget.changeMonths,
 //                   ),
 //                 ),
+
 //               );
 
 //               if (result != null && result is Yahrtzeit) {
@@ -496,16 +517,24 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     }
   }
 
-  void fetchYahrtzeits() async {
+  Future<void> fetchYahrtzeits() async {
     try {
       final fetchedYahrtzeits = await readData();
-      print("Fetched Yahrtzeits: $fetchedYahrtzeits");
+
       setState(() {
         _yahrtzeits = fetchedYahrtzeits;
         isLoading = false;
       });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_listKey.currentState != null) {
+          for (var i = 0; i < filteredYahrtzeitDates.length; i++) {
+            _listKey.currentState?.insertItem(i);
+          }
+        }
+      });
     } catch (e) {
-      print("Error fetching yahrtzeits: $e");
+      print('Error fetching yahrtzeits: $e');
       setState(() {
         isLoading = false;
       });
@@ -744,12 +773,14 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
 
     Share.shareFiles([filePath], text: 'Yahrtzeit Calendar');
   }
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          AppLocalizations.of(context)!.translate('manage_yahrtzeits'),
+          AppLocalizations.of(context)!.translate('manage_yahrzeits'),
           style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
@@ -764,7 +795,6 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                 MaterialPageRoute(
                   builder: (context) => AddYahrtzeitPage(
                     yearsToSync: widget.yearsToSync,
-                    isEditing: false,
                     syncSettings: widget.syncSettings,
                     notifications: widget.notifications,
                     language: widget.language,
@@ -794,6 +824,11 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
           IconButton(
             icon: Icon(Icons.share, color: Colors.white),
             onPressed: _shareICSFile,
+          ),
+          IconButton(
+            icon: Icon(Icons.info, color: Colors.white),
+            onPressed: (){},
+            // onPressed: _showStoredData,
           ),
         ],
       ),
