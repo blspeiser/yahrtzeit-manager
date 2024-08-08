@@ -40,37 +40,41 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   }
 
   Future<void> fetchYahrtzeits() async {
-  try {
-    final yahrtzeits = await manager.getAllYahrtzeits();
-    print('All yahrtzeits fetched: ${yahrtzeits.length}');
-    
-    // Filter out yahrtzeits without day and month
-    final validYahrtzeits = yahrtzeits.where((yahrtzeit) => yahrtzeit.day != null && yahrtzeit.month != null).toList();
-    
-    print('Valid yahrtzeits: ${validYahrtzeits.length}');
-    for (var yahrtzeit in validYahrtzeits) {
-      print('Yahrtzeit: ${yahrtzeit.englishName}, Day: ${yahrtzeit.day}, Month: ${yahrtzeit.month}');
+    try {
+      final yahrtzeits = await manager.getAllYahrtzeits();
+      print('Fetched yahrtzeits: ${yahrtzeits.length}');
+      setState(() {
+        yahrtzeitDates = manager.nextMultiple(yahrtzeits);
+        filteredYahrtzeitDates =
+            manager.filterUpcomingByMonths(yahrtzeitDates, _months);
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error fetching yahrtzeits: $e');
+      setState(() {
+        isLoading = false;
+      });
     }
-
-    setState(() {
-      yahrtzeitDates = manager.nextMultiple(validYahrtzeits);
-      filteredYahrtzeitDates = manager.filterUpcomingByMonths(yahrtzeitDates, _months);
-      isLoading = false;
-    });
-  } catch (e) {
-    print('Error fetching yahrtzeits: $e');
-    setState(() {
-      isLoading = false;
-    });
   }
-}
-
 
   Future<void> fetchGroups() async {
     try {
       final fetchedGroups = await manager.getAllGroups();
+
+      // יצירת רשימה ייחודית בלי כפילויות של אותיות גדולות וקטנות
+      final uniqueGroups = fetchedGroups
+          .fold<Map<String, String>>({}, (map, group) {
+            final lowerCaseGroup = group.toLowerCase();
+            if (!map.containsKey(lowerCaseGroup)) {
+              map[lowerCaseGroup] = group;
+            }
+            return map;
+          })
+          .values
+          .toList();
+
       setState(() {
-        groups = fetchedGroups;
+        groups = uniqueGroups;
       });
     } catch (e) {
       print('Error fetching groups: $e');
@@ -105,18 +109,24 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
     return filteredList;
   }
 
-  void _filterYahrtzeits(String query) {
+  void _filterYahrtzeits(String? query) {
     setState(() {
-      searchQuery = query;
-      if (query.isEmpty) {
+      if (query == null) {
+        // במקרה של "ללא קבוצה" - סינון לפי קבוצה ריקה או null
+        filteredYahrtzeitDates = yahrtzeitDates.where((yahrtzeitDate) {
+          return yahrtzeitDate.yahrtzeit.group == null ||
+              yahrtzeitDate.yahrtzeit.group!.isEmpty;
+        }).toList();
+      } else if (query.isEmpty) {
+        // במקרה של "ללא סינון"
         filteredYahrtzeitDates = yahrtzeitDates;
       } else {
+        // סינון לפי קבוצה נבחרת
         filteredYahrtzeitDates = yahrtzeitDates.where((yahrtzeitDate) {
-          final groupMatch = yahrtzeitDate.yahrtzeit.group != null &&
+          return yahrtzeitDate.yahrtzeit.group != null &&
               yahrtzeitDate.yahrtzeit.group!
                   .toLowerCase()
                   .contains(query.toLowerCase());
-          return groupMatch;
         }).toList();
       }
     });
@@ -147,37 +157,69 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Autocomplete<String>(
-                      optionsBuilder: (TextEditingValue textEditingValue) {
-                        if (textEditingValue.text.isEmpty) {
-                          return const Iterable<String>.empty();
-                        }
-                        return groups.where((String group) {
-                          return group
-                              .toLowerCase()
-                              .contains(textEditingValue.text.toLowerCase());
-                        });
-                      },
-                      onSelected: (String selection) {
-                        _filterYahrtzeits(selection);
-                      },
-                      fieldViewBuilder: (BuildContext context,
-                          TextEditingController textEditingController,
-                          FocusNode focusNode,
-                          VoidCallback onFieldSubmitted) {
-                        return TextField(
-                          controller: textEditingController,
-                          focusNode: focusNode,
-                          onChanged: _filterYahrtzeits,
-                          decoration: InputDecoration(
-                            labelText: 'חפש קבוצה',
-                            prefixIcon: Icon(Icons.search),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
+                    child: Row(
+                      children: [
+                        // Dropdown של כל הקבוצות
+                        Expanded(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            hint: Text('בחר קבוצה'),
+                            value: searchQuery.isEmpty ? null : searchQuery,
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                searchQuery = newValue ?? '';
+                                if (searchQuery.isEmpty) {
+                                  fetchYahrtzeits(); // מבצע fetch מחדש
+                                } else if (searchQuery == 'ללא קבוצה') {
+                                  _filterYahrtzeits(
+                                      null); // מסנן לפי חוסר קבוצה
+                                } else {
+                                  _filterYahrtzeits(
+                                      searchQuery); // מסנן לפי קבוצה נבחרת
+                                }
+                              });
+                            },
+                            items: [
+                              DropdownMenuItem<String>(
+                                value: '',
+                                child: Text('ללא סינון'),
+                              ),
+                              DropdownMenuItem<String>(
+                                value: 'ללא קבוצה',
+                                child: Text('ללא קבוצה'),
+                              ),
+                              ...groups.map<DropdownMenuItem<String>>(
+                                  (String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                            ],
                           ),
-                        );
-                      },
+                        ),
+                        SizedBox(width: 8),
+                        // כפתור לבחירת מספר חודשים
+                        DropdownButton<int>(
+                          hint: Text('בחר חודשים'),
+                          value: _months,
+                          onChanged: (int? newValue) {
+                            setState(() {
+                              _months = newValue!;
+                              filteredYahrtzeitDates =
+                                  manager.filterUpcomingByMonths(
+                                      yahrtzeitDates, _months);
+                            });
+                          },
+                          items: List.generate(12, (index) => index + 1)
+                              .map<DropdownMenuItem<int>>((int value) {
+                            return DropdownMenuItem<int>(
+                              value: value,
+                              child: Text('חודשים $value'),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
                   ),
                   Expanded(

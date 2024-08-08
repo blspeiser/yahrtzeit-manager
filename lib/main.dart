@@ -101,11 +101,11 @@ class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {
         return MaterialApp(
           title: 'Yahrtzeit Manager',
           theme: ThemeData(
-            primarySwatch: Colors.blue,
+            primarySwatch: Colors.grey,
             visualDensity: VisualDensity.adaptivePlatformDensity,
             textTheme: TextTheme(
               bodyLarge:
-                  TextStyle(color: const Color.fromARGB(221, 179, 108, 108)),
+                  TextStyle(color: Colors.black),
               bodyMedium: TextStyle(color: Colors.black54),
             ),
           ),
