@@ -44,52 +44,92 @@ class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {
   int days = 10;
   int months = 6;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings(); // קריאה לטעינת ההגדרות
+  }
+
+  Future<void> _loadSettings() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      syncSettings = prefs.getBool('syncSettings') ?? syncSettings;
+      notifications = prefs.getBool('notifications') ?? notifications;
+      language = prefs.getString('language') ?? language;
+      jewishLanguage = prefs.getString('jewishLanguage') ?? jewishLanguage;
+      calendar = prefs.getString('calendar') ?? calendar;
+      years = prefs.getInt('years') ?? years;
+      days = prefs.getInt('days') ?? days;
+      months = prefs.getInt('months') ?? months;
+    });
+  }
+
+  Future<void> _saveSettings() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('syncSettings', syncSettings);
+    await prefs.setBool('notifications', notifications);
+    await prefs.setString('language', language);
+    await prefs.setString('jewishLanguage', jewishLanguage);
+    await prefs.setString('calendar', calendar);
+    await prefs.setInt('years', years);
+    await prefs.setInt('days', days);
+    await prefs.setInt('months', months);
+  }
+
   void toggleSyncSettings() {
     setState(() {
       syncSettings = !syncSettings;
     });
+    _saveSettings();
   }
 
   void toggleNotifications() {
     setState(() {
       notifications = !notifications;
     });
+    _saveSettings();
   }
 
   void changeLanguage(String lang) {
     setState(() {
       language = lang;
     });
+    _saveSettings();
   }
 
   void changeJewishLanguage(String lang) {
     setState(() {
       jewishLanguage = lang;
     });
+    _saveSettings();
   }
 
   void changeYears(int year) {
     setState(() {
       years = year;
     });
+    _saveSettings();
   }
 
   void changeDays(int day) {
     setState(() {
       days = day;
     });
+    _saveSettings();
   }
 
   void changeCalendar(String cal) {
     setState(() {
       calendar = cal;
     });
+    _saveSettings();
   }
 
   void changeMonths(int month) {
     setState(() {
       months = month;
     });
+    _saveSettings();
   }
 
 // class YahrtzeitManagerApp extends StatelessWidget {
