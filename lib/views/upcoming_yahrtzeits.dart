@@ -14,8 +14,6 @@ class UpcomingYahrtzeits extends StatefulWidget {
 
 class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   final YahrtzeitsManager manager = YahrtzeitsManager();
-  List<YahrtzeitDate> yahrtzeitDates = [];
-  List<YahrtzeitDate> filteredYahrtzeitDates = [];
   List<String> groups = [];
   bool isLoading = true;
   String searchQuery = '';
@@ -34,26 +32,31 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   void initState() {
     super.initState();
     _loadSettings().then((_) {
-      fetchYahrtzeits();
       fetchGroups();
     });
   }
 
-  Future<void> fetchYahrtzeits() async {
+
+  Future<List<YahrtzeitDate>> fetchYahrtzeits() async {
     try {
       final yahrtzeits = await manager.getAllYahrtzeits();
-      print('Fetched yahrtzeits: ${yahrtzeits.length}');
-      setState(() {
-        yahrtzeitDates = manager.nextMultiple(yahrtzeits);
-        filteredYahrtzeitDates =
-            manager.filterUpcomingByMonths(yahrtzeitDates, _months);
-        isLoading = false;
-      });
+      print('All yahrtzeits fetched: ${yahrtzeits.length}');
+      
+      // Filter out yahrtzeits without day and month
+      final validYahrtzeits = yahrtzeits.where((yahrtzeit) => yahrtzeit.day != null && yahrtzeit.month != null).toList();
+      
+      print('Valid yahrtzeits: ${validYahrtzeits.length}');
+      for (var yahrtzeit in validYahrtzeits) {
+        print('Yahrtzeit: ${yahrtzeit.englishName}, Day: ${yahrtzeit.day}, Month: ${yahrtzeit.month}');
+      }
+
+      final yahrtzeitDates = manager.nextMultiple(validYahrtzeits);
+      final filteredYahrtzeitDates = manager.filterUpcomingByMonths(yahrtzeitDates, _months);
+      
+      return filteredYahrtzeitDates;
     } catch (e) {
       print('Error fetching yahrtzeits: $e');
-      setState(() {
-        isLoading = false;
-      });
+      return [];
     }
   }
 
@@ -95,6 +98,7 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
     });
   }
 
+
   List<YahrtzeitDate> _filterDuplicateYahrtzeits(
       List<YahrtzeitDate> yahrtzeits) {
     final uniqueNames = <String>{};
@@ -129,6 +133,7 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                   .contains(query.toLowerCase());
         }).toList();
       }
+
     });
   }
 
@@ -221,29 +226,22 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                         ),
                       ],
                     ),
+
                   ),
-                  Expanded(
-                    child: filteredYahrtzeitDates.isEmpty
-                        ? Center(
-                            child: Text(
-                              AppLocalizations.of(context)!
-                                  .translate('no_upcoming_yahrtzeits_found'),
-                              style:
-                                  TextStyle(fontSize: 14, color: Colors.grey),
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: filteredYahrtzeitDates.length,
-                            itemBuilder: (context, index) {
-                              final yahrtzeitDate =
-                                  filteredYahrtzeitDates[index];
-                              return YahrtzeitTile(
-                                  yahrtzeitDate: yahrtzeitDate);
-                            },
-                          ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: filteredYahrtzeitDates.length,
+                    itemBuilder: (context, index) {
+                      final yahrtzeitDate = filteredYahrtzeitDates[index];
+                      return YahrtzeitTile(yahrtzeitDate: yahrtzeitDate);
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
+            );
+          }
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -304,7 +302,7 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
             ),
           ).then((result) {
             if (result == true) {
-              fetchYahrtzeits();
+              setState(() {});
             }
           });
         },

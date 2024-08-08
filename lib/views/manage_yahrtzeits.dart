@@ -108,25 +108,20 @@
 //     }
 //   }
 
-//   Future<void> fetchYahrtzeits() async {
+
+
+//   void fetchYahrtzeits() async {
 //     try {
 //       final fetchedYahrtzeits = await readData();
-
+//       print("Fetched Yahrtzeits: $fetchedYahrtzeits");
 //       setState(() {
-//         yahrtzeitDates = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
-//         filteredYahrtzeitDates = yahrtzeitDates;
+//         _yahrtzeits = fetchedYahrtzeits;
+//         // _upcomingDates = upcomingDates;
+//         // yahrtzeitDates = validYahrtzeits.map((y) => YahrtzeitDate.fromYahrtzeit(y)).toList();
 //         isLoading = false;
 //       });
-
-//       WidgetsBinding.instance.addPostFrameCallback((_) {
-//         if (_listKey.currentState != null) {
-//           for (var i = 0; i < filteredYahrtzeitDates.length; i++) {
-//             _listKey.currentState?.insertItem(i);
-//           }
-//         }
-//       });
 //     } catch (e) {
-//       print('Error fetching yahrtzeits: $e');
+//       print("Error fetching yahrtzeits: $e");
 //       setState(() {
 //         isLoading = false;
 //       });
@@ -268,6 +263,7 @@
 //     );
 //   }
 
+
 //   void _filterYahrtzeits(String query) {
 //     setState(() {
 //       searchQuery = query;
@@ -284,6 +280,7 @@
 //     });
 //   }
 
+
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
@@ -295,15 +292,17 @@
 //         centerTitle: true,
 //         backgroundColor: Colors.grey[600],
 //         elevation: 0,
+//         actionsIconTheme: IconThemeData(color: Colors.white),
 //         actions: [
 //           IconButton(
-//             icon: Icon(Icons.add, color: Colors.white),
-//             onPressed: () {
-//               Navigator.push(
+//             icon: Icon(Icons.add),
+//             onPressed: () async {
+//               final result = await Navigator.push(
 //                 context,
 //                 MaterialPageRoute(
 //                   builder: (context) => AddYahrtzeitPage(
 //                     yearsToSync: widget.yearsToSync,
+//                     isEditing: false,
 //                     syncSettings: widget.syncSettings,
 //                     notifications: widget.notifications,
 //                     language: widget.language,
@@ -322,206 +321,95 @@
 //                     changeMonths: widget.changeMonths,
 //                   ),
 //                 ),
-//               ).then((result) {
-//                 if (result == true) {
+
+//               );
+
+//               if (result != null && result is Yahrtzeit) {
+//                 await _addYahrtzeitToFile(result);
+//                 setState(() {
 //                   fetchYahrtzeits();
-//                 }
-//               });
+//                 });
+//               }
 //             },
-//           ),
-//           IconButton(
-//             icon: Icon(Icons.info, color: Colors.white),
-//             onPressed: _showStoredData,
 //           ),
 //         ],
 //       ),
-//       body: Container(
-//         color: Colors.white,
-//         child: isLoading
-//             ? Center(
-//                 child: CircularProgressIndicator(
-//                   valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
-//                 ),
-//               )
-//             : yahrtzeitDates.isEmpty
-//                 ? Center(
-//                     child: Text(
-//                       AppLocalizations.of(context)!
-//                           .translate('you_have_not_added_any_yahrtzeits_yet.'),
-//                       style: TextStyle(fontSize: 18, color: Colors.grey),
+//       body: isLoading
+//           ? Center(child: CircularProgressIndicator())
+//           : ListView.builder(
+//               itemCount: _yahrtzeits.length,
+//               itemBuilder: (context, index) {
+//                 final yahrtzeit = _yahrtzeits[index];
+//                 return Card(
+//                   margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+//                   elevation: 5,
+//                   shape: RoundedRectangleBorder(
+//                     borderRadius: BorderRadius.circular(12),
+//                   ),
+//                   // color: Colors.wh,
+//                   child: ListTile(
+//                     contentPadding:
+//                         EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+//                     title: Row(
+//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                       children: [
+//                         Text(
+//                           yahrtzeit.englishName ?? 'Unknown',
+//                           style: TextStyle(
+//                               fontSize: 14, fontWeight: FontWeight.bold),
+//                         ),
+//                         Text(
+//                           yahrtzeit.hebrewName ?? 'Unknown',
+//                           style: TextStyle(
+//                               fontSize: 14, fontWeight: FontWeight.bold),
+//                         ),
+//                       ],
 //                     ),
-//                   )
-//                 : AnimatedList(
-//                     key: _listKey,
-//                     initialItemCount: yahrtzeitDates.length,
-//                     itemBuilder: (context, index, animation) {
-//                       if (index >= yahrtzeitDates.length) {
-//                         return SizedBox.shrink();
-//                       }
-//                       return FadeTransition(
-//                         opacity: animation,
-//                         child: _buildYahrtzeitTile(yahrtzeitDates[index]),
-//                       );
+//                     subtitle: Row(
+//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                       children: [
+//                         if (yahrtzeit.day != null && yahrtzeit.month != null)
+//                           Text(
+//                             '${yahrtzeit.day} ${hebrewMonths[yahrtzeit.month!]}',
+//                             style: TextStyle(
+//                                 fontSize: 12, color: Colors.grey[600]),
+//                           ),
+//                         if (yahrtzeit.day != null && yahrtzeit.month != null)
+//                           Text(
+//                             formatHebrewDate(yahrtzeit.month, yahrtzeit.day),
+//                             style: TextStyle(
+//                                 fontSize: 12, color: Colors.grey[600]),
+//                           ),
+//                       ],
+//                     ),
+
+//                     trailing: IconButton(
+//                       icon: Icon(
+//                         Icons.edit,
+//                         color: Colors.grey[600],
+//                       ),
+//                       onPressed: () => _editYahrtzeit(yahrtzeit),
+//                     ),
+//                     onLongPress: () {
+//                       _showDeleteConfirmationDialog(yahrtzeit);
 //                     },
 //                   ),
-//       ),
-//       floatingActionButtonLocation: widget.syncSettings
-//           ? FloatingActionButtonLocation.centerDocked
-//           : null,
-//       floatingActionButton: widget.syncSettings
-//           ? Padding(
-//               padding: const EdgeInsets.all(16.0),
-//               child: SizedBox(
-//                 height: 50,
-//                 width: double.infinity,
-//                 child: ElevatedButton(
-//                   onPressed: () async {
-//                     try {
-//                       List<Yahrtzeit> yahrtzeits = await readData();
-//                       manager.onSyncButtonPressed(
-//                           yahrtzeits, widget.yearsToSync);
-//                       ScaffoldMessenger.of(context).showSnackBar(
-//                         SnackBar(
-//                           content: Text('Sync successful'),
-//                         ),
-//                       );
-//                     } catch (e) {
-//                       print('Sync failed: $e');
-//                       ScaffoldMessenger.of(context).showSnackBar(
-//                         SnackBar(
-//                           content: Text('Sync failed'),
-//                         ),
-//                       );
-//                     }
-//                   },
-//                   style: ElevatedButton.styleFrom(
-//                     backgroundColor: Colors.grey[600],
-//                     shape: RoundedRectangleBorder(
-//                       borderRadius: BorderRadius.circular(12.0),
-//                     ),
-//                   ),
-//                   child: Text(
-//                     'Sync',
-//                     style: TextStyle(color: Colors.white, fontSize: 18),
-//                   ),
-//                 ),
-//               ),
-//             )
-//           : null,
-//     );
-//   }
-
-//   Widget _buildYahrtzeitTile(YahrtzeitDate yahrtzeitDate) {
-//     String hebrewDate = _getHebrewDateString(yahrtzeitDate.hebrewDate);
-//     String englishDate = _getEnglishDateString(yahrtzeitDate.hebrewDate);
-
-//     // Check language preferences
-//     bool isBothEnglish =
-//         widget.language == 'en' && widget.jewishLanguage == 'en';
-//     bool isBothHebrew =
-//         widget.language == 'he' && widget.jewishLanguage == 'he';
-//     bool isEnglishAndHebrew =
-//         (widget.language == 'en' && widget.jewishLanguage == 'he') ||
-//             (widget.language == 'he' && widget.jewishLanguage == 'en');
-
-//     return Dismissible(
-//       key: Key(yahrtzeitDate.yahrtzeit.id.toString()),
-//       direction: DismissDirection.endToStart,
-//       // onDismissed: (direction) {
-//       //   _deleteYahrtzeit(yahrtzeitDate.yahrtzeit);
-//       // },
-//       background: Container(
-//         color: Colors.red,
-//         alignment: Alignment.centerRight,
-//         padding: EdgeInsets.symmetric(horizontal: 20),
-//         child: Row(
-//           mainAxisAlignment: MainAxisAlignment.end,
-//           children: [
-//             Icon(Icons.delete, color: Colors.white),
-//             SizedBox(width: 20),
-//           ],
-//         ),
-//       ),
-//       child: Card(
-//         elevation: 5,
-//         margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-//         shape: RoundedRectangleBorder(
-//           borderRadius: BorderRadius.circular(15),
-//         ),
-//         child: ListTile(
-//           contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-//           title: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Text(
-//                 yahrtzeitDate.yahrtzeit.englishName!,
-//                 style: TextStyle(
-//                   fontSize: 18,
-//                   fontWeight: FontWeight.bold,
-//                   color: Colors.black,
-//                 ),
-//               ),
-//               SizedBox(height: 5),
-//               // Display dates based on language settings
-//               if (isBothHebrew) ...[
-//                 Text(
-//                   hebrewDate,
-//                   style: TextStyle(
-//                     fontSize: 16,
-//                     color: Colors.grey[600],
-//                   ),
-//                 ),
-//               ] else if (isBothEnglish) ...[
-//                 Text(
-//                   englishDate,
-//                   style: TextStyle(
-//                     fontSize: 16,
-//                     color: Colors.grey[600],
-//                   ),
-//                 ),
-//               ] else if (isEnglishAndHebrew) ...[
-//                 Text(
-//                   englishDate,
-//                   style: TextStyle(
-//                     fontSize: 16,
-//                     color: Colors.grey[600],
-//                   ),
-//                 ),
-//                 SizedBox(height: 5),
-//                 Text(
-//                   hebrewDate,
-//                   style: TextStyle(
-//                     fontSize: 16,
-//                     color: Colors.grey[600],
-//                   ),
-//                 ),
-//               ],
-//             ],
-//           ),
-//           trailing: Row(
-//             mainAxisSize: MainAxisSize.min,
-//             children: [
-//               IconButton(
-//                 icon: Icon(
-//                   Icons.edit,
-//                   color: Colors.grey[600],
-//                 ),
-//                 onPressed: () => _editYahrtzeit(yahrtzeitDate.yahrtzeit),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
+//                 );
+//               },
+//             ),
 //     );
 //   }
 // }
 
-
+import 'dart:io';
+import 'package:cambium_project/views/upcoming_yahrtzeits.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:kosher_dart/kosher_dart.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:share/share.dart'; // הוספת חבילת שיתוף
 import '../localizations/app_localizations.dart';
 import '../models/yahrtzeit.dart';
 import '../models/yahrtzeit_date.dart';
@@ -580,8 +468,10 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   List<DateTime> _upcomingDates = [];
   bool isLoading = true;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  Map<String, bool> selectedYahrtzeits = {}; // מפת בחירה
 
   final YahrtzeitsManager manager = YahrtzeitsManager();
+  final UpcomingYahrtzeits u = UpcomingYahrtzeits();
   List<YahrtzeitDate> filteredYahrtzeitDates = [];
   String searchQuery = '';
 
@@ -632,8 +522,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       final fetchedYahrtzeits = await readData();
 
       setState(() {
-        yahrtzeitDates = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
-        filteredYahrtzeitDates = yahrtzeitDates;
+        _yahrtzeits = fetchedYahrtzeits;
         isLoading = false;
       });
 
@@ -650,20 +539,6 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
         isLoading = false;
       });
     }
-  }
-
-  List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
-    final uniqueNames = <String>{};
-    final filteredList = <YahrtzeitDate>[];
-
-    for (var yahrtzeit in yahrtzeits) {
-      if (yahrtzeit.englishName != null &&
-          uniqueNames.add(yahrtzeit.englishName!)) {
-        filteredList.add(YahrtzeitDate.fromYahrtzeit(yahrtzeit));
-      }
-    }
-
-    return filteredList;
   }
 
   String _getHebrewDateString(JewishDate date) {
@@ -787,22 +662,119 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     );
   }
 
-  void _filterYahrtzeits(String query) {
+  void _toggleSelection(String id) {
     setState(() {
-      searchQuery = query;
-      if (query.isEmpty) {
-        filteredYahrtzeitDates = yahrtzeitDates;
-      } else {
-        filteredYahrtzeitDates = yahrtzeitDates.where((yahrtzeitDate) {
-          return yahrtzeitDate.yahrtzeit.group != null &&
-              yahrtzeitDate.yahrtzeit.group!
-                  .toLowerCase()
-                  .contains(query.toLowerCase());
-        }).toList();
+      selectedYahrtzeits[id] = !(selectedYahrtzeits[id] ?? false);
+    });
+  }
+
+  void _selectAll() {
+    setState(() {
+      for (var yahrtzeit in _yahrtzeits) {
+        selectedYahrtzeits[yahrtzeit.id] = true;
       }
     });
   }
 
+  void _deselectAll() {
+    setState(() {
+      selectedYahrtzeits.clear();
+    });
+  }
+
+  void _shareSelected() {
+    final selected = _yahrtzeits
+        .where((yahrtzeit) => selectedYahrtzeits[yahrtzeit.id] == true);
+    if (selected.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No Yahrtzeits selected for sharing'),
+        ),
+      );
+      return;
+    }
+
+    final shareText = selected.map((yahrtzeit) {
+      return '${yahrtzeit.englishName ?? ''} (${yahrtzeit.hebrewName})';
+    }).join('\n');
+
+    Share.share(shareText); // שימוש בחבילת השיתוף לשיתוף הטקסט
+  }
+  String _createICSContent(List<Yahrtzeit> yahrtzeits) {
+    final buffer = StringBuffer();
+
+    buffer.writeln("BEGIN:VCALENDAR");
+    buffer.writeln("VERSION:2.0");
+    buffer.writeln("PRODID:-//YourApp//Yahrtzeit Manager//EN");
+
+    for (var yahrtzeit in yahrtzeits) {
+      try {
+        // נסה להמיר את התאריך היהודי לתאריך גרגוריאני
+        final jewishDate = JewishDate.initDate(
+          jewishYear: DateTime.now().year,
+          jewishMonth: yahrtzeit.month!,
+          jewishDayOfMonth: yahrtzeit.day!,
+        );
+        final gregorianDate = DateTime(
+          jewishDate.getGregorianYear(),
+          jewishDate.getGregorianMonth(),
+          jewishDate.getGregorianDayOfMonth(),
+        );
+
+        final start =
+            DateFormat("yyyyMMdd'T'HHmmss'Z'").format(gregorianDate.toUtc());
+        final end = DateFormat("yyyyMMdd'T'HHmmss'Z'")
+            .format(gregorianDate.add(Duration(days: 1)).toUtc());
+
+        buffer.writeln("BEGIN:VEVENT");
+        buffer.writeln("UID:${yahrtzeit.id}");
+        buffer.writeln(
+            "SUMMARY:${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
+        buffer.writeln("DTSTART:$start");
+        buffer.writeln("DTEND:$end");
+        buffer.writeln(
+            "DESCRIPTION:Yahrtzeit for ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
+        buffer.writeln("END:VEVENT");
+      } catch (e) {
+        print(
+            "Error with Yahrtzeit: ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}, Error: $e");
+        // ניתן להוסיף כאן הודעה אם יש תאריך לא תקין כדי להתריע
+      }
+    }
+
+    buffer.writeln("END:VCALENDAR");
+
+    return buffer.toString();
+  }
+
+  Future<void> _shareICSFile() async {
+    final selected = _yahrtzeits
+        .where((yahrtzeit) => selectedYahrtzeits[yahrtzeit.id] == true)
+        .toList();
+
+    if (selected.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No Yahrtzeits selected for sharing'),
+        ),
+      );
+      return;
+    }
+
+    final icsContent = _createICSContent(selected);
+    final directory = await getTemporaryDirectory();
+    final filePath = '${directory.path}/yahrtzeits.ics';
+    final file = File(filePath);
+
+    await file.writeAsString(icsContent);
+
+    // ניתן להוסיף כאן הדפסה או בדיקה לוודא שהקובץ נכתב כראוי
+    print('ICS file created at: $filePath');
+
+    Share.shareFiles([filePath], text: 'Yahrtzeit Calendar');
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -817,8 +789,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
         actions: [
           IconButton(
             icon: Icon(Icons.add, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddYahrtzeitPage(
@@ -841,12 +813,17 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                     changeMonths: widget.changeMonths,
                   ),
                 ),
-              ).then((result) {
-                if (result == true) {
-                  fetchYahrtzeits();
-                }
-              });
-            },
+              );
+               if (result == true) {
+              fetchYahrtzeits();
+              setState(() {});
+            }
+          },
+
+          ),
+          IconButton(
+            icon: Icon(Icons.share, color: Colors.white),
+            onPressed: _shareICSFile,
           ),
           IconButton(
             icon: Icon(Icons.info, color: Colors.white),
@@ -855,183 +832,122 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
           ),
         ],
       ),
-      body: Container(
-        color: Colors.white,
-        child: isLoading
-            ? Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
-                ),
-              )
-            : yahrtzeitDates.isEmpty
-                ? Center(
-                    child: Text(
-                      AppLocalizations.of(context)!
-                          .translate('you_have_not_added_any_yahrtzeits_yet.'),
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: TextField(
+                    onChanged: (query) {
+                      setState(() {
+                        searchQuery = query;
+                        _yahrtzeits = _yahrtzeits
+                            .where((y) =>
+                                y.englishName
+                                    ?.toLowerCase()
+                                    .contains(query.toLowerCase()) ??
+                                false)
+                            .toList();
+                      });
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Search',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.search),
                     ),
-                  )
-                : AnimatedList(
-                    key: _listKey,
-                    initialItemCount: yahrtzeitDates.length,
-                    itemBuilder: (context, index, animation) {
-                      if (index >= yahrtzeitDates.length) {
-                        return SizedBox.shrink();
-                      }
-                      return FadeTransition(
-                        opacity: animation,
-                        child: _buildYahrtzeitTile(yahrtzeitDates[index]),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _selectAll,
+                      child: Text('Select All'),
+                    ),
+                    SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: _deselectAll,
+                      child: Text('Deselect All'),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _yahrtzeits.length,
+                    itemBuilder: (context, index) {
+                      final yahrtzeit = _yahrtzeits[index];
+                      bool isSelected =
+                          selectedYahrtzeits[yahrtzeit.id] ?? false;
+
+                      return Card(
+                        margin:
+                            EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 16),
+                          leading: Checkbox(
+                            value: isSelected,
+                            onChanged: (value) {
+                              _toggleSelection(yahrtzeit.id);
+                            },
+                          ),
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                yahrtzeit.englishName ?? 'Unknown',
+                                style: TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                yahrtzeit.hebrewName ?? 'Unknown',
+                                style: TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          subtitle: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              if (yahrtzeit.day != null &&
+                                  yahrtzeit.month != null)
+                                Text(
+                                  '${yahrtzeit.day} ${hebrewMonths[yahrtzeit.month!]}',
+                                  style: TextStyle(
+                                      fontSize: 12, color: Colors.grey[600]),
+                                ),
+                              if (yahrtzeit.day != null &&
+                                  yahrtzeit.month != null)
+                                Text(
+                                  formatHebrewDate(
+                                      yahrtzeit.month, yahrtzeit.day),
+                                  style: TextStyle(
+                                      fontSize: 12, color: Colors.grey[600]),
+                                ),
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: Icon(
+                              Icons.edit,
+                              color: Colors.grey[600],
+                            ),
+                            onPressed: () => _editYahrtzeit(yahrtzeit),
+                          ),
+                          onLongPress: () {
+                            _showDeleteConfirmationDialog(yahrtzeit);
+                          },
+                        ),
                       );
                     },
                   ),
-      ),
-      floatingActionButtonLocation: widget.syncSettings
-          ? FloatingActionButtonLocation.centerDocked
-          : null,
-      floatingActionButton: widget.syncSettings
-          ? Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SizedBox(
-                height: 50,
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      List<Yahrtzeit> yahrtzeits = await readData();
-                      manager.onSyncButtonPressed(
-                          yahrtzeits, widget.yearsToSync);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Sync successful'),
-                        ),
-                      );
-                    } catch (e) {
-                      print('Sync failed: $e');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Sync failed'),
-                        ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[600],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                  ),
-                  child: Text(
-                    'Sync',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                ),
-              ),
-            )
-          : null,
-    );
-  }
-
-  Widget _buildYahrtzeitTile(YahrtzeitDate yahrtzeitDate) {
-    String hebrewDate = _getHebrewDateString(yahrtzeitDate.hebrewDate);
-    String englishDate = _getEnglishDateString(yahrtzeitDate.hebrewDate);
-
-    // Check language preferences
-    bool isBothEnglish =
-        widget.language == 'en' && widget.jewishLanguage == 'en';
-    bool isBothHebrew =
-        widget.language == 'he' && widget.jewishLanguage == 'he';
-    bool isEnglishAndHebrew =
-        (widget.language == 'en' && widget.jewishLanguage == 'he') ||
-            (widget.language == 'he' && widget.jewishLanguage == 'en');
-
-    return Dismissible(
-      key: Key(yahrtzeitDate.yahrtzeit.id.toString()),
-      direction: DismissDirection.endToStart,
-      // onDismissed: (direction) {
-      //   _deleteYahrtzeit(yahrtzeitDate.yahrtzeit);
-      // },
-      background: Container(
-        color: Colors.red,
-        alignment: Alignment.centerRight,
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Icon(Icons.delete, color: Colors.white),
-            SizedBox(width: 20),
-          ],
-        ),
-      ),
-      child: Card(
-        elevation: 5,
-        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: ListTile(
-          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                yahrtzeitDate.yahrtzeit.englishName!,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-              SizedBox(height: 5),
-              // Display dates based on language settings
-              if (isBothHebrew) ...[
-                Text(
-                  hebrewDate,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ] else if (isBothEnglish) ...[
-                Text(
-                  englishDate,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ] else if (isEnglishAndHebrew) ...[
-                Text(
-                  englishDate,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  hebrewDate,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
                 ),
               ],
-            ],
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(
-                  Icons.edit,
-                  color: Colors.grey[600],
-                ),
-                onPressed: () => _editYahrtzeit(yahrtzeitDate.yahrtzeit),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }
