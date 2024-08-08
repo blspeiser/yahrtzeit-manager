@@ -671,6 +671,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
 
     Share.share(shareText); // שימוש בחבילת השיתוף לשיתוף הטקסט
   }
+
   String _createICSContent(List<Yahrtzeit> yahrtzeits) {
     final buffer = StringBuffer();
 
@@ -744,6 +745,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
 
     Share.shareFiles([filePath], text: 'Yahrtzeit Calendar');
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -784,12 +786,11 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                   ),
                 ),
               );
-               if (result == true) {
-              fetchYahrtzeits();
-              setState(() {});
-            }
-          },
-
+              if (result == true) {
+                fetchYahrtzeits();
+                setState(() {});
+              }
+            },
           ),
           IconButton(
             icon: Icon(Icons.share, color: Colors.white),
@@ -827,13 +828,35 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(8), 
+                        ),
+                        padding: EdgeInsets.all(5), 
+                      ),
                       onPressed: _selectAll,
-                      child: Text('Select All'),
+                      child: Text('Select All',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[800],
+                              fontWeight: FontWeight.bold)),
                     ),
                     SizedBox(width: 8),
                     ElevatedButton(
+                       style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(8), 
+                        ),
+                        padding: EdgeInsets.all(5), 
+                      ),
                       onPressed: _deselectAll,
-                      child: Text('Deselect All'),
+                      child: Text('Deselect All',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[800],
+                              fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
