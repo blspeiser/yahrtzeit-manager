@@ -58,12 +58,6 @@ class YahrtzeitTile extends StatelessWidget {
             ),
           ],
         ),
-        // trailing: IconButton(
-        //   icon: Icon(Icons.share),
-        //   onPressed: () async {
-        //     await _shareYahrtzeit(yahrtzeitDate);
-        //   },
-        // ),
         onTap: () {
           Navigator.push(
             context,

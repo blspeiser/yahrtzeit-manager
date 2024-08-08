@@ -1,3 +1,4 @@
+import 'package:cambium_project/views/manage_yahrtzeits.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../home_page.dart';
@@ -95,6 +96,38 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     JewishDate.ADAR: 'אדר',
     JewishDate.ADAR_II: 'אדר ב׳',
   };
+  static const List<String> hebrewDays = [
+    'א',
+    'ב',
+    'ג',
+    'ד',
+    'ה',
+    'ו',
+    'ז',
+    'ח',
+    'ט',
+    'י',
+    'יא',
+    'יב',
+    'יג',
+    'יד',
+    'טו',
+    'טז',
+    'יז',
+    'יח',
+    'יט',
+    'כ',
+    'כא',
+    'כב',
+    'כג',
+    'כד',
+    'כה',
+    'כו',
+    'כז',
+    'כח',
+    'כט',
+    'ל'
+  ];
 
   @override
   void initState() {
@@ -142,30 +175,15 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
 
       try {
         List<Map<String, dynamic>> jsonData = await readData();
-
-        int currentYear = JewishDate().getJewishYear();
-        List<Yahrtzeit> newYahrtzeits = [];
-
-        JewishDate jewishDate = JewishDate.initDate(
-            jewishYear: currentYear,
-            jewishMonth: _selectedMonth!,
-            jewishDayOfMonth: _selectedDay!);
-        DateTime gregorianDate = DateTime(
-            jewishDate.getGregorianYear(),
-            jewishDate.getGregorianMonth(),
-            jewishDate.getGregorianDayOfMonth());
-
         Yahrtzeit newYahrtzeit;
-
-        // Create Yahrtzeit object based on language
         if (widget.language == 'en') {
           newYahrtzeit = Yahrtzeit(
             englishName: _englishNameController.text,
             hebrewName: _hebrewNameController.text.isNotEmpty
                 ? _hebrewNameController.text
                 : '',
-            day: _selectedDay!,
-            month: _selectedMonth!,
+            day: _selectedDay,
+            month: _selectedMonth,
             group: _groupController.text,
           );
         } else {
@@ -174,30 +192,23 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
             englishName: _englishNameController.text.isNotEmpty
                 ? _englishNameController.text
                 : '',
-            day: _selectedDay!,
-            month: _selectedMonth!,
+            day: _selectedDay,
+            month: _selectedMonth,
             group: _groupController.text,
           );
         }
 
-        newYahrtzeits.add(newYahrtzeit);
-
-        jsonData.addAll(newYahrtzeits.map((y) => y.toJson()).toList());
+        jsonData.add(newYahrtzeit.toJson());
 
         if (widget.syncSettings) {
-          for (var yahrtzeit in newYahrtzeits) {
-            await manager.addYahrtzeit(
-                yahrtzeit, widget.yearsToSync, widget.syncSettings);
-          }
+          await manager.addYahrtzeit(
+              newYahrtzeit, widget.yearsToSync, widget.syncSettings);
         }
 
         await writeData(jsonData);
         print('JSON file content: ${json.encode(jsonData)}');
-
-        // Log the new data to ensure it's saved correctly
         final savedData = await readData();
         print('Saved Data: $savedData');
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Data saved!')),
         );
@@ -205,7 +216,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomePage(
+            builder: (context) => ManageYahrtzeits(
               syncSettings: widget.syncSettings,
               notifications: widget.notifications,
               language: widget.language,
@@ -222,6 +233,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
               changeYears: widget.changeYears,
               changeDays: widget.changeDays,
               changeMonths: widget.changeMonths,
+              yearsToSync: widget.yearsToSync,
             ),
           ),
         );
@@ -303,24 +315,43 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                 Row(
                   children: [
                     Expanded(
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                            labelText:
-                                AppLocalizations.of(context)!.translate('day')),
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          _selectedDay = int.tryParse(value);
-                        },
-                        validator: (value) {
-                          if (value != null && value.isNotEmpty) {
-                            final day = int.tryParse(value);
-                            if (day == null || day < 1 || day > 31) {
-                              return 'Please enter a valid day between 1 and 31';
-                            }
-                          }
-                          return null;
-                        },
-                      ),
+                      child: widget.language == 'he'
+                          ? DropdownButtonFormField<int>(
+                              decoration: InputDecoration(
+                                  labelText: AppLocalizations.of(context)!
+                                      .translate('day')),
+                              value: _selectedDay,
+                              items: hebrewDays.asMap().entries.map((entry) {
+                                return DropdownMenuItem<int>(
+                                  value: entry.key + 1,
+                                  child: Text(entry.value),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedDay = value;
+                                });
+                              },
+                            )
+                          : DropdownButtonFormField<int>(
+                              decoration: InputDecoration(
+                                  labelText: AppLocalizations.of(context)!
+                                      .translate('day')),
+                              value: _selectedDay,
+                              items: List.generate(31, (index) => index + 1)
+                                  .map((day) {
+                                return DropdownMenuItem<int>(
+                                  value: day,
+                                  child: Text(
+                                      day.toString()), // תצוגה של מספר באנגלית
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedDay = value;
+                                });
+                              },
+                            ),
                     ),
                     SizedBox(width: 16), // Add spacing between the fields
                     Expanded(
@@ -340,10 +371,14 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                             _selectedMonth = value;
                           });
                         },
+                        validator: (value) {
+                          return null;
+                        },
                       ),
                     ),
                   ],
                 ),
+
                 TextFormField(
                   controller: _groupController,
                   decoration: InputDecoration(
@@ -362,7 +397,6 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                 ),
               ],
             ),
-
           ),
         ),
       ),
