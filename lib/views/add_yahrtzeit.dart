@@ -115,8 +115,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     'טז',
     'יז',
     'יח',
-    'יט',
-    'כ',
+    'יט' 'כ',
     'כא',
     'כב',
     'כג',
@@ -212,31 +211,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Data saved!')),
         );
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ManageYahrtzeits(
-              syncSettings: widget.syncSettings,
-              notifications: widget.notifications,
-              language: widget.language,
-              jewishLanguage: widget.jewishLanguage,
-              years: widget.years,
-              days: widget.days,
-              months: widget.months,
-              calendar: widget.calendar,
-              toggleSyncSettings: widget.toggleSyncSettings,
-              toggleNotifications: widget.toggleNotifications,
-              changeLanguage: widget.changeLanguage,
-              changeJewishLanguage: widget.changeJewishLanguage,
-              changeCalendar: widget.changeCalendar,
-              changeYears: widget.changeYears,
-              changeDays: widget.changeDays,
-              changeMonths: widget.changeMonths,
-              yearsToSync: widget.yearsToSync,
-            ),
-          ),
-        );
+        Navigator.pop(context, true);
       } catch (e) {
         showDialog(
           context: context,

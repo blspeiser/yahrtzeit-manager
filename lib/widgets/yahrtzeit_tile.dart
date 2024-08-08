@@ -82,15 +82,50 @@ class YahrtzeitTile extends StatelessWidget {
     await Share.shareFiles([file.path], text: 'Yahrtzeit Details');
   }
 
-  String _createICSContent(YahrtzeitDate yahrtzeitDate) {
-    final start = _formatDateTime(yahrtzeitDate.gregorianDate);
-    final end =
-        _formatDateTime(yahrtzeitDate.gregorianDate.add(Duration(hours: 1)));
-    final now = _formatDateTime(DateTime.now());
-    final uid =
-        '${yahrtzeitDate.gregorianDate.microsecondsSinceEpoch}@yourdomain.com';
+//   String _createICSContent(YahrtzeitDate yahrtzeitDate) {
+//     final start = _formatDateTime(yahrtzeitDate.gregorianDate);
+//     final end =
+//         _formatDateTime(yahrtzeitDate.gregorianDate.add(Duration(hours: 1)));
+//     final now = _formatDateTime(DateTime.now());
+//     final uid =
+//         '${yahrtzeitDate.gregorianDate.microsecondsSinceEpoch}@yourdomain.com';
 
-    return '''
+//     return '''
+// BEGIN:VCALENDAR
+// VERSION:2.0
+// PRODID:-//Your Organization//Your Product//EN
+// CALSCALE:GREGORIAN
+// BEGIN:VEVENT
+// UID:$uid
+// DTSTAMP:$now
+// DTSTART:$start
+// DTEND:$end
+// SUMMARY:Yahrtzeit for ${yahrtzeitDate.yahrtzeit.englishName} (${yahrtzeitDate.yahrtzeit.hebrewName})
+// DESCRIPTION:Yahrtzeit for ${yahrtzeitDate.yahrtzeit.englishName} (${yahrtzeitDate.yahrtzeit.hebrewName})
+// STATUS:CONFIRMED
+// TRANSP:OPAQUE
+// END:VEVENT
+// END:VCALENDAR
+//     ''';
+//   }
+
+//   String _formatDateTime(DateTime dateTime) {
+//     return dateTime
+//             .toUtc()
+//             .toIso8601String()
+//             .replaceAll('-', '')
+//             .replaceAll(':', '')
+//             .split('.')[0] +
+//         'Z';
+//   }
+
+String _createICSContent(YahrtzeitDate yahrtzeitDate) {
+  final start = _formatDateTime(yahrtzeitDate.gregorianDate);
+  final end = _formatDateTime(yahrtzeitDate.gregorianDate.add(Duration(days: 1))); // 24 hours duration
+  final now = _formatDateTime(DateTime.now().toUtc());
+  final uid = '${yahrtzeitDate.gregorianDate.microsecondsSinceEpoch}@yourdomain.com';
+
+  return '''
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Your Organization//Your Product//EN
@@ -106,16 +141,12 @@ STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT
 END:VCALENDAR
-    ''';
-  }
+  ''';
+}
 
-  String _formatDateTime(DateTime dateTime) {
-    return dateTime
-            .toUtc()
-            .toIso8601String()
-            .replaceAll('-', '')
-            .replaceAll(':', '')
-            .split('.')[0] +
-        'Z';
-  }
+String _formatDateTime(DateTime dateTime) {
+  return DateFormat('yyyyMMddTHHmmss').format(dateTime.toUtc()) + 'Z';
+}
+
+
 }
