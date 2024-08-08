@@ -50,7 +50,12 @@
     "gregorian_date": "Gregorian date",
     "English":"English",
     "Hebrew":"Hebrew",
-    "Main language":"Main language"
+    "Main language":"Main language",
+    "_off":"off",
+    "_on":"on",
+    "months_filter":"months_filter",
+    "Search Groop":"Search Groop"
+
     
 
     

@@ -583,7 +583,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 DropdownMenuItem(
                   value: 'he',
-                  child: Text( AppLocalizations.of(context)!.translate('Hebrew')),
+                  child: Text( AppLocalizations.of(context)!.translate('עברית')),
                 ),
                 
               ],
@@ -597,7 +597,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             // AppLocalizations.of(context)!.translate('settings')
             // title: Text('Sync: ${_syncSettings ? 'on' : 'off'}'),
-            title: Text('${AppLocalizations.of(context)!.translate('Sync')}: ${widget.syncSettings ? AppLocalizations.of(context)!.translate('on') : AppLocalizations.of(context)!.translate('off')}'),
+            title: Text('${AppLocalizations.of(context)!.translate('Sync')}: ${widget.syncSettings ? AppLocalizations.of(context)!.translate('_on') : AppLocalizations.of(context)!.translate('_off')}'),
 
             trailing: Switch(
               value: _syncSettings,

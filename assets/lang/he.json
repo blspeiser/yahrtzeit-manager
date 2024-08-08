@@ -50,7 +50,11 @@
     "gregorian_date":"תאריך לועזי",
     "English":"English",
     "Hebrew":"עברית",
-    "Main language":"שפה עיקרית"
+    "Main language":"שפה עיקרית",
+    "_on":"דלוק",
+    "_off":"כבוי",
+    "months_filter":"סנון לפי מספר חודשים",
+    "Search Groop":"חפש קבוצה"
 
      
     
