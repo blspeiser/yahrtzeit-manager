@@ -5,8 +5,8 @@ class Yahrtzeit {
   final String id;
   final String? englishName;
   final String hebrewName;
-  final int day;
-  final int month;
+  final int? day;
+  final int? month;
   final String? group;
   bool selected = false;
 
@@ -17,8 +17,9 @@ class Yahrtzeit {
     required this.month,
     this.group,
     String? id,
-  }) : id = id ?? Uuid().v4(); // תן אפשרות להעביר id, אם לא, ייווצר חדש
+  }) : id = id ?? Uuid().v4();
 
+  
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -41,22 +42,34 @@ class Yahrtzeit {
       group: json['group'],
     )..selected = json['selected'] ?? false;
   }
-
-  DateTime getGregorianDate() {
-    int year = JewishDate().getJewishYear();
-    JewishDate jewishDate = JewishDate.initDate(
-        jewishYear: year, jewishMonth: month, jewishDayOfMonth: day);
-    final gregorianDate = DateTime(jewishDate.getGregorianYear(),
-        jewishDate.getGregorianMonth(), jewishDate.getGregorianDayOfMonth());
-    DateTime currentDate = DateTime.now();
-    if (gregorianDate.isBefore(currentDate)) {
-      year += 1;
-      JewishDate jewishDate = JewishDate.initDate(
-          jewishYear: year, jewishMonth: month, jewishDayOfMonth: day);
-      final gregorianDate = DateTime(jewishDate.getGregorianYear(),
-          jewishDate.getGregorianMonth(), jewishDate.getGregorianDayOfMonth());
-      return gregorianDate;
-    }
-    return gregorianDate;
+  DateTime? getGregorianDate() {
+  if (month == null || day == null) {
+    // אם month או day אינם מאותחלים, החזר null או טיפול חלופי
+    return null;
   }
+
+  int year = JewishDate().getJewishYear();
+  JewishDate jewishDate = JewishDate.initDate(
+      jewishYear: year, jewishMonth: month!, jewishDayOfMonth: day!);
+  DateTime gregorianDate = DateTime(
+    jewishDate.getGregorianYear(),
+    jewishDate.getGregorianMonth(),
+    jewishDate.getGregorianDayOfMonth(),
+  );
+
+  DateTime currentDate = DateTime.now();
+  if (gregorianDate.isBefore(currentDate)) {
+    year += 1;
+    jewishDate = JewishDate.initDate(
+        jewishYear: year, jewishMonth: month!, jewishDayOfMonth: day!);
+    gregorianDate = DateTime(
+      jewishDate.getGregorianYear(),
+      jewishDate.getGregorianMonth(),
+      jewishDate.getGregorianDayOfMonth(),
+    );
+  }
+
+  return gregorianDate;
+}
+
 }
