@@ -469,11 +469,12 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   bool isLoading = true;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
   Map<String, bool> selectedYahrtzeits = {}; // מפת בחירה
-
-  final YahrtzeitsManager manager = YahrtzeitsManager();
+    final YahrtzeitsManager manager = YahrtzeitsManager();
   final UpcomingYahrtzeits u = UpcomingYahrtzeits();
   List<YahrtzeitDate> filteredYahrtzeitDates = [];
+  List<String> groups = [];
   String searchQuery = '';
+  String? selectedGroup;
 
   static const Map<int, String> hebrewMonths = {
     JewishDate.TISHREI: 'Tishrei',
@@ -495,6 +496,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   void initState() {
     super.initState();
     fetchYahrtzeits();
+    fetchGroups();
   }
 
   Future<void> writeData(List<Map<String, dynamic>> data) async {
@@ -540,6 +542,73 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       });
     }
   }
+
+
+
+//   Future<void> fetchYahrtzeits() async {
+//   try {
+//     final fetchedYahrtzeits = await readData();
+
+//     setState(() {
+//       yahrtzeitDates = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
+//       filteredYahrtzeitDates = yahrtzeitDates;
+//       isLoading = false;
+//     });
+
+//     WidgetsBinding.instance.addPostFrameCallback((_) {
+//       if (_listKey.currentState != null) {
+//         for (var i = 0; i < filteredYahrtzeitDates.length; i++) {
+//           _listKey.currentState?.insertItem(i);
+//         }
+//       }
+//     });
+//   } catch (e) {
+//     print('Error fetching yahrtzeits: $e');
+//     setState(() {
+//       isLoading = false;
+//     });
+//   }
+// }
+
+List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
+    final uniqueNames = <String>{};
+    final filteredList = <YahrtzeitDate>[];
+
+    for (var yahrtzeit in yahrtzeits) {
+      if (yahrtzeit.englishName != null &&
+          uniqueNames.add(yahrtzeit.englishName!)) {
+        filteredList.add(YahrtzeitDate.fromYahrtzeit(yahrtzeit));
+      }
+    }
+
+    return filteredList;
+  }
+
+
+  Future<void> fetchGroups() async {
+    try {
+      final fetchedGroups = await manager.getAllGroups();
+
+      // יצירת רשימה ייחודית בלי כפילויות של אותיות גדולות וקטנות
+      final uniqueGroups = fetchedGroups
+          .fold<Map<String, String>>({}, (map, group) {
+            final lowerCaseGroup = group.toLowerCase();
+            if (!map.containsKey(lowerCaseGroup)) {
+              map[lowerCaseGroup] = group;
+            }
+            return map;
+          })
+          .values
+          .toList();
+
+      setState(() {
+        groups = uniqueGroups;
+      });
+    } catch (e) {
+      print('Error fetching groups: $e');
+    }
+  }
+
 
   String _getHebrewDateString(JewishDate date) {
     final hebrewFormatter = HebrewDateFormatter()
@@ -605,6 +674,52 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       );
     }
   }
+
+//   void _filterYahrtzeits(String? query) {
+//   setState(() {
+//     if (query == null) {
+//       // במקרה של "ללא קבוצה" - סינון לפי ערך null בקבוצה
+//       filteredYahrtzeitDates = yahrtzeitDates.where((yahrtzeitDate) {
+//         return yahrtzeitDate.yahrtzeit.group == null;
+//       }).toList();
+//     } else if (query.isEmpty) {
+//       // במקרה של "ללא סינון"
+//       filteredYahrtzeitDates = yahrtzeitDates;
+//     } else {
+//       // סינון לפי קבוצה נבחרת
+//       filteredYahrtzeitDates = yahrtzeitDates.where((yahrtzeitDate) {
+//         return yahrtzeitDate.yahrtzeit.group != null &&
+//             yahrtzeitDate.yahrtzeit.group!
+//                 .toLowerCase()
+//                 .contains(query.toLowerCase());
+//       }).toList();
+//     }
+//   });
+// }
+
+ void _filterYahrtzeits(String? query) {
+    setState(() {
+      if (query == null) {
+        // במקרה של "ללא קבוצה" - סינון לפי קבוצה ריקה או null
+        filteredYahrtzeitDates = yahrtzeitDates.where((yahrtzeitDate) {
+          return yahrtzeitDate.yahrtzeit.group == null ||
+              yahrtzeitDate.yahrtzeit.group!.isEmpty;
+        }).toList();
+      } else if (query.isEmpty) {
+        // במקרה של "ללא סינון"
+        filteredYahrtzeitDates = yahrtzeitDates;
+      } else {
+        // סינון לפי קבוצה נבחרת
+        filteredYahrtzeitDates = yahrtzeitDates.where((yahrtzeitDate) {
+          return yahrtzeitDate.yahrtzeit.group != null &&
+              yahrtzeitDate.yahrtzeit.group!
+                  .toLowerCase()
+                  .contains(query.toLowerCase());
+        }).toList();
+      }
+    });
+  }
+
 
   Future<void> _addYahrtzeitToFile(Yahrtzeit yahrtzeit) async {
     try {
@@ -774,7 +889,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     Share.shareFiles([filePath], text: 'Yahrtzeit Calendar');
   }
 
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -814,12 +929,11 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                   ),
                 ),
               );
-               if (result == true) {
-              fetchYahrtzeits();
-              setState(() {});
-            }
-          },
-
+              if (result == true) {
+                fetchYahrtzeits();
+                setState(() {});
+              }
+            },
           ),
           IconButton(
             icon: Icon(Icons.share, color: Colors.white),
@@ -827,8 +941,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
           ),
           IconButton(
             icon: Icon(Icons.info, color: Colors.white),
-            onPressed: (){},
-            // onPressed: _showStoredData,
+            onPressed: () {},
           ),
         ],
       ),
@@ -838,25 +951,42 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: TextField(
-                    onChanged: (query) {
-                      setState(() {
-                        searchQuery = query;
-                        _yahrtzeits = _yahrtzeits
-                            .where((y) =>
-                                y.englishName
-                                    ?.toLowerCase()
-                                    .contains(query.toLowerCase()) ??
-                                false)
-                            .toList();
-                      });
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Search',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.search),
-                    ),
-                  ),
+                  child: DropdownButton<String>(
+                            isExpanded: true,
+                            hint: Text('בחר קבוצה'),
+                            value: searchQuery.isEmpty ? null : searchQuery,
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                searchQuery = newValue ?? '';
+                                if (searchQuery.isEmpty) {
+                                  fetchYahrtzeits(); // מבצע fetch מחדש
+                                } else if (searchQuery == 'ללא קבוצה') {
+                                  _filterYahrtzeits(
+                                      null); // מסנן לפי חוסר קבוצה
+                                } else {
+                                  _filterYahrtzeits(
+                                      searchQuery); // מסנן לפי קבוצה נבחרת
+                                }
+                              });
+                            },
+                            items: [
+                              DropdownMenuItem<String>(
+                                value: '',
+                                child: Text('ללא סינון'),
+                              ),
+                              DropdownMenuItem<String>(
+                                value: 'ללא קבוצה',
+                                child: Text('ללא קבוצה'),
+                              ),
+                              ...groups.map<DropdownMenuItem<String>>(
+                                  (String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                            ],
+                          ),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -881,15 +1011,13 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                           selectedYahrtzeits[yahrtzeit.id] ?? false;
 
                       return Card(
-                        margin:
-                            EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                         elevation: 5,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: ListTile(
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 16),
+                          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                           leading: Checkbox(
                             value: isSelected,
                             onChanged: (value) {
@@ -901,41 +1029,31 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                             children: [
                               Text(
                                 yahrtzeit.englishName ?? 'Unknown',
-                                style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.bold),
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                               ),
                               Text(
                                 yahrtzeit.hebrewName ?? 'Unknown',
-                                style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.bold),
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
                           subtitle: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              if (yahrtzeit.day != null &&
-                                  yahrtzeit.month != null)
+                              if (yahrtzeit.day != null && yahrtzeit.month != null)
                                 Text(
                                   '${yahrtzeit.day} ${hebrewMonths[yahrtzeit.month!]}',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.grey[600]),
+                                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                                 ),
-                              if (yahrtzeit.day != null &&
-                                  yahrtzeit.month != null)
+                              if (yahrtzeit.day != null && yahrtzeit.month != null)
                                 Text(
-                                  formatHebrewDate(
-                                      yahrtzeit.month, yahrtzeit.day),
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.grey[600]),
+                                  formatHebrewDate(yahrtzeit.month, yahrtzeit.day),
+                                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                                 ),
                             ],
                           ),
                           trailing: IconButton(
-                            icon: Icon(
-                              Icons.edit,
-                              color: Colors.grey[600],
-                            ),
+                            icon: Icon(Icons.edit, color: Colors.grey[600]),
                             onPressed: () => _editYahrtzeit(yahrtzeit),
                           ),
                           onLongPress: () {
@@ -950,4 +1068,6 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
             ),
     );
   }
+
 }
+
