@@ -1066,6 +1066,46 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
                 ),
               ],
             ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    floatingActionButton: widget.syncSettings
+        ? Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              height: 50,
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  try {
+                    List<Yahrtzeit> yahrtzeits = await readData();
+                    manager.onSyncButtonPressed(yahrtzeits, widget.yearsToSync);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Sync successful'),
+                      ),
+                    );
+                  } catch (e) {
+                    print('Sync failed: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Sync failed'),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[600],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                ),
+                child: Text(
+                  'Sync with calendar',
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+              ),
+            ),
+          )
+        : null,
     );
   }
 
