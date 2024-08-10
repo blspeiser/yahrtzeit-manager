@@ -14,10 +14,10 @@ class YahrtzeitDate {
 
   factory YahrtzeitDate.fromYahrtzeit(Yahrtzeit yahrtzeit) {
     final gregorianDate = yahrtzeit.getGregorianDate();
-    final hebrewDate = JewishDate.fromDateTime(gregorianDate);
+    final hebrewDate = JewishDate.fromDateTime(gregorianDate!);
     return YahrtzeitDate(
       yahrtzeit: yahrtzeit,
-      gregorianDate: gregorianDate,
+      gregorianDate: gregorianDate!,
       hebrewDate: hebrewDate,
     );
   }

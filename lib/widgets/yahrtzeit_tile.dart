@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:cambium_project/models/yahrtzeit.dart';
 import 'package:flutter/material.dart';
 import 'package:kosher_dart/kosher_dart.dart';
 import 'package:path_provider/path_provider.dart';
@@ -58,12 +58,6 @@ class YahrtzeitTile extends StatelessWidget {
             ),
           ],
         ),
-        // trailing: IconButton(
-        //   icon: Icon(Icons.share),
-        //   onPressed: () async {
-        //     await _shareYahrtzeit(yahrtzeitDate);
-        //   },
-        // ),
         onTap: () {
           Navigator.push(
             context,
@@ -77,51 +71,10 @@ class YahrtzeitTile extends StatelessWidget {
     );
   }
 
-  Future<void> _shareYahrtzeit(YahrtzeitDate yahrtzeitDate) async {
-    final directory = await getTemporaryDirectory();
-    final path = '${directory.path}/${yahrtzeitDate.yahrtzeit.englishName}.ics';
-    final file = File(path);
 
-    final icsContent = _createICSContent(yahrtzeitDate);
-    await file.writeAsString(icsContent);
+String _formatDateTime(DateTime dateTime) {
+  return DateFormat('yyyyMMddTHHmmss').format(dateTime.toUtc()) + 'Z';
+}
 
-    await Share.shareFiles([file.path], text: 'Yahrtzeit Details');
-  }
 
-  String _createICSContent(YahrtzeitDate yahrtzeitDate) {
-    final start = _formatDateTime(yahrtzeitDate.gregorianDate);
-    final end =
-        _formatDateTime(yahrtzeitDate.gregorianDate.add(Duration(hours: 1)));
-    final now = _formatDateTime(DateTime.now());
-    final uid =
-        '${yahrtzeitDate.gregorianDate.microsecondsSinceEpoch}@yourdomain.com';
-
-    return '''
-BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Your Organization//Your Product//EN
-CALSCALE:GREGORIAN
-BEGIN:VEVENT
-UID:$uid
-DTSTAMP:$now
-DTSTART:$start
-DTEND:$end
-SUMMARY:Yahrtzeit for ${yahrtzeitDate.yahrtzeit.englishName} (${yahrtzeitDate.yahrtzeit.hebrewName})
-DESCRIPTION:Yahrtzeit for ${yahrtzeitDate.yahrtzeit.englishName} (${yahrtzeitDate.yahrtzeit.hebrewName})
-STATUS:CONFIRMED
-TRANSP:OPAQUE
-END:VEVENT
-END:VCALENDAR
-    ''';
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    return dateTime
-            .toUtc()
-            .toIso8601String()
-            .replaceAll('-', '')
-            .replaceAll(':', '')
-            .split('.')[0] +
-        'Z';
-  }
 }

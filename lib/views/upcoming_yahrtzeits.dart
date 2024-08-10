@@ -1,99 +1,3 @@
-// import 'package:flutter/material.dart';
-// import '../localizations/app_localizations.dart';
-// import '../models/yahrtzeit.dart';
-// import '../models/yahrtzeit_date.dart';
-// import '../services/yahrtzeits_manager.dart';
-// import '../widgets/yahrtzeit_tile.dart';
-
-// class UpcomingYahrtzeits extends StatefulWidget {
-//   @override
-//   _UpcomingYahrtzeitsState createState() => _UpcomingYahrtzeitsState();
-// }
-
-// class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
-//   final YahrtzeitsManager manager = YahrtzeitsManager();
-//   List<YahrtzeitDate> yahrtzeitDates = [];
-//   bool isLoading = true;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     fetchYahrtzeits();
-//   }
-
-//   Future<void> fetchYahrtzeits() async {
-//     try {
-//       final yahrtzeits = await manager
-//           .getAllYahrtzeits(); // טען את כל היארצייטים מ-SharedPreferences
-//       print('Fetched yahrtzeits: ${yahrtzeits.length}');
-//       setState(() {
-//         yahrtzeitDates =
-//             _filterDuplicateYahrtzeits(manager.nextMultiple(yahrtzeits));
-//         isLoading = false;
-//       });
-//     } catch (e) {
-//       print('Error fetching yahrtzeits: $e');
-//       setState(() {
-//         isLoading = false;
-//       });
-//     }
-//   }
-
-//   List<YahrtzeitDate> _filterDuplicateYahrtzeits(
-//       List<YahrtzeitDate> yahrtzeits) {
-//     final uniqueNames = <String>{};
-//     final filteredList = <YahrtzeitDate>[];
-
-//     for (var yahrtzeitDate in yahrtzeits) {
-//       if (uniqueNames.add(yahrtzeitDate.yahrtzeit.englishName!)) {
-//         filteredList.add(yahrtzeitDate);
-//       }
-//     }
-
-//     return filteredList;
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(
-//           AppLocalizations.of(context)!.translate('upcoming_yahrtzeits'),
-//           style: TextStyle(color: Colors.white),
-//         ),
-//         centerTitle: true,
-//         backgroundColor: Color.fromARGB(255, 50, 4, 129),
-//         elevation: 0,
-//         actionsIconTheme: IconThemeData(color: Colors.white),
-//       ),
-//       body: Container(
-//         color: Colors.white,
-//         child: isLoading
-//             ? Center(
-//                 child: CircularProgressIndicator(
-//                   valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
-//                 ),
-//               )
-//             : yahrtzeitDates.isEmpty
-//                 ? Center(
-//                     child: Text(
-//                       AppLocalizations.of(context)!
-//                           .translate('no_upcoming_yahrtzeits_found'),
-//                       style: TextStyle(fontSize: 18, color: Colors.grey),
-//                     ),
-//                   )
-//                 : ListView.builder(
-//                     itemCount: yahrtzeitDates.length,
-//                     itemBuilder: (context, index) {
-//                       final yahrtzeitDate = yahrtzeitDates[index];
-//                       return YahrtzeitTile(yahrtzeitDate: yahrtzeitDate);
-//                     },
-//                   ),
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../localizations/app_localizations.dart';
@@ -135,6 +39,30 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
     });
   }
 
+//   Future<void> fetchYahrtzeits() async {
+//     try {
+//       final yahrtzeits = await manager.getAllYahrtzeits();
+//       print('Fetched yahrtzeits: ${yahrtzeits.length}');
+//       setState(() {
+//         yahrtzeitDates = manager.nextMultiple(yahrtzeits);
+//         filteredYahrtzeitDates =
+//             manager.filterUpcomingByMonths(yahrtzeitDates, _months);
+//         isLoading = false;
+//       });
+//     } catch (e) {
+//       print('Error fetching yahrtzeits: $e');
+//       setState(() {
+//         isLoading = false;
+//       });
+//     }
+//   }
+
+//   Future<void> fetchGroups() async {
+//     try {
+//       final fetchedGroups = await manager.getAllGroups();
+//       setState(() {
+//         groups = fetchedGroups;
+
   Future<void> fetchYahrtzeits() async {
     try {
       final yahrtzeits = await manager.getAllYahrtzeits();
@@ -156,8 +84,20 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   Future<void> fetchGroups() async {
     try {
       final fetchedGroups = await manager.getAllGroups();
+
+      final uniqueGroups = fetchedGroups
+          .fold<Map<String, String>>({}, (map, group) {
+            final lowerCaseGroup = group.toLowerCase();
+            if (!map.containsKey(lowerCaseGroup)) {
+              map[lowerCaseGroup] = group;
+            }
+            return map;
+          })
+          .values
+          .toList();
+
       setState(() {
-        groups = fetchedGroups;
+        groups = uniqueGroups;
       });
     } catch (e) {
       print('Error fetching groups: $e');
@@ -192,12 +132,20 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
     return filteredList;
   }
 
-  void _filterYahrtzeits(String query) {
+
+  void _filterYahrtzeits(String? query) {
     setState(() {
-      searchQuery = query;
-      if (query.isEmpty) {
+      if (query == null) {
+        // במקרה של "ללא קבוצה" - סינון לפי קבוצה ריקה או null
+        filteredYahrtzeitDates = yahrtzeitDates.where((yahrtzeitDate) {
+          return yahrtzeitDate.yahrtzeit.group == null ||
+              yahrtzeitDate.yahrtzeit.group!.isEmpty;
+        }).toList();
+      } else if (query.isEmpty) {
+        // במקרה של "ללא סינון"
         filteredYahrtzeitDates = yahrtzeitDates;
       } else {
+        // סינון לפי קבוצה נבחרת
         filteredYahrtzeitDates = yahrtzeitDates.where((yahrtzeitDate) {
           return yahrtzeitDate.yahrtzeit.group != null &&
               yahrtzeitDate.yahrtzeit.group!
@@ -233,38 +181,101 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Autocomplete<String>(
-                      optionsBuilder: (TextEditingValue textEditingValue) {
-                        if (textEditingValue.text.isEmpty) {
-                          return const Iterable<String>.empty();
-                        }
-                        return groups.where((String group) {
-                          return group
-                              .toLowerCase()
-                              .contains(textEditingValue.text.toLowerCase());
-                        });
-                      },
-                      onSelected: (String selection) {
-                        _filterYahrtzeits(selection);
-                      },
-                      fieldViewBuilder: (BuildContext context,
-                          TextEditingController textEditingController,
-                          FocusNode focusNode,
-                          VoidCallback onFieldSubmitted) {
-                        return TextField(
-                          controller: textEditingController,
-                          focusNode: focusNode,
-                          onChanged: _filterYahrtzeits,
-                          decoration: InputDecoration(
-                            labelText: AppLocalizations.of(context)!
-                                  .translate('Search Groop'),
-                            prefixIcon: Icon(Icons.search),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
+                    
+//                     child: Autocomplete<String>(
+//                       optionsBuilder: (TextEditingValue textEditingValue) {
+//                         if (textEditingValue.text.isEmpty) {
+//                           return const Iterable<String>.empty();
+//                         }
+//                         return groups.where((String group) {
+//                           return group
+//                               .toLowerCase()
+//                               .contains(textEditingValue.text.toLowerCase());
+//                         });
+//                       },
+//                       onSelected: (String selection) {
+//                         _filterYahrtzeits(selection);
+//                       },
+//                       fieldViewBuilder: (BuildContext context,
+//                           TextEditingController textEditingController,
+//                           FocusNode focusNode,
+//                           VoidCallback onFieldSubmitted) {
+//                         return TextField(
+//                           controller: textEditingController,
+//                           focusNode: focusNode,
+//                           onChanged: _filterYahrtzeits,
+//                           decoration: InputDecoration(
+//                             labelText: AppLocalizations.of(context)!
+//                                   .translate('Search Groop'),
+//                             prefixIcon: Icon(Icons.search),
+//                             border: OutlineInputBorder(
+//                               borderRadius: BorderRadius.circular(8.0),
+//                             ),
+//                           ),
+//                         );
+//                       },
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            hint: Text('בחר קבוצה'),
+                            value: searchQuery.isEmpty ? null : searchQuery,
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                searchQuery = newValue ?? '';
+                                if (searchQuery.isEmpty) {
+                                  fetchYahrtzeits(); 
+                                } else if (searchQuery == 'ללא קבוצה') {
+                                  _filterYahrtzeits(
+                                      null);
+                                } else {
+                                  _filterYahrtzeits(
+                                      searchQuery); 
+                                }
+                              });
+                            },
+                            items: [
+                              DropdownMenuItem<String>(
+                                value: '',
+                                child: Text('ללא סינון'),
+                              ),
+                              DropdownMenuItem<String>(
+                                value: 'ללא קבוצה',
+                                child: Text('ללא קבוצה'),
+                              ),
+                              ...groups.map<DropdownMenuItem<String>>(
+                                  (String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                            ],
                           ),
-                        );
-                      },
+                        ),
+                        SizedBox(width: 8),
+                        // כפתור לבחירת מספר חודשים
+                        DropdownButton<int>(
+                          hint: Text('בחר חודשים'),
+                          value: _months,
+                          onChanged: (int? newValue) {
+                            setState(() {
+                              _months = newValue!;
+                              filteredYahrtzeitDates =
+                                  manager.filterUpcomingByMonths(
+                                      yahrtzeitDates, _months);
+                            });
+                          },
+                          items: List.generate(12, (index) => index + 1)
+                              .map<DropdownMenuItem<int>>((int value) {
+                            return DropdownMenuItem<int>(
+                              value: value,
+                              child: Text('חודשים $value'),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
                   ),
                   Expanded(
