@@ -765,6 +765,7 @@ import '../models/yahrtzeit.dart';
 import '../services/yahrtzeits_manager.dart';
 import 'package:kosher_dart/kosher_dart.dart';
 import 'dart:convert';
+import 'manage_yahrtzeits.dart';
 
 class AddYahrtzeitPage extends StatefulWidget {
   final Yahrtzeit? yahrtzeit;
@@ -823,39 +824,87 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
   final YahrtzeitsManager manager = YahrtzeitsManager();
   List<String> groups = [];
 
-  static const Map<int, String> englishMonths = {
-    JewishDate.NISSAN: 'Nissan',
-    JewishDate.IYAR: 'Iyar',
-    JewishDate.SIVAN: 'Sivan',
-    JewishDate.TAMMUZ: 'Tammuz',
-    JewishDate.AV: 'Av',
-    JewishDate.ELUL: 'Elul',
-    JewishDate.TISHREI: 'Tishrei',
-    JewishDate.CHESHVAN: 'Cheshvan',
-    JewishDate.KISLEV: 'Kislev',
-    JewishDate.TEVES: 'Teves',
-    JewishDate.SHEVAT: 'Shevat',
-    JewishDate.ADAR: 'Adar',
-    JewishDate.ADAR_II: 'Adar II',
-    // JewishDate.ADAR_I: 'Adar I',
-  };
+  // static const Map<int, String> englishMonths = {
+  //   JewishDate.NISSAN: 'Nissan',
+  //   JewishDate.IYAR: 'Iyar',
+  //   JewishDate.SIVAN: 'Sivan',
+  //   JewishDate.TAMMUZ: 'Tammuz',
+  //   JewishDate.AV: 'Av',
+  //   JewishDate.ELUL: 'Elul',
+  //   JewishDate.TISHREI: 'Tishrei',
+  //   JewishDate.CHESHVAN: 'Cheshvan',
+  //   JewishDate.KISLEV: 'Kislev',
+  //   JewishDate.TEVES: 'Teves',
+  //   JewishDate.SHEVAT: 'Shevat',
+  //   JewishDate.ADAR: 'Adar',
+  //   JewishDate.ADAR_II: 'Adar II',
+  // };
 
-  static const Map<int, String> hebrewMonths = {
-    JewishDate.NISSAN: 'ניסן',
-    JewishDate.IYAR: 'אייר',
-    JewishDate.SIVAN: 'סיוון',
-    JewishDate.TAMMUZ: 'תמוז',
-    JewishDate.AV: 'אב',
-    JewishDate.ELUL: 'אלול',
-    JewishDate.TISHREI: 'תשרי',
-    JewishDate.CHESHVAN: 'חשוון',
-    JewishDate.KISLEV: 'כסלו',
-    JewishDate.TEVES: 'טבת',
-    JewishDate.SHEVAT: 'שבט',
-    JewishDate.ADAR: 'אדר',
-    // JewishDate.ADAR_I: 'אדר א',
-    JewishDate.ADAR_II: 'אדר ב׳',
+  // static const Map<int, String> hebrewMonths = {
+  //   JewishDate.NISSAN: 'ניסן',
+  //   JewishDate.IYAR: 'אייר',
+  //   JewishDate.SIVAN: 'סיוון',
+  //   JewishDate.TAMMUZ: 'תמוז',
+  //   JewishDate.AV: 'אב',
+  //   JewishDate.ELUL: 'אלול',
+  //   JewishDate.TISHREI: 'תשרי',
+  //   JewishDate.CHESHVAN: 'חשוון',
+  //   JewishDate.KISLEV: 'כסלו',
+  //   JewishDate.TEVES: 'טבת',
+  //   JewishDate.SHEVAT: 'שבט',
+  //   JewishDate.ADAR: 'אדר',
+  //   JewishDate.ADAR_II: 'אדר ב׳',
+  // };
+// static const Map<int, String> englishMonths = {
+//   1: 'Nissan',
+//   2: 'Iyar',
+//   3: 'Sivan',
+//   4: 'Tammuz',
+//   5: 'Av',
+//   6: 'Elul',
+//   7: 'Tishrei',
+//   8: 'Cheshvan',
+//   9: 'Kislev',
+//   10: 'Teves',
+//   11: 'Shevat',
+//   12: 'Adar',
+//   13: 'Adar I',  // הוסף שורה זו
+//   14: 'Adar II',
+// };
+Map<int, String> getMonths(BuildContext context) {
+  return {
+    1: AppLocalizations.of(context)!.translate('Tishrei'),
+    2: AppLocalizations.of(context)!.translate('Cheshvan'),
+    3: AppLocalizations.of(context)!.translate('Kislev'),
+    4: AppLocalizations.of(context)!.translate('Teves'),
+    5: AppLocalizations.of(context)!.translate('Shevat'),
+    6: AppLocalizations.of(context)!.translate('Adar'),
+    7: AppLocalizations.of(context)!.translate('Adar I'),
+    8: AppLocalizations.of(context)!.translate('Adar II'),
+    9: AppLocalizations.of(context)!.translate('Nissan'),
+    10: AppLocalizations.of(context)!.translate('Iyar'),
+    11: AppLocalizations.of(context)!.translate('Sivan'),
+    12: AppLocalizations.of(context)!.translate('Tammuz'),
+    13: AppLocalizations.of(context)!.translate('Av'),
+    14: AppLocalizations.of(context)!.translate('Elul'),
   };
+}
+// static const Map<int, String> hebrewMonths = {
+//   1: 'ניסן',
+//   2: 'אייר',
+//   3: 'סיוון',
+//   4: 'תמוז',
+//   5: 'אב',
+//   6: 'אלול',
+//   7: 'תשרי',
+//   8: 'חשוון',
+//   9: 'כסלו',
+//   10: 'טבת',
+//   11: 'שבט',
+//   12: 'אדר',
+//   13: 'אדר א׳',  // הוסף שורה זו
+//   14: 'אדר ב׳',
+// };
 
   @override
   void initState() {
@@ -960,7 +1009,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
         print('Saved Data: $savedData');
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Data saved!')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.translate('Data saved!'))),
         );
 
         Navigator.pushReplacement(
@@ -1006,11 +1055,11 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     }
   }
 
-  String _getMonthName(int month) {
-    return Localizations.localeOf(context).languageCode == 'he'
-        ? hebrewMonths[month] ?? ''
-        : englishMonths[month] ?? '';
-  }
+  // String _getMonthName(int month) {
+  //   return Localizations.localeOf(context).languageCode == 'en'
+  //       ? hebrewMonths[month] ?? ''
+  //       : englishMonths[month] ?? '';
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -1021,7 +1070,8 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            widget.isEditing ? 'Edit Yahrtzeit' : 'Add Yahrtzeit',
+            widget.isEditing ?  AppLocalizations.of(context)!.translate('Edit Yahrtzeit') 
+                              : AppLocalizations.of(context)!.translate('Add Yahrtzeit'),
             style: TextStyle(color: Colors.white),
           ),
           centerTitle: true,
@@ -1043,7 +1093,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                   validator: (value) {
                     if (widget.language == 'en' &&
                         (value == null || value.isEmpty)) {
-                      return 'Please enter English name';
+                      return AppLocalizations.of(context)!.translate('Please enter English name');
                     }
                     return null;
                   },
@@ -1056,7 +1106,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                   validator: (value) {
                     if (widget.language == 'he' &&
                         (value == null || value.isEmpty)) {
-                      return 'Please enter Hebrew name';
+                      return AppLocalizations.of(context)!.translate('Please enter Hebrew name');
                     }
                     return null;
                   },
@@ -1076,7 +1126,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                           if (value != null && value.isNotEmpty) {
                             final day = int.tryParse(value);
                             if (day == null || day < 1 || day > 31) {
-                              return 'Please enter a valid day between 1 and 31';
+                              return AppLocalizations.of(context)!.translate('Please enter a valid day between 1 and 31');
                             }
                           }
                           return null;
@@ -1090,12 +1140,22 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                             labelText: AppLocalizations.of(context)!
                                 .translate('month')),
                         value: _selectedMonth,
-                        items: hebrewMonths.entries.map((entry) {
-                          return DropdownMenuItem<int>(
-                            value: entry.key,
-                            child: Text(entry.value),
-                          );
-                        }).toList(),
+                        items: getMonths(context).entries.map((entry) {
+                            return DropdownMenuItem<int>(
+                              value: entry.key,
+                              child: Text(entry.value),
+                            );
+                          }).toList(),
+                      //   items: List.generate(14, (index) {
+                      //   final monthNumber = index + 1; // מספר החודש מתחיל מ-1
+                      //   return DropdownMenuItem<int>(
+                      //     value: monthNumber,
+                      //     child: Text(_getEnglishMonthName(monthNumber, context)),
+                      //   );
+                      // }).toList(),
+
+                          
+
                         onChanged: (value) {
                           setState(() {
                             _selectedMonth = value;
@@ -1115,7 +1175,9 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                 ElevatedButton(
                   onPressed: _submitForm,
                   child: Text(
-                      widget.isEditing ? 'Update Yahrtzeit' : 'Add Yahrtzeit',
+                      widget.isEditing ? AppLocalizations.of(context)!
+                                  .translate('Update Yahrtzeit') : AppLocalizations.of(context)!
+                                  .translate('Add Yahrtzeit'),
                       style: TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
@@ -1129,3 +1191,4 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     );
   }
 }
+

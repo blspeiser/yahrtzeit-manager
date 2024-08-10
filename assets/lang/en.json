@@ -54,7 +54,24 @@
     "_off":"off",
     "_on":"on",
     "months_filter":"months_filter",
-    "Search Groop":"Search Groop"
+    "Search Groop":"Search Groop",
+    "Nissan":"Nissan",
+    "Iyar":"Iyar",
+    "Sivan":"Sivan",
+    "Tammuz":"Tammuz",
+    "Av":"Av",
+    "Elul":"Elul",
+    "Tishrei":"Tishrei",
+    "Cheshvan":"Cheshvan",
+    "Kislev":"Kislev",
+    "Teves":"Teves",
+    "Shevat":"Shevat",
+    "Adar":"Adar",
+    "Adar I":"Adar I",
+    "Adar II":"Adar II",
+    "Please enter a valid day between 1 and 31":"Please enter a valid day between 1 and 31",
+    "Data saved!":"Data saved!",
+    "Group":"Group"
 
     
 

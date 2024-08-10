@@ -54,12 +54,26 @@
     "_on":"דלוק",
     "_off":"כבוי",
     "months_filter":"סנון לפי מספר חודשים",
-    "Search Groop":"חפש קבוצה"
+    "Search Groop":"חפש קבוצה",
+    "Nissan":"ניסן",
+    "Iyar":"אייר",
+    "Sivan":"סיוון",
+    "Tammuz":"תמוז",
+    "Av":"אב",
+    "Elul":"אלול",
+    "Tishrei":"תשרי",
+    "Cheshvan":"חשוון",
+    "Kislev":"כסלו",
+    "Teves":"טבת",
+    "Shevat":"שבט",
+    "Adar":"אדר",
+    "Adar I":"אדר א",
+    "Adar II":"אדר ב",
+    "Please enter a valid day between 1 and 31":"בבקשה להכניס ערך חוקי בין 1-31",
+    "Data saved!":"...הנתונים נשמרו",
+    "Group":"קבוצה"
 
-     
-    
 
-    
 
 
   }

@@ -653,25 +653,62 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   final YahrtzeitsManager manager = YahrtzeitsManager();
+  
   List<YahrtzeitDate> filteredYahrtzeitDates = [];
   List<String> groups = [];
   String searchQuery = '';
 
-  static const Map<int, String> hebrewMonths = {
-    JewishDate.TISHREI: 'Tishrei',
-    JewishDate.CHESHVAN: 'Cheshvan',
-    JewishDate.KISLEV: 'Kislev',
-    JewishDate.TEVES: 'Teves',
-    JewishDate.SHEVAT: 'Shevat',
-    JewishDate.ADAR: 'Adar',
-    JewishDate.ADAR_II: 'Adar II',
-    JewishDate.NISSAN: 'Nissan',
-    JewishDate.IYAR: 'Iyar',
-    JewishDate.SIVAN: 'Sivan',
-    JewishDate.TAMMUZ: 'Tammuz',
-    JewishDate.AV: 'Av',
-    JewishDate.ELUL: 'Elul',
+  // static const Map<int, String> hebrewMonths = {
+  //   JewishDate.TISHREI: 'Tishrei',
+  //   JewishDate.CHESHVAN: 'Cheshvan',
+  //   JewishDate.KISLEV: 'Kislev',
+  //   JewishDate.TEVES: 'Teves',
+  //   JewishDate.SHEVAT: 'Shevat',
+  //   JewishDate.ADAR: 'Adar',
+  //   JewishDate.ADAR_II: 'Adar II',
+  //   JewishDate.NISSAN: 'Nissan',
+  //   JewishDate.IYAR: 'Iyar',
+  //   JewishDate.SIVAN: 'Sivan',
+  //   JewishDate.TAMMUZ: 'Tammuz',
+  //   JewishDate.AV: 'Av',
+  //   JewishDate.ELUL: 'Elul',
+  // };
+  // static const Map<int, String> englishMonths = {
+  //   1: 'Nissan',
+  //   2: 'Iyar',
+  //   3: 'Sivan',
+  //   4: 'Tammuz',
+  //   5: 'Av',
+  //   6: 'Elul',
+  //   7: 'Tishrei',
+  //   8: 'Cheshvan',
+  //   9: 'Kislev',
+  //   10: 'Teves',
+  //   11: 'Shevat',
+  //   12: 'Adar',
+  //   13: 'Adar I',  
+  //   14: 'Adar II',
+  // };
+
+Map<int, String> getMonths(BuildContext context) {
+  return {
+    1: AppLocalizations.of(context)!.translate('Tishrei'),
+    2: AppLocalizations.of(context)!.translate('Cheshvan'),
+    3: AppLocalizations.of(context)!.translate('Kislev'),
+    4: AppLocalizations.of(context)!.translate('Teves'),
+    5: AppLocalizations.of(context)!.translate('Shevat'),
+    6: AppLocalizations.of(context)!.translate('Adar'),
+    7: AppLocalizations.of(context)!.translate('Adar I'),
+    8: AppLocalizations.of(context)!.translate('Adar II'),
+    9: AppLocalizations.of(context)!.translate('Nissan'),
+    10: AppLocalizations.of(context)!.translate('Iyar'),
+    11: AppLocalizations.of(context)!.translate('Sivan'),
+    12: AppLocalizations.of(context)!.translate('Tammuz'),
+    13: AppLocalizations.of(context)!.translate('Av'),
+    14: AppLocalizations.of(context)!.translate('Elul'),
   };
+}
+
 
   @override
   void initState() {
@@ -750,8 +787,19 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   }
 
   String _getEnglishMonthName(int month) {
-    return hebrewMonths[month] ?? '';
+    final months = getMonths(context); 
+    
+  if (month == 6 || month == 8) {
+    return months['Adar'] ?? '';
   }
+
+  if (month == 7) {
+    return months['Adar_I'] ?? '';
+  }
+
+    return months[month] ?? ''; 
+  }
+
 
   Future<void> _editYahrtzeit(Yahrtzeit yahrtzeit) async {
     try {
