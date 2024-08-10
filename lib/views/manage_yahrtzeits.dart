@@ -673,7 +673,7 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
                   ),
                 ),
                 child: Text(
-                  'Sync with calendar',
+                  'Sync with Calendar',
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),
