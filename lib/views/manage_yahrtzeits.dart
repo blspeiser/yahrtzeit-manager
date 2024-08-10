@@ -366,6 +366,11 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
 
     Share.share(shareText); // שימוש בחבילת השיתוף לשיתוף הטקסט
   }
+
+  bool _isChecked = false;
+
+  final List<String> _option = ['select all', 'diselect all'];
+
   String _createICSContent(List<Yahrtzeit> yahrtzeits) {
     final buffer = StringBuffer();
 
@@ -439,8 +444,6 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
 
     Share.shareFiles([filePath], text: 'Yahrtzeit Calendar');
   }
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -543,13 +546,33 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.all(5),
+                      ),
                       onPressed: _selectAll,
-                      child: Text('Select All'),
+                      child: Text('Select All',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[800],
+                              fontWeight: FontWeight.bold)),
                     ),
                     SizedBox(width: 8),
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.all(5),
+                      ),
                       onPressed: _deselectAll,
-                      child: Text('Deselect All'),
+                      child: Text('Deselect All',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[800],
+                              fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
