@@ -257,177 +257,172 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
         : englishMonths[month] ?? '';
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).requestFocus(new FocusNode());
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.isEditing ? 'Edit Yahrtzeit' : 'Add Yahrtzeit',
-            style: TextStyle(color: Colors.white),
-          ),
-          centerTitle: true,
-          backgroundColor: Colors.grey[600],
-          elevation: 0,
-          actionsIconTheme: IconThemeData(color: Colors.white),
+
+@override
+Widget build(BuildContext context) {
+  return GestureDetector(
+    onTap: () {
+      FocusScope.of(context).requestFocus(new FocusNode());
+    },
+    child: Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.isEditing ? 'Edit Yahrtzeit' : 'Add Yahrtzeit',
+          style: TextStyle(color: Colors.white),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: <Widget>[
-                TextFormField(
-                  controller: _englishNameController,
-                  decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!
-                          .translate('English Name')),
-                  validator: (value) {
-                    if (widget.language == 'en' &&
-                        (value == null || value.isEmpty)) {
-                      return 'Please enter English name';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  onTap: () {
-                    FocusScope.of(context).requestFocus(_focusNode);
-                  },
-                  controller: _hebrewNameController,
-                  focusNode: _focusNode,
-                  readOnly: true,
-                  decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!
-                          .translate('Hebrew Name')),
-                  validator: (value) {
-                    if (widget.language == 'he' &&
-                        (value == null || value.isEmpty)) {
-                      return 'Please enter Hebrew name';
-                    }
-                    return null;
-                  },
-                ),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: widget.language == 'he'
-                          ? DropdownButtonFormField<int>(
-                              decoration: InputDecoration(
-                                  labelText: AppLocalizations.of(context)!
-                                      .translate('day')),
-                              value: _selectedDay,
-                              items: hebrewDays.asMap().entries.map((entry) {
-                                return DropdownMenuItem<int>(
-                                  value: entry.key + 1,
-                                  child: Text(entry.value),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedDay = value;
-                                });
-                              },
-                            )
-                          : DropdownButtonFormField<int>(
-                              decoration: InputDecoration(
-                                  labelText: AppLocalizations.of(context)!
-                                      .translate('day')),
-                              value: _selectedDay,
-                              items: List.generate(31, (index) => index + 1)
-                                  .map((day) {
-                                return DropdownMenuItem<int>(
-                                  value: day,
-                                  child: Text(
-                                      day.toString()), // תצוגה של מספר באנגלית
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedDay = value;
-                                });
-                              },
-                            ),
-                    ),
-                    SizedBox(width: 16), // Add spacing between the fields
-                    Expanded(
-                      child: DropdownButtonFormField<int>(
-                        decoration: InputDecoration(
-                            labelText: AppLocalizations.of(context)!
-                                .translate('month')),
-                        value: _selectedMonth,
-                        items: hebrewMonths.entries.map((entry) {
-                          return DropdownMenuItem<int>(
-                            value: entry.key,
-                            child: Text(entry.value),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedMonth = value;
-                          });
-                        },
-                        validator: (value) {
-                          return null;
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-
-                TextFormField(
-                  controller: _groupController,
-                  decoration: InputDecoration(
-                      labelText:
-                          AppLocalizations.of(context)!.translate('Group')),
-                ),
-                SizedBox(height: 30), // Add spacing between the fields
-                ElevatedButton(
-                  onPressed: _submitForm,
-                  child: Text(
-                      widget.isEditing ? 'Update Yahrtzeit' : 'Add Yahrtzeit',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20)),
-                ),
-                SizedBox(
-                  height: 60,
-                ),
-
-                if (_showCustomKeyboard)
+        centerTitle: true,
+        backgroundColor: Colors.grey[600],
+        elevation: 0,
+        actionsIconTheme: IconThemeData(color: Colors.white),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: <Widget>[
+              TextFormField(
+                controller: _englishNameController,
+                decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!
+                        .translate('English Name')),
+                validator: (value) {
+                  if (widget.language == 'en' &&
+                      (value == null || value.isEmpty)) {
+                    return 'Please enter English name';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                onTap: () {
+                  FocusScope.of(context).requestFocus(_focusNode);
+                },
+                controller: _hebrewNameController,
+                focusNode: _focusNode,
+                readOnly: true,
+                decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)!
+                        .translate('Hebrew Name')),
+                validator: (value) {
+                  if (widget.language == 'he' &&
+                      (value == null || value.isEmpty)) {
+                    return 'Please enter Hebrew name';
+                  }
+                  return null;
+                },
+              ),
+              Row(
+                children: [
                   Expanded(
-                    child: KeyboardLayout(
-                      layoutType: _currentLanguage,
-                      onKeyPressed: (key) {
+                    child: widget.language == 'he'
+                        ? DropdownButtonFormField<int>(
+                            decoration: InputDecoration(
+                                labelText: AppLocalizations.of(context)!
+                                    .translate('day')),
+                            value: _selectedDay,
+                            items: hebrewDays.asMap().entries.map((entry) {
+                              return DropdownMenuItem<int>(
+                                value: entry.key + 1,
+                                child: Text(entry.value),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedDay = value;
+                              });
+                            },
+                          )
+                        : DropdownButtonFormField<int>(
+                            decoration: InputDecoration(
+                                labelText: AppLocalizations.of(context)!
+                                    .translate('day')),
+                            value: _selectedDay,
+                            items: List.generate(31, (index) => index + 1)
+                                .map((day) {
+                              return DropdownMenuItem<int>(
+                                value: day,
+                                child: Text(
+                                    day.toString()), // תצוגה של מספר באנגלית
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedDay = value;
+                              });
+                            },
+                          ),
+                  ),
+                  SizedBox(width: 16), // Add spacing between the fields
+                  Expanded(
+                    child: DropdownButtonFormField<int>(
+                      decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context)!
+                              .translate('month')),
+                      value: _selectedMonth,
+                      items: hebrewMonths.entries.map((entry) {
+                        return DropdownMenuItem<int>(
+                          value: entry.key,
+                          child: Text(entry.value),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
                         setState(() {
-                          if (key == 'DEL') {
-                            if (_hebrewNameController.text.isNotEmpty) {
-                              _hebrewNameController.text =
-                                  _hebrewNameController.text.substring(
-                                      0, _hebrewNameController.text.length - 1);
-                            }
-                          } else if (key == 'Lang') {
-                            _currentLanguage =
-                                _currentLanguage == KeyboardLayoutType.English
-                                    ? KeyboardLayoutType.Hebrew
-                                    : KeyboardLayoutType.English;
-                          } else {
-                            _hebrewNameController.text += key;
-                          }
+                          _selectedMonth = value;
                         });
+                      },
+                      validator: (value) {
+                        return null;
                       },
                     ),
                   ),
-              ],
-            ),
+                ],
+              ),
+              TextFormField(
+                controller: _groupController,
+                decoration: InputDecoration(
+                    labelText:
+                        AppLocalizations.of(context)!.translate('Group')),
+              ),
+              SizedBox(height: 30), // Add spacing between the fields
+              ElevatedButton(
+                onPressed: _submitForm,
+                child: Text(
+                    widget.isEditing ? 'Update Yahrtzeit' : 'Add Yahrtzeit',
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20)),
+              ),
+              // Spacer to push the keyboard to the bottom of the screen
+              Spacer(),
+              if (_showCustomKeyboard)
+                KeyboardLayout(
+                  layoutType: _currentLanguage,
+                  onKeyPressed: (key) {
+                    setState(() {
+                      if (key == 'DEL') {
+                        if (_hebrewNameController.text.isNotEmpty) {
+                          _hebrewNameController.text =
+                              _hebrewNameController.text.substring(
+                                  0, _hebrewNameController.text.length - 1);
+                        }
+                      } else if (key == 'Lang') {
+                        _currentLanguage =
+                            _currentLanguage == KeyboardLayoutType.English
+                                ? KeyboardLayoutType.Hebrew
+                                : KeyboardLayoutType.English;
+                      } else {
+                        _hebrewNameController.text += key;
+                      }
+                    });
+                  },
+                ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

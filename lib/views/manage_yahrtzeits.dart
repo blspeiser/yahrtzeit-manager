@@ -418,6 +418,41 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
     return buffer.toString();
   }
 
+  
+//   String _createICSContent(List<Yahrtzeit> yahrtzeits) {
+//   final buffer = StringBuffer();
+
+//   buffer.writeln("BEGIN:VCALENDAR");
+//   buffer.writeln("VERSION:2.0");
+//   buffer.writeln("PRODID:-//YourApp//Yahrtzeit Manager//EN");
+
+//   for (var yahrtzeit in yahrtzeits) {
+//     try {
+//       // השתמש בתאריך הנוכחי
+//       final now = DateTime.now().toUtc();
+
+//       final start = DateFormat("yyyyMMdd'T'HHmmss'Z'").format(now);
+//       final end = DateFormat("yyyyMMdd'T'HHmmss'Z'")
+//           .format(now.add(Duration(days: 1)));
+
+//       buffer.writeln("BEGIN:VEVENT");
+//       buffer.writeln("UID:${yahrtzeit.id}");
+//       buffer.writeln("SUMMARY:${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
+//       buffer.writeln("DTSTART:$start");
+//       buffer.writeln("DTEND:$end");
+//       buffer.writeln("DESCRIPTION:Yahrtzeit for ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
+//       buffer.writeln("END:VEVENT");
+//     } catch (e) {
+//       print("Error with Yahrtzeit: ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}, Error: $e");
+//       // ניתן להוסיף כאן הודעה אם יש שגיאה
+//     }
+//   }
+
+//   buffer.writeln("END:VCALENDAR");
+
+//   return buffer.toString();
+// }
+
   Future<void> _shareICSFile() async {
     final selected = filteredYahrtzeits
         .where((yahrtzeit) => selectedYahrtzeits[yahrtzeit.id] == true)
