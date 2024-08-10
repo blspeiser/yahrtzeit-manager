@@ -929,8 +929,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 DropdownMenuItem(
                   value: 'he',
-                  child:
-                      Text(AppLocalizations.of(context)!.translate('Hebrew')),
+                  child: Text( AppLocalizations.of(context)!.translate('עברית')),
+
                 ),
               ],
               onChanged: (value) {
@@ -943,6 +943,9 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             // AppLocalizations.of(context)!.translate('settings')
             // title: Text('Sync: ${_syncSettings ? 'on' : 'off'}'),
+
+
+
             title: Text(AppLocalizations.of(context)!.translate('Sync')),
             trailing: Switch(
               value: _syncSettings,

@@ -39,6 +39,30 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
     });
   }
 
+//   Future<void> fetchYahrtzeits() async {
+//     try {
+//       final yahrtzeits = await manager.getAllYahrtzeits();
+//       print('Fetched yahrtzeits: ${yahrtzeits.length}');
+//       setState(() {
+//         yahrtzeitDates = manager.nextMultiple(yahrtzeits);
+//         filteredYahrtzeitDates =
+//             manager.filterUpcomingByMonths(yahrtzeitDates, _months);
+//         isLoading = false;
+//       });
+//     } catch (e) {
+//       print('Error fetching yahrtzeits: $e');
+//       setState(() {
+//         isLoading = false;
+//       });
+//     }
+//   }
+
+//   Future<void> fetchGroups() async {
+//     try {
+//       final fetchedGroups = await manager.getAllGroups();
+//       setState(() {
+//         groups = fetchedGroups;
+
   Future<void> fetchYahrtzeits() async {
     try {
       final yahrtzeits = await manager.getAllYahrtzeits();
@@ -108,6 +132,7 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
     return filteredList;
   }
 
+
   void _filterYahrtzeits(String? query) {
     setState(() {
       if (query == null) {
@@ -156,6 +181,39 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
+                    
+//                     child: Autocomplete<String>(
+//                       optionsBuilder: (TextEditingValue textEditingValue) {
+//                         if (textEditingValue.text.isEmpty) {
+//                           return const Iterable<String>.empty();
+//                         }
+//                         return groups.where((String group) {
+//                           return group
+//                               .toLowerCase()
+//                               .contains(textEditingValue.text.toLowerCase());
+//                         });
+//                       },
+//                       onSelected: (String selection) {
+//                         _filterYahrtzeits(selection);
+//                       },
+//                       fieldViewBuilder: (BuildContext context,
+//                           TextEditingController textEditingController,
+//                           FocusNode focusNode,
+//                           VoidCallback onFieldSubmitted) {
+//                         return TextField(
+//                           controller: textEditingController,
+//                           focusNode: focusNode,
+//                           onChanged: _filterYahrtzeits,
+//                           decoration: InputDecoration(
+//                             labelText: AppLocalizations.of(context)!
+//                                   .translate('Search Groop'),
+//                             prefixIcon: Icon(Icons.search),
+//                             border: OutlineInputBorder(
+//                               borderRadius: BorderRadius.circular(8.0),
+//                             ),
+//                           ),
+//                         );
+//                       },
                     child: Row(
                       children: [
                         Expanded(
