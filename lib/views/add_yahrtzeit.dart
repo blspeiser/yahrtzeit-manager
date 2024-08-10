@@ -1,9 +1,11 @@
 import 'package:cambium_project/views/manage_yahrtzeits.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../home_page.dart';
 import '../localizations/app_localizations.dart';
 import '../models/yahrtzeit.dart';
+import '../services/keyboard_layouts.dart';
 import '../services/yahrtzeits_manager.dart';
 import 'package:kosher_dart/kosher_dart.dart';
 import 'dart:convert';
@@ -59,6 +61,10 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
   final _formKey = GlobalKey<FormState>();
   final _englishNameController = TextEditingController();
   final _hebrewNameController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  bool _showCustomKeyboard = false;
+  KeyboardLayoutType _currentLanguage = KeyboardLayoutType.Hebrew;
+
   final _groupController = TextEditingController();
   int? _selectedDay;
   int? _selectedMonth;
@@ -139,6 +145,19 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
       _groupController.text = widget.yahrtzeit!.group ?? '';
     }
     fetchGroups();
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) {
+        // הסתרת מקלדת ברירת המחדל
+        SystemChannels.textInput.invokeMethod('TextInput.hide');
+        setState(() {
+          _showCustomKeyboard = true;
+        });
+      } else {
+        setState(() {
+          _showCustomKeyboard = false;
+        });
+      }
+    });
   }
 
   Future<void> fetchGroups() async {
@@ -275,7 +294,12 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                   },
                 ),
                 TextFormField(
+                  onTap: () {
+                    FocusScope.of(context).requestFocus(_focusNode);
+                  },
                   controller: _hebrewNameController,
+                  focusNode: _focusNode,
+                  readOnly: true,
                   decoration: InputDecoration(
                       labelText: AppLocalizations.of(context)!
                           .translate('Hebrew Name')),
@@ -287,6 +311,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                     return null;
                   },
                 ),
+
                 Row(
                   children: [
                     Expanded(
@@ -370,6 +395,34 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                           fontWeight: FontWeight.bold,
                           fontSize: 20)),
                 ),
+                SizedBox(
+                  height: 60,
+                ),
+
+                if (_showCustomKeyboard)
+                  Expanded(
+                    child: KeyboardLayout(
+                      layoutType: _currentLanguage,
+                      onKeyPressed: (key) {
+                        setState(() {
+                          if (key == 'DEL') {
+                            if (_hebrewNameController.text.isNotEmpty) {
+                              _hebrewNameController.text =
+                                  _hebrewNameController.text.substring(
+                                      0, _hebrewNameController.text.length - 1);
+                            }
+                          } else if (key == 'Lang') {
+                            _currentLanguage =
+                                _currentLanguage == KeyboardLayoutType.English
+                                    ? KeyboardLayoutType.Hebrew
+                                    : KeyboardLayoutType.English;
+                          } else {
+                            _hebrewNameController.text += key;
+                          }
+                        });
+                      },
+                    ),
+                  ),
               ],
             ),
           ),

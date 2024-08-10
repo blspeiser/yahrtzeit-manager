@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'localizations/app_localizations.dart';
 import 'localizations/global_material_localizations.dart';
+import 'services/keyboard_layouts.dart';
 import 'services/notification_service.dart';
 import 'settings/settings.dart';
 import 'views/upcoming_yahrtzeits.dart';
@@ -43,6 +44,10 @@ class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {
   int years = 5;
   int days = 10;
   int months = 6;
+  // FocusNode _focusNode = FocusNode();
+  // TextEditingController _controller = TextEditingController();
+  // bool _showCustomKeyboard = false;
+  // KeyboardLayoutType _currentLanguage = KeyboardLayoutType.English;
 
   @override
   void initState() {
@@ -144,8 +149,7 @@ class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {
             primarySwatch: Colors.grey,
             visualDensity: VisualDensity.adaptivePlatformDensity,
             textTheme: TextTheme(
-              bodyLarge:
-                  TextStyle(color: Colors.black),
+              bodyLarge: TextStyle(color: Colors.black),
               bodyMedium: TextStyle(color: Colors.black54),
             ),
           ),
