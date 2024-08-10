@@ -371,87 +371,94 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
 
   final List<String> _option = ['select all', 'diselect all'];
 
-  String _createICSContent(List<Yahrtzeit> yahrtzeits) {
-    final buffer = StringBuffer();
+  // String _createICSContent(List<Yahrtzeit> yahrtzeits) {
+  //   final buffer = StringBuffer();
 
-    buffer.writeln("BEGIN:VCALENDAR");
-    buffer.writeln("VERSION:2.0");
-    buffer.writeln("PRODID:-//YourApp//Yahrtzeit Manager//EN");
+  //   buffer.writeln("BEGIN:VCALENDAR");
+  //   buffer.writeln("VERSION:2.0");
+  //   buffer.writeln("PRODID:-//YourApp//Yahrtzeit Manager//EN");
 
-    for (var yahrtzeit in yahrtzeits) {
-      try {
-        // נסה להמיר את התאריך היהודי לתאריך גרגוריאני
-        final jewishDate = JewishDate.initDate(
-          jewishYear: DateTime.now().year,
-          jewishMonth: yahrtzeit.month!,
-          jewishDayOfMonth: yahrtzeit.day!,
-        );
-        final gregorianDate = DateTime(
-          jewishDate.getGregorianYear(),
-          jewishDate.getGregorianMonth(),
-          jewishDate.getGregorianDayOfMonth(),
-        );
+  //   for (var yahrtzeit in yahrtzeits) {
+  //     try {
+  //       // נסה להמיר את התאריך היהודי לתאריך גרגוריאני
+  //       final jewishDate = JewishDate.initDate(
+  //         jewishYear: DateTime.now().year,
+  //         jewishMonth: yahrtzeit.month!,
+  //         jewishDayOfMonth: yahrtzeit.day!,
+  //       );
+  //       final gregorianDate = DateTime(
+  //         jewishDate.getGregorianYear(),
+  //         jewishDate.getGregorianMonth(),
+  //         jewishDate.getGregorianDayOfMonth(),
+  //       );
 
-        final start =
-            DateFormat("yyyyMMdd'T'HHmmss'Z'").format(gregorianDate.toUtc());
-        final end = DateFormat("yyyyMMdd'T'HHmmss'Z'")
-            .format(gregorianDate.add(Duration(days: 1)).toUtc());
+  //       final start =
+  //           DateFormat("yyyyMMdd'T'HHmmss'Z'").format(gregorianDate.toUtc());
+  //       final end = DateFormat("yyyyMMdd'T'HHmmss'Z'")
+  //           .format(gregorianDate.add(Duration(days: 1)).toUtc());
 
-        buffer.writeln("BEGIN:VEVENT");
-        buffer.writeln("UID:${yahrtzeit.id}");
-        buffer.writeln(
-            "SUMMARY:${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
-        buffer.writeln("DTSTART:$start");
-        buffer.writeln("DTEND:$end");
-        buffer.writeln(
-            "DESCRIPTION:Yahrtzeit for ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
-        buffer.writeln("END:VEVENT");
-      } catch (e) {
-        print(
-            "Error with Yahrtzeit: ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}, Error: $e");
-        // ניתן להוסיף כאן הודעה אם יש תאריך לא תקין כדי להתריע
-      }
-    }
+  //       buffer.writeln("BEGIN:VEVENT");
+  //       buffer.writeln("UID:${yahrtzeit.id}");
+  //       buffer.writeln(
+  //           "SUMMARY:${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
+  //       buffer.writeln("DTSTART:$start");
+  //       buffer.writeln("DTEND:$end");
+  //       buffer.writeln(
+  //           "DESCRIPTION:Yahrtzeit for ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
+  //       buffer.writeln("END:VEVENT");
+  //     } catch (e) {
+  //       print(
+  //           "Error with Yahrtzeit: ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}, Error: $e");
+  //       // ניתן להוסיף כאן הודעה אם יש תאריך לא תקין כדי להתריע
+  //     }
+  //   }
 
-    buffer.writeln("END:VCALENDAR");
+  //   buffer.writeln("END:VCALENDAR");
 
-    return buffer.toString();
-  }
+  //   return buffer.toString();
+  // }
 
   
-//   String _createICSContent(List<Yahrtzeit> yahrtzeits) {
-//   final buffer = StringBuffer();
+  String _createICSContent(List<Yahrtzeit> yahrtzeits) {
+  final buffer = StringBuffer();
 
-//   buffer.writeln("BEGIN:VCALENDAR");
-//   buffer.writeln("VERSION:2.0");
-//   buffer.writeln("PRODID:-//YourApp//Yahrtzeit Manager//EN");
+  buffer.writeln("BEGIN:VCALENDAR");
+  buffer.writeln("VERSION:2.0");
+  buffer.writeln("PRODID:-//YourApp//Yahrtzeit Manager//EN");
 
-//   for (var yahrtzeit in yahrtzeits) {
-//     try {
-//       // השתמש בתאריך הנוכחי
-//       final now = DateTime.now().toUtc();
+  for (var yahrtzeit in yahrtzeits) {
+    try {
+      // השתמש בתאריך הנוכחי
+      // final now = DateTime.now().toUtc();
+      int year = JewishDate().getJewishYear();
+      final jewishDate = JewishDate.initDate(
+        jewishYear: year,
+        jewishMonth: yahrtzeit.month!,
+        jewishDayOfMonth: yahrtzeit.day!,
+      );
+      final now = DateTime(jewishDate.getGregorianYear(), jewishDate.getGregorianMonth(), jewishDate.getGregorianDayOfMonth());
 
-//       final start = DateFormat("yyyyMMdd'T'HHmmss'Z'").format(now);
-//       final end = DateFormat("yyyyMMdd'T'HHmmss'Z'")
-//           .format(now.add(Duration(days: 1)));
+      final start = DateFormat("yyyyMMdd'T'HHmmss'Z'").format(now);
+      final end = DateFormat("yyyyMMdd'T'HHmmss'Z'")
+          .format(now.add(Duration(hours: 2)));
 
-//       buffer.writeln("BEGIN:VEVENT");
-//       buffer.writeln("UID:${yahrtzeit.id}");
-//       buffer.writeln("SUMMARY:${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
-//       buffer.writeln("DTSTART:$start");
-//       buffer.writeln("DTEND:$end");
-//       buffer.writeln("DESCRIPTION:Yahrtzeit for ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
-//       buffer.writeln("END:VEVENT");
-//     } catch (e) {
-//       print("Error with Yahrtzeit: ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}, Error: $e");
-//       // ניתן להוסיף כאן הודעה אם יש שגיאה
-//     }
-//   }
+      buffer.writeln("BEGIN:VEVENT");
+      buffer.writeln("UID:${yahrtzeit.id}");
+      buffer.writeln("SUMMARY:${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
+      buffer.writeln("DTSTART:$start");
+      buffer.writeln("DTEND:$end");
+      buffer.writeln("DESCRIPTION:Yahrtzeit for ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
+      buffer.writeln("END:VEVENT");
+    } catch (e) {
+      print("Error with Yahrtzeit: ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}, Error: $e");
+      // ניתן להוסיף כאן הודעה אם יש שגיאה
+    }
+  }
 
-//   buffer.writeln("END:VCALENDAR");
+  buffer.writeln("END:VCALENDAR");
 
-//   return buffer.toString();
-// }
+  return buffer.toString();
+}
 
   Future<void> _shareICSFile() async {
     final selected = filteredYahrtzeits
@@ -528,10 +535,10 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
             icon: Icon(Icons.share, color: Colors.white),
             onPressed: _shareICSFile,
           ),
-          IconButton(
-            icon: Icon(Icons.info, color: Colors.white),
-            onPressed: () {},
-          ),
+          // IconButton(
+          //   icon: Icon(Icons.info, color: Colors.white),
+          //   onPressed: () {},
+          // ),
         ],
       ),
       body: isLoading
