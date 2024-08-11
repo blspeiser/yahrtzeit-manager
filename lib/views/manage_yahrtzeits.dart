@@ -1,6 +1,5 @@
 
 import 'package:cambium_project/services/yahrtzeits_manager.dart';
-
 import 'dart:io';
 import 'package:cambium_project/views/upcoming_yahrtzeits.dart';
 import 'package:flutter/material.dart';
@@ -404,53 +403,6 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
   bool _isChecked = false;
 
   final List<String> _option = ['select all', 'diselect all'];
-
-  // String _createICSContent(List<Yahrtzeit> yahrtzeits) {
-  //   final buffer = StringBuffer();
-
-  //   buffer.writeln("BEGIN:VCALENDAR");
-  //   buffer.writeln("VERSION:2.0");
-  //   buffer.writeln("PRODID:-//YourApp//Yahrtzeit Manager//EN");
-
-  //   for (var yahrtzeit in yahrtzeits) {
-  //     try {
-  //       // נסה להמיר את התאריך היהודי לתאריך גרגוריאני
-  //       final jewishDate = JewishDate.initDate(
-  //         jewishYear: DateTime.now().year,
-  //         jewishMonth: yahrtzeit.month!,
-  //         jewishDayOfMonth: yahrtzeit.day!,
-  //       );
-  //       final gregorianDate = DateTime(
-  //         jewishDate.getGregorianYear(),
-  //         jewishDate.getGregorianMonth(),
-  //         jewishDate.getGregorianDayOfMonth(),
-  //       );
-
-  //       final start =
-  //           DateFormat("yyyyMMdd'T'HHmmss'Z'").format(gregorianDate.toUtc());
-  //       final end = DateFormat("yyyyMMdd'T'HHmmss'Z'")
-  //           .format(gregorianDate.add(Duration(days: 1)).toUtc());
-
-  //       buffer.writeln("BEGIN:VEVENT");
-  //       buffer.writeln("UID:${yahrtzeit.id}");
-  //       buffer.writeln(
-  //           "SUMMARY:${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
-  //       buffer.writeln("DTSTART:$start");
-  //       buffer.writeln("DTEND:$end");
-  //       buffer.writeln(
-  //           "DESCRIPTION:Yahrtzeit for ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
-  //       buffer.writeln("END:VEVENT");
-  //     } catch (e) {
-  //       print(
-  //           "Error with Yahrtzeit: ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}, Error: $e");
-  //       // ניתן להוסיף כאן הודעה אם יש תאריך לא תקין כדי להתריע
-  //     }
-  //   }
-
-  //   buffer.writeln("END:VCALENDAR");
-
-  //   return buffer.toString();
-  // }
 
   
   String _createICSContent(List<Yahrtzeit> yahrtzeits) {
