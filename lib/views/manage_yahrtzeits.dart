@@ -380,7 +380,7 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
     if (selected.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('No Yahrtzeits selected for sharing'),
+          content: Text(AppLocalizations.of(context)!.translate('No Yahrtzeits selected for sharing')),
         ),
       );
       return;
@@ -494,7 +494,7 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
     if (selected.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('No Yahrtzeits selected for sharing'),
+          content: Text(AppLocalizations.of(context)!.translate('No Yahrtzeits selected for sharing')),
         ),
       );
       return;
@@ -575,7 +575,7 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
                   padding: const EdgeInsets.all(16.0),
                   child: DropdownButton<String>(
                             isExpanded: true,
-                            hint: Text('בחר קבוצה'),
+                            hint: Text(AppLocalizations.of(context)!.translate('Select Group')),
                             value: searchQuery.isEmpty ? null : searchQuery,
                             onChanged: (String? newValue) {
                               setState(() {
@@ -594,11 +594,11 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
                             items: [
                               DropdownMenuItem<String>(
                                 value: '',
-                                child: Text('ללא סינון'),
+                                child: Text(AppLocalizations.of(context)!.translate('Without Filtering')),
                               ),
                               DropdownMenuItem<String>(
                                 value: 'ללא קבוצה',
-                                child: Text('ללא קבוצה'),
+                                child: Text(AppLocalizations.of(context)!.translate('Without Group')),
                               ),
                               ...groups.map<DropdownMenuItem<String>>(
                                   (String value) {
@@ -621,7 +621,7 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
                         padding: EdgeInsets.all(5),
                       ),
                       onPressed: _selectAll,
-                      child: Text('Select All',
+                      child: Text(AppLocalizations.of(context)!.translate('Select All'),
                           style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[800],
@@ -636,7 +636,7 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
                         padding: EdgeInsets.all(5),
                       ),
                       onPressed: _deselectAll,
-                      child: Text('Deselect All',
+                      child: Text(AppLocalizations.of(context)!.translate('Deselect All'),
                           style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[800],
@@ -722,14 +722,14 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
                     manager.onSyncButtonPressed(yahrtzeits, widget.yearsToSync);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Sync successful'),
+                        content: Text(AppLocalizations.of(context)!.translate('Sync successful')),
                       ),
                     );
                   } catch (e) {
                     print('Sync failed: $e');
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Sync failed'),
+                        content: Text(AppLocalizations.of(context)!.translate('Sync failed')),
                       ),
                     );
                   }
@@ -741,7 +741,8 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
                   ),
                 ),
                 child: Text(
-                  'Sync with Calendar',
+                  AppLocalizations.of(context)!.translate(
+                  'Sync with Calendar'),
                   style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),

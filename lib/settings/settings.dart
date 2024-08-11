@@ -918,7 +918,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           ListTile(
             title: Text(
-                AppLocalizations.of(context)!.translate('jewish_language')),
+                AppLocalizations.of(context)!.translate('Jewish language')),
             trailing: DropdownButton<String>(
               value: _jewishLanguage,
               items: [
@@ -960,7 +960,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           if (_syncSettings)
             ListTile(
-              title: Text(AppLocalizations.of(context)!.translate('years')),
+              title: Text(AppLocalizations.of(context)!.translate('Years')),
               trailing: DropdownButton<int>(
                 value: _years,
                 items: List.generate(10, (index) => index + 1).map((int value) {
@@ -995,7 +995,7 @@ class _SettingsPageState extends State<SettingsPage> {
             if (_notifications)
               ListTile(
                 title: Text(
-                    AppLocalizations.of(context)!.translate('days_before')),
+                    AppLocalizations.of(context)!.translate('Days_Before')),
                 trailing: DropdownButton<int>(
                   value: _days,
                   items:

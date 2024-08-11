@@ -22,9 +22,9 @@
     "Groups":"קבוצות",
     "Jewish Name":"שם עיברי",
     "Full Name":"שם מלא ",
-    "days_before":"מספר ימים לפני קבלת ההתראה",
-    "years":"שנים",
-    "jewish_language":"שפה יהודית",
+    "Days_Before":"מספר ימים לפני קבלת ההתראה",
+    "Years":"שנים",
+    "Jewish language":"שפה יהודית",
     "calendar_settings":"הגדרות לוח",
     "Google Calendar":"לוח גוגל",
     "Device Calendar":"יומן הפלאפון",
@@ -71,7 +71,23 @@
     "Adar II":"אדר ב",
     "Please enter a valid day between 1 and 31":"בבקשה להכניס ערך חוקי בין 1-31",
     "Data saved!":"...הנתונים נשמרו",
-    "Group":"קבוצה"
+    "Group":"קבוצה",
+    "No Yahrtzeits selected for sharing":"לא בחרת יארצייט לשיתוף",
+    "Select Group":"בחר קבוצה",
+    "Without Group":"ללא קבוצה",
+    "Without Filtering":"ללא סינון",
+    "Select All":"בחר הכל",
+    "Deselect All":"בטל את הבחירה בהכל",
+    "Sync successful":"הסינכרון הצליח",
+    "Sync failed":"הסינכרון נכשל",
+    "Sync with Calendar":"Google לסינכרון עם לוח",
+    "_Select Groop":"בחר קבוצה",
+    "WithoutFiltering":"ללא סינון",
+    "WithoutGroup":"ללא קבוצה",
+    "SelectMonth":"בחר מספר חודש/ים",
+    "months":"חודשים"
+
+
 
 
 

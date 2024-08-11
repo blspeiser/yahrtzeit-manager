@@ -22,10 +22,10 @@
     "Groups":"Groups",
     "Jewish Name":"Jewish Name",
     "Full Name":"Full Name",
-    "days_before":"days_before",
-    "years":"years",
-    "jewish_language":"jewish_language",
-    "calendar_settings":"calendar_settings",
+    "Days_Before":"Days_Before",
+    "Years":"Years",
+    "Jewish language":"Jewish language",
+    "calendar_settings":"Calendar Settings",
     "Google Calendar":"Google Calendar",
     "Device Calendar":"Device Calendar",
     "Select Month":"Select Month",
@@ -38,8 +38,8 @@
     "off":"off",
     "Notifications":"Notifications",
     "you_have_not_added_any_yahrtzeits_yet":"you_have_not_added_any_yahrtzeits_yet",
-    "no_upcoming_yahrtzeits_found":"no_upcoming_yahrtzeits_found",
-    "Tishrei":"Tishrei",
+    "no_upcoming_yahrtzeits_found":"No Upcoming Yahrtzeits Found",
+   
     "day":"day",
     "month":"month",
     "Group Name":"Group Name",
@@ -71,7 +71,21 @@
     "Adar II":"Adar II",
     "Please enter a valid day between 1 and 31":"Please enter a valid day between 1 and 31",
     "Data saved!":"Data saved!",
-    "Group":"Group"
+    "Group":"Group",
+    "No Yahrtzeits selected for sharing":"No Yahrtzeits selected for sharing",
+    "Select Group":"Select Group",
+    "Without Group":"Without Group",
+    "Without Filtering":"Without Filtering",
+    "Select All":"Select All",
+    "Deselect All":"Deselect All",
+    "Sync successful":"Sync successful",
+    "Sync failed":"Sync failed",
+    "Sync with Calendar":"Sync with Calendar",
+    "_Select Groop":"Select Groop",
+    "WithoutFiltering":"Without Filtering",
+    "WithoutGroup":"Without Group",
+    "SelectMonth":"Select Num Of Month",
+    "months":"Months:"
 
     
 
