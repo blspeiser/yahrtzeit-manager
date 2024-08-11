@@ -75,22 +75,41 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
 
   Map<int, String> getMonths(BuildContext context) {
   return {
-    1: AppLocalizations.of(context)!.translate('Tishrei'),
-    2: AppLocalizations.of(context)!.translate('Cheshvan'),
-    3: AppLocalizations.of(context)!.translate('Kislev'),
-    4: AppLocalizations.of(context)!.translate('Teves'),
-    5: AppLocalizations.of(context)!.translate('Shevat'),
-    6: AppLocalizations.of(context)!.translate('Adar'),
-    7: AppLocalizations.of(context)!.translate('Adar I'),
-    8: AppLocalizations.of(context)!.translate('Adar II'),
-    9: AppLocalizations.of(context)!.translate('Nissan'),
-    10: AppLocalizations.of(context)!.translate('Iyar'),
-    11: AppLocalizations.of(context)!.translate('Sivan'),
-    12: AppLocalizations.of(context)!.translate('Tammuz'),
-    13: AppLocalizations.of(context)!.translate('Av'),
-    14: AppLocalizations.of(context)!.translate('Elul'),
+    7: AppLocalizations.of(context)!.translate('Tishrei'),
+    8: AppLocalizations.of(context)!.translate('Cheshvan'),
+    9: AppLocalizations.of(context)!.translate('Kislev'),
+    10: AppLocalizations.of(context)!.translate('Teves'),
+    11: AppLocalizations.of(context)!.translate('Shevat'),
+    12: AppLocalizations.of(context)!.translate('Adar'),
+    13: AppLocalizations.of(context)!.translate('Adar I'),
+    14: AppLocalizations.of(context)!.translate('Adar II'),
+    1: AppLocalizations.of(context)!.translate('Nissan'),
+    2: AppLocalizations.of(context)!.translate('Iyar'),
+    3: AppLocalizations.of(context)!.translate('Sivan'),
+    4: AppLocalizations.of(context)!.translate('Tammuz'),
+    5: AppLocalizations.of(context)!.translate('Av'),
+    6: AppLocalizations.of(context)!.translate('Elul'),
   };
 }
+
+// Map<int, String> getMonths(BuildContext context) {
+//   return {
+//     7: AppLocalizations.of(context)!.translate('Tishrei'),
+//     8: AppLocalizations.of(context)!.translate('Cheshvan'),
+//     9: AppLocalizations.of(context)!.translate('Kislev'),
+//     10: AppLocalizations.of(context)!.translate('Teves'),
+//     11: AppLocalizations.of(context)!.translate('Shevat'),
+//     12: AppLocalizations.of(context)!.translate('Adar'),
+//     13: AppLocalizations.of(context)!.translate('Adar I'),
+//     14: AppLocalizations.of(context)!.translate('Adar II'),
+//     1: AppLocalizations.of(context)!.translate('Nissan'),
+//     2: AppLocalizations.of(context)!.translate('Iyar'),
+//     3: AppLocalizations.of(context)!.translate('Sivan'),
+//     4: AppLocalizations.of(context)!.translate('Tammuz'),
+//     5: AppLocalizations.of(context)!.translate('Av'),
+//     6: AppLocalizations.of(context)!.translate('Elul'),
+//   };
+// }
 
 static const List<String> hebrewDays = [
 
