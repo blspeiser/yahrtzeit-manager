@@ -1,3 +1,6 @@
+
+import 'package:cambium_project/services/yahrtzeits_manager.dart';
+
 import 'dart:io';
 import 'package:cambium_project/views/upcoming_yahrtzeits.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +17,7 @@ import '../services/yahrtzeits_manager.dart';
 import '../widgets/format.dart';
 import 'add_yahrtzeit.dart';
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ManageYahrtzeits extends StatefulWidget {
   final int yearsToSync;
@@ -65,6 +69,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   // List<DateTime> _upcomingDates = [];
   bool isLoading = true;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+
   Map<String, bool> selectedYahrtzeits = {}; // מפת בחירה
     final YahrtzeitsManager manager = YahrtzeitsManager();
   final UpcomingYahrtzeits u = UpcomingYahrtzeits();
@@ -73,21 +78,27 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   String searchQuery = '';
   String? selectedGroup;
 
-  static const Map<int, String> hebrewMonths = {
-    JewishDate.TISHREI: 'Tishrei',
-    JewishDate.CHESHVAN: 'Cheshvan',
-    JewishDate.KISLEV: 'Kislev',
-    JewishDate.TEVES: 'Teves',
-    JewishDate.SHEVAT: 'Shevat',
-    JewishDate.ADAR: 'Adar',
-    JewishDate.ADAR_II: 'Adar II',
-    JewishDate.NISSAN: 'Nissan',
-    JewishDate.IYAR: 'Iyar',
-    JewishDate.SIVAN: 'Sivan',
-    JewishDate.TAMMUZ: 'Tammuz',
-    JewishDate.AV: 'Av',
-    JewishDate.ELUL: 'Elul',
+
+Map<int, String> getMonths(BuildContext context) {
+  return {
+    1: AppLocalizations.of(context)!.translate('Tishrei'),
+    2: AppLocalizations.of(context)!.translate('Cheshvan'),
+    3: AppLocalizations.of(context)!.translate('Kislev'),
+    4: AppLocalizations.of(context)!.translate('Teves'),
+    5: AppLocalizations.of(context)!.translate('Shevat'),
+    6: AppLocalizations.of(context)!.translate('Adar'),
+    7: AppLocalizations.of(context)!.translate('Adar I'),
+    8: AppLocalizations.of(context)!.translate('Adar II'),
+    9: AppLocalizations.of(context)!.translate('Nissan'),
+    10: AppLocalizations.of(context)!.translate('Iyar'),
+    11: AppLocalizations.of(context)!.translate('Sivan'),
+    12: AppLocalizations.of(context)!.translate('Tammuz'),
+    13: AppLocalizations.of(context)!.translate('Av'),
+    14: AppLocalizations.of(context)!.translate('Elul'),
+ 
   };
+}
+
 
   @override
   void initState() {
@@ -121,6 +132,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       final fetchedYahrtzeits = await readData();
 
       setState(() {
+
         _yahrtzeits = fetchedYahrtzeits;
         filteredYahrtzeits = _yahrtzeits;
         isLoading = false;
@@ -128,6 +140,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_listKey.currentState != null) {
+
           for (var i = 0; i < filteredYahrtzeits.length; i++) {
             _listKey.currentState?.insertItem(i);
           }
@@ -140,6 +153,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       });
     }
   }
+
 
 
 List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
@@ -197,8 +211,19 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
   }
 
   String _getEnglishMonthName(int month) {
-    return hebrewMonths[month] ?? '';
+    final months = getMonths(context); 
+    
+  if (month == 6 || month == 8) {
+    return months['Adar'] ?? '';
   }
+
+  if (month == 7) {
+    return months['Adar_I'] ?? '';
+  }
+
+    return months[month] ?? ''; 
+  }
+
 
   Future<void> _editYahrtzeit(Yahrtzeit yahrtzeit) async {
     try {
@@ -327,6 +352,7 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
       },
     );
   }
+
 
   void _toggleSelection(String id) {
     setState(() {
@@ -500,6 +526,7 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
         actions: [
           IconButton(
             icon: Icon(Icons.add, color: Colors.white),
+
             onPressed: () async {
               final result = await Navigator.push(
                 context,
@@ -524,6 +551,7 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
                     changeMonths: widget.changeMonths,
                   ),
                 ),
+
               );
               if (result == true) {
                 fetchYahrtzeits();
@@ -698,21 +726,154 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
                       SnackBar(
                         content: Text('Sync successful'),
                       ),
-                    );
-                  } catch (e) {
-                    print('Sync failed: $e');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Sync failed'),
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey[600],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
+          ),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: widget.syncSettings
+          ? Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SizedBox(
+                height: 50,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    try {
+                      List<Yahrtzeit> yahrtzeits = await readData();
+                      manager.onSyncButtonPressed(
+                          yahrtzeits, widget.yearsToSync);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Sync successful'),
+                        ),
+                      );
+                    } catch (e) {
+                      print('Sync failed: $e');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Sync failed'),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[600],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
                   ),
+                  child: Text(
+                    'Sync with calendar',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+//                 ),
+//               ),
+//             )
+//           : null,
+//     );
+//   }
+
+//   Widget _buildYahrtzeitTile(YahrtzeitDate yahrtzeitDate) {
+//     String hebrewDate = _getHebrewDateString(yahrtzeitDate.hebrewDate);
+//     String englishDate = _getEnglishDateString(yahrtzeitDate.hebrewDate);
+
+//     // Check language preferences
+//     bool isBothEnglish =
+//         widget.language == 'en' && widget.jewishLanguage == 'en';
+//     bool isBothHebrew =
+//         widget.language == 'he' && widget.jewishLanguage == 'he';
+//     bool isEnglishAndHebrew =
+//         (widget.language == 'en' && widget.jewishLanguage == 'he') ||
+//             (widget.language == 'he' && widget.jewishLanguage == 'en');
+
+//     return Dismissible(
+//       key: Key(yahrtzeitDate.yahrtzeit.id.toString()),
+//       direction: DismissDirection.endToStart,
+//       onDismissed: (direction) {
+//         _deleteYahrtzeit(yahrtzeitDate.yahrtzeit);
+//       },
+//       background: Container(
+//         color: Colors.red,
+//         alignment: Alignment.centerRight,
+//         padding: EdgeInsets.symmetric(horizontal: 20),
+//         child: Row(
+//           mainAxisAlignment: MainAxisAlignment.end,
+//           children: [
+//             Icon(Icons.delete, color: Colors.white),
+//             SizedBox(width: 20),
+//           ],
+//         ),
+//       ),
+//       child: Card(
+//         elevation: 5,
+//         margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+//         shape: RoundedRectangleBorder(
+//           borderRadius: BorderRadius.circular(15),
+//         ),
+//         child: ListTile(
+//           contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+//           title: Column(
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//               Text(
+//                 yahrtzeitDate.yahrtzeit.englishName!,
+//                 style: TextStyle(
+//                   fontSize: 18,
+//                   fontWeight: FontWeight.bold,
+//                   color: Colors.black,
+//                 ),
+//               ),
+//               SizedBox(height: 5),
+//               // Display dates based on language settings
+//               if (isBothHebrew) ...[
+//                 Text(
+//                   hebrewDate,
+//                   style: TextStyle(
+//                     fontSize: 16,
+//                     color: Colors.grey[600],
+//                   ),
+//                 ),
+//               ] else if (isBothEnglish) ...[
+//                 Text(
+//                   englishDate,
+//                   style: TextStyle(
+//                     fontSize: 16,
+//                     color: Colors.grey[600],
+//                   ),
+//                 ),
+//               ] else if (isEnglishAndHebrew) ...[
+//                 Text(
+//                   englishDate,
+//                   style: TextStyle(
+//                     fontSize: 16,
+//                     color: Colors.grey[600],
+//                   ),
+//                 ),
+//                 SizedBox(height: 5),
+//                 Text(
+//                   hebrewDate,
+//                   style: TextStyle(
+//                     fontSize: 16,
+//                     color: Colors.grey[600],
+//                   ),
+//                 ),
+//               ],
+//             ],
+//           ),
+//           trailing: Row(
+//             mainAxisSize: MainAxisSize.min,
+//             children: [
+//               IconButton(
+//                 icon: Icon(
+//                   Icons.edit,
+//                   color: Colors.grey[600],
+//                 ),
+//                 onPressed: () => _editYahrtzeit(yahrtzeitDate.yahrtzeit),
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
                 ),
                 child: Text(
                   'Sync with Calendar',
@@ -726,4 +887,3 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
   }
 
 }
-

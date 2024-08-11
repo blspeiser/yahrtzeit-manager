@@ -1,3 +1,4 @@
+
 import 'package:cambium_project/views/manage_yahrtzeits.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +10,7 @@ import '../services/keyboard_layouts.dart';
 import '../services/yahrtzeits_manager.dart';
 import 'package:kosher_dart/kosher_dart.dart';
 import 'dart:convert';
+import 'manage_yahrtzeits.dart';
 
 class AddYahrtzeitPage extends StatefulWidget {
   final Yahrtzeit? yahrtzeit;
@@ -91,6 +93,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
 }
 
 static const List<String> hebrewDays = [
+
     'א',
     'ב',
     'ג',
@@ -216,7 +219,7 @@ static const List<String> hebrewDays = [
         final savedData = await readData();
         print('Saved Data: $savedData');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Data saved!')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.translate('Data saved!'))),
         );
         Navigator.pop(context, true);
       } catch (e) {
@@ -238,9 +241,6 @@ static const List<String> hebrewDays = [
       }
     }
   }
-
-
-
 
 
   Widget build(BuildContext context) {
