@@ -251,7 +251,7 @@ static const List<String> hebrewDays = [
     child: Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.isEditing ? 'Edit Yahrtzeit' : 'Add Yahrtzeit',
+          widget.isEditing ? AppLocalizations.of(context)!.translate('Edit Yahrtzeit') : AppLocalizations.of(context)!.translate('Add Yahrtzeit'),
           style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
@@ -273,7 +273,7 @@ static const List<String> hebrewDays = [
                 validator: (value) {
                   if (widget.language == 'en' &&
                       (value == null || value.isEmpty)) {
-                    return 'Please enter English name';
+                    return AppLocalizations.of(context)!.translate('Please enter English name');
                   }
                   return null;
                 },
@@ -291,7 +291,7 @@ static const List<String> hebrewDays = [
                 validator: (value) {
                   if (widget.language == 'he' &&
                       (value == null || value.isEmpty)) {
-                    return 'Please enter Hebrew name';
+                    return AppLocalizations.of(context)!.translate('Please enter Hebrew name');
                   }
                   return null;
                 },
@@ -395,7 +395,7 @@ static const List<String> hebrewDays = [
               ElevatedButton(
                 onPressed: _submitForm,
                 child: Text(
-                    widget.isEditing ? 'Update Yahrtzeit' : 'Add Yahrtzeit',
+                    widget.isEditing ? AppLocalizations.of(context)!.translate('Update Yahrtzeit') : AppLocalizations.of(context)!.translate('Add Yahrtzeit'),
                     style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,

@@ -7,6 +7,7 @@ import 'dart:io';
 
 import '../localizations/app_localizations.dart';
 import '../models/yahrtzeit_date.dart';
+import '../settings/settings.dart';
 
 class YahrtzeitDetailsPage extends StatelessWidget {
   final YahrtzeitDate yahrtzeitDate;
@@ -19,15 +20,19 @@ class YahrtzeitDetailsPage extends StatelessWidget {
     final hebrewFormatter = HebrewDateFormatter()
       ..hebrewFormat = true
       ..useGershGershayim = true;
+    // קבלת השפה הנוכחית
+    final locale = Localizations.localeOf(context).languageCode;
+
+    // בחירת השם להציג לפי השפה הנוכחית
+    final String nameToDisplay = locale == 'he'
+        ? (yahrtzeitDate.yahrtzeit.hebrewName ?? 'Unknown Name')
+        : (yahrtzeitDate.yahrtzeit.englishName ?? 'Unknown Name');
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-            '${yahrtzeitDate.yahrtzeit.englishName}',
-            style: TextStyle(color: Colors.white)),
+        title: Text('${nameToDisplay}', style: TextStyle(color: Colors.white)),
         centerTitle: true,
         backgroundColor: Colors.grey[600],
-
         elevation: 0,
         actionsIconTheme: IconThemeData(color: Colors.white),
         actions: [
@@ -78,34 +83,36 @@ class YahrtzeitDetailsPage extends StatelessWidget {
     );
   }
 
-
   String _createICSContent(YahrtzeitDate yahrtzeitDate) {
-  final buffer = StringBuffer();
+    final buffer = StringBuffer();
 
-  buffer.writeln("BEGIN:VCALENDAR");
-  buffer.writeln("VERSION:2.0");
-  buffer.writeln("PRODID:-//YourApp//Yahrtzeit Manager//EN");
+    buffer.writeln("BEGIN:VCALENDAR");
+    buffer.writeln("VERSION:2.0");
+    buffer.writeln("PRODID:-//YourApp//Yahrtzeit Manager//EN");
 
     try {
-
-      final start = DateFormat("yyyyMMdd'T'HHmmss'Z'").format(yahrtzeitDate.gregorianDate);
+      final start = DateFormat("yyyyMMdd'T'HHmmss'Z'")
+          .format(yahrtzeitDate.gregorianDate);
       final end = DateFormat("yyyyMMdd'T'HHmmss'Z'")
           .format(yahrtzeitDate.gregorianDate.add(Duration(hours: 2)));
 
       buffer.writeln("BEGIN:VEVENT");
-      buffer.writeln("SUMMARY:${yahrtzeitDate.yahrtzeit.englishName ?? yahrtzeitDate.yahrtzeit.hebrewName}");
+      buffer.writeln(
+          "SUMMARY:${yahrtzeitDate.yahrtzeit.englishName ?? yahrtzeitDate.yahrtzeit.hebrewName}");
       buffer.writeln("DTSTART:$start");
       buffer.writeln("DTEND:$end");
-      buffer.writeln("DESCRIPTION:Yahrtzeit for ${yahrtzeitDate.yahrtzeit.englishName ?? yahrtzeitDate.yahrtzeit.hebrewName}");
+      buffer.writeln(
+          "DESCRIPTION:Yahrtzeit for ${yahrtzeitDate.yahrtzeit.englishName ?? yahrtzeitDate.yahrtzeit.hebrewName}");
       buffer.writeln("END:VEVENT");
     } catch (e) {
-      print("Error with Yahrtzeit: ${yahrtzeitDate.yahrtzeit.englishName ?? yahrtzeitDate.yahrtzeit.hebrewName}, Error: $e");
+      print(
+          "Error with Yahrtzeit: ${yahrtzeitDate.yahrtzeit.englishName ?? yahrtzeitDate.yahrtzeit.hebrewName}, Error: $e");
     }
 
-  buffer.writeln("END:VCALENDAR");
+    buffer.writeln("END:VCALENDAR");
 
-  return buffer.toString();
-}
+    return buffer.toString();
+  }
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(

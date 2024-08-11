@@ -219,7 +219,7 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                         Expanded(
                           child: DropdownButton<String>(
                             isExpanded: true,
-                            hint: Text('בחר קבוצה'),
+                            hint: Text(AppLocalizations.of(context)!.translate('_Select Groop')),
                             value: searchQuery.isEmpty ? null : searchQuery,
                             onChanged: (String? newValue) {
                               setState(() {
@@ -238,11 +238,11 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                             items: [
                               DropdownMenuItem<String>(
                                 value: '',
-                                child: Text('ללא סינון'),
+                                child: Text(AppLocalizations.of(context)!.translate('WithoutFiltering')),
                               ),
                               DropdownMenuItem<String>(
                                 value: 'ללא קבוצה',
-                                child: Text('ללא קבוצה'),
+                                child: Text(AppLocalizations.of(context)!.translate('WithoutGroup')),
                               ),
                               ...groups.map<DropdownMenuItem<String>>(
                                   (String value) {
@@ -257,7 +257,7 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                         SizedBox(width: 8),
                         // כפתור לבחירת מספר חודשים
                         DropdownButton<int>(
-                          hint: Text('בחר חודשים'),
+                          hint: Text(AppLocalizations.of(context)!.translate('SelectMonth')),
                           value: _months,
                           onChanged: (int? newValue) {
                             setState(() {
@@ -267,13 +267,21 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                                       yahrtzeitDates, _months);
                             });
                           },
+                          // items: List.generate(12, (index) => index + 1)
+                          //     .map<DropdownMenuItem<int>>((int value) {
+                          //   return DropdownMenuItem<int>(
+                          //     value: value,
+                          //     child: Text(' $value חודשים'),
+                          //   );
+                          // }).toList(),
                           items: List.generate(12, (index) => index + 1)
-                              .map<DropdownMenuItem<int>>((int value) {
-                            return DropdownMenuItem<int>(
-                              value: value,
-                              child: Text('חודשים $value'),
-                            );
-                          }).toList(),
+    .map<DropdownMenuItem<int>>((int value) {
+  return DropdownMenuItem<int>(
+    value: value,
+    child: Text('${AppLocalizations.of(context)!.translate('months')} $value'),
+  );
+}).toList(),
+
                         ),
                       ],
                     ),
