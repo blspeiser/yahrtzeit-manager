@@ -70,10 +70,10 @@ class YahrtzeitDetailsPage extends StatelessWidget {
                     AppLocalizations.of(context)!.translate('Hebrew Name'),
                     yahrtzeitDate.yahrtzeit.hebrewName),
                 _buildDetailRow(
-                    AppLocalizations.of(context)!.translate('Gregorian Date'),
+                    AppLocalizations.of(context)!.translate('gregorian_date'),
                     gregorianFormatter.format(yahrtzeitDate.gregorianDate)),
                 _buildDetailRow(
-                    AppLocalizations.of(context)!.translate('Hebrew Date'),
+                    AppLocalizations.of(context)!.translate('hebrew_gate'),
                     hebrewFormatter.format(yahrtzeitDate.hebrewDate)),
               ],
             ),
