@@ -219,7 +219,7 @@ class _UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                         Expanded(
                           child: DropdownButton<String>(
                             isExpanded: true,
-                            hint: Text(AppLocalizations.of(context)!.translate('_Select Groop')),
+                            hint: Text(AppLocalizations.of(context)!.translate('_Select Group')),
                             value: searchQuery.isEmpty ? null : searchQuery,
                             onChanged: (String? newValue) {
                               setState(() {
