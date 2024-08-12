@@ -44,7 +44,6 @@
     "month":"חודש",
     "Group Name":"שם קבוצה",
     "Yahrtzeit details": "פרטי יארצייט",
- 
     "hebrew_gate": "תאריך עברי",
     "details":"פרטים",
     "gregorian_date":"תאריך לועזי",
@@ -80,8 +79,8 @@
     "Deselect All":"בטל את הבחירה בהכל",
     "Sync successful":"הסינכרון הצליח",
     "Sync failed":"הסינכרון נכשל",
-    "Sync with Calendar":"Google לסינכרון עם לוח",
-    "_Select Groop":"בחר קבוצה",
+    "Sync with Calendar":" לסינכרון עם לוח Google",
+    "_Select Group":"בחר קבוצה",
     "WithoutFiltering":"ללא סינון",
     "WithoutGroup":"ללא קבוצה",
     "SelectMonth":"בחר מספר חודש/ים",
