@@ -83,6 +83,37 @@ class YahrtzeitDetailsPage extends StatelessWidget {
     );
   }
 
+  // String _createICSContent(YahrtzeitDate yahrtzeitDate) {
+  //   final buffer = StringBuffer();
+
+  //   buffer.writeln("BEGIN:VCALENDAR");
+  //   buffer.writeln("VERSION:2.0");
+  //   buffer.writeln("PRODID:-//YourApp//Yahrtzeit Manager//EN");
+
+  //   try {
+  //     final start = DateFormat("yyyyMMdd'T'HHmmss'Z'")
+  //         .format(yahrtzeitDate.gregorianDate);
+  //     final end = DateFormat("yyyyMMdd'T'HHmmss'Z'")
+  //         .format(yahrtzeitDate.gregorianDate.add(Duration(hours: 2)));
+
+  //     buffer.writeln("BEGIN:VEVENT");
+  //     buffer.writeln(
+  //         "SUMMARY:${yahrtzeitDate.yahrtzeit.englishName ?? yahrtzeitDate.yahrtzeit.hebrewName}");
+  //     buffer.writeln("DTSTART:$start");
+  //     buffer.writeln("DTEND:$end");
+  //     buffer.writeln(
+  //         "DESCRIPTION:Yahrtzeit for ${yahrtzeitDate.yahrtzeit.englishName ?? yahrtzeitDate.yahrtzeit.hebrewName}");
+  //     buffer.writeln("END:VEVENT");
+  //   } catch (e) {
+  //     print(
+  //         "Error with Yahrtzeit: ${yahrtzeitDate.yahrtzeit.englishName ?? yahrtzeitDate.yahrtzeit.hebrewName}, Error: $e");
+  //   }
+
+  //   buffer.writeln("END:VCALENDAR");
+
+  //   return buffer.toString();
+  // }
+
   String _createICSContent(YahrtzeitDate yahrtzeitDate) {
     final buffer = StringBuffer();
 
