@@ -212,14 +212,6 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
   String _getEnglishMonthName(int month) {
     final months = getMonths(context); 
     
-  // if (month == 6 || month == 8) {
-  //   return months['Adar'] ?? '';
-  // }
-
-  // if (month == 7) {
-  //   return months['Adar_I'] ?? '';
-  // }
-
   if (month == 12 || month == 14) {
     return months['Adar'] ?? '';
   }
@@ -405,73 +397,121 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
   final List<String> _option = ['select all', 'diselect all'];
 
   
-  String _createICSContent(List<Yahrtzeit> yahrtzeits) {
-  final buffer = StringBuffer();
+//   String _createICSContent(List<Yahrtzeit> yahrtzeits) {
+//   final buffer = StringBuffer();
 
-  buffer.writeln("BEGIN:VCALENDAR");
-  buffer.writeln("VERSION:2.0");
-  buffer.writeln("PRODID:-//YourApp//Yahrtzeit Manager//EN");
+//   buffer.writeln("BEGIN:VCALENDAR");
+//   buffer.writeln("VERSION:2.0");
+//   buffer.writeln("PRODID:-//YourApp//Yahrtzeit Manager//EN");
 
-  for (var yahrtzeit in yahrtzeits) {
-    try {
-      // השתמש בתאריך הנוכחי
-      // final now = DateTime.now().toUtc();
-      int year = JewishDate().getJewishYear();
-      final jewishDate = JewishDate.initDate(
-        jewishYear: year,
-        jewishMonth: yahrtzeit.month!,
-        jewishDayOfMonth: yahrtzeit.day!,
-      );
-      final now = DateTime(jewishDate.getGregorianYear(), jewishDate.getGregorianMonth(), jewishDate.getGregorianDayOfMonth());
+//   for (var yahrtzeit in yahrtzeits) {
+//     try {
+//       // השתמש בתאריך הנוכחי
+//       // final now = DateTime.now().toUtc();
+//       int year = JewishDate().getJewishYear();
+//       final jewishDate = JewishDate.initDate(
+//         jewishYear: year,
+//         jewishMonth: yahrtzeit.month!,
+//         jewishDayOfMonth: yahrtzeit.day!,
+//       );
+//       final now = DateTime(jewishDate.getGregorianYear(), jewishDate.getGregorianMonth(), jewishDate.getGregorianDayOfMonth());
 
-      final start = DateFormat("yyyyMMdd'T'HHmmss'Z'").format(now);
-      final end = DateFormat("yyyyMMdd'T'HHmmss'Z'")
-          .format(now.add(Duration(hours: 2)));
+//       final start = DateFormat("yyyyMMdd'T'HHmmss'Z'").format(now);
+//       final end = DateFormat("yyyyMMdd'T'HHmmss'Z'")
+//           .format(now.add(Duration(hours: 2)));
 
-      buffer.writeln("BEGIN:VEVENT");
-      buffer.writeln("UID:${yahrtzeit.id}");
-      buffer.writeln("SUMMARY:${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
-      buffer.writeln("DTSTART:$start");
-      buffer.writeln("DTEND:$end");
-      buffer.writeln("DESCRIPTION:Yahrtzeit for ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
-      buffer.writeln("END:VEVENT");
-    } catch (e) {
-      print("Error with Yahrtzeit: ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}, Error: $e");
-      // ניתן להוסיף כאן הודעה אם יש שגיאה
-    }
-  }
+//       buffer.writeln("BEGIN:VEVENT");
+//       buffer.writeln("UID:${yahrtzeit.id}");
+//       buffer.writeln("SUMMARY:${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
+//       buffer.writeln("DTSTART:$start");
+//       buffer.writeln("DTEND:$end");
+//       buffer.writeln("DESCRIPTION:Yahrtzeit for ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}");
+//       buffer.writeln("END:VEVENT");
+//     } catch (e) {
+//       print("Error with Yahrtzeit: ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}, Error: $e");
+//       // ניתן להוסיף כאן הודעה אם יש שגיאה
+//     }
+//   }
 
-  buffer.writeln("END:VCALENDAR");
+//   buffer.writeln("END:VCALENDAR");
 
-  return buffer.toString();
+//   return buffer.toString();
+// }
+
+
+String __createYMDBContent(Yahrtzeit yahrtzeit) {
+  final gregorianDate = yahrtzeit.getGregorianDate();
+  final gregorianDateString = gregorianDate != null
+      ? '${gregorianDate.year}-${gregorianDate.month.toString().padLeft(2, '0')}-${gregorianDate.day.toString().padLeft(2, '0')}'
+      : 'Unknown Date';
+
+  return '''
+ID: ${yahrtzeit.id}
+English Name: ${yahrtzeit.englishName ?? 'N/A'}
+Hebrew Name: ${yahrtzeit.hebrewName}
+Hebrew Date: ${yahrtzeit.day}/${yahrtzeit.month}
+Gregorian Date: $gregorianDateString
+Group: ${yahrtzeit.group ?? 'N/A'}
+Selected: ${yahrtzeit.selected ? 'True' : 'False'}
+''';
 }
 
-  Future<void> _shareICSFile() async {
-    final selected = filteredYahrtzeits
-        .where((yahrtzeit) => selectedYahrtzeits[yahrtzeit.id] == true)
-        .toList();
 
-    if (selected.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.translate('No Yahrtzeits selected for sharing')),
-        ),
-      );
-      return;
-    }
+  // Future<void> _shareICSFile() async {
+  //   final selected = filteredYahrtzeits
+  //       .where((yahrtzeit) => selectedYahrtzeits[yahrtzeit.id] == true)
+  //       .toList();
 
-    final icsContent = _createICSContent(selected);
-    final directory = await getTemporaryDirectory();
-    final filePath = '${directory.path}/yahrtzeits.ics';
-    final file = File(filePath);
+  //   if (selected.isEmpty) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text(AppLocalizations.of(context)!.translate('No Yahrtzeits selected for sharing')),
+  //       ),
+  //     );
+  //     return;
+  //   }
 
-    await file.writeAsString(icsContent);
+  //   final icsContent = _createICSContent(selected);
+  //   final directory = await getTemporaryDirectory();
+  //   final filePath = '${directory.path}/yahrtzeits.ics';
+  //   final file = File(filePath);
 
-    // ניתן להוסיף כאן הדפסה או בדיקה לוודא שהקובץ נכתב כראוי
-    print('ICS file created at: $filePath');
+  //   await file.writeAsString(icsContent);
 
-    Share.shareFiles([filePath], text: 'Yahrtzeit Calendar');
+  //   // ניתן להוסיף כאן הדפסה או בדיקה לוודא שהקובץ נכתב כראוי
+  //   print('ICS file created at: $filePath');
+
+  //   Share.shareFiles([filePath], text: 'Yahrtzeit Calendar');
+  // }
+
+Future<void> _shareYMDBFile() async {
+  final selected = filteredYahrtzeits
+      .where((yahrtzeit) => selectedYahrtzeits[yahrtzeit.id] == true)
+      .toList();
+
+  if (selected.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.translate('No Yahrtzeits selected for sharing')),
+      ),
+    );
+    return;
   }
+
+  final ymdbContent = selected.map(__createYMDBContent).join('\n\n');
+  final directory = await getTemporaryDirectory();
+  final filePath = '${directory.path}/yahrtzeits.ymdb';
+  final file = File(filePath);
+
+  await file.writeAsString(ymdbContent);
+
+  // Log file creation
+  print('YMDB file created at: $filePath');
+
+  Share.shareFiles([filePath], text: 'Yahrtzeit Details');
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -519,7 +559,7 @@ List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
           ),
           IconButton(
             icon: Icon(Icons.share, color: Colors.white),
-            onPressed: _shareICSFile,
+            onPressed: _shareYMDBFile,
           ),
           // IconButton(
           //   icon: Icon(Icons.info, color: Colors.white),
