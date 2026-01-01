@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kosher_dart/kosher_dart.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/yahrtzeit_date.dart';
 import 'package:intl/intl.dart';
 

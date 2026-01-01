@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../localizations/app_localizations.dart';
-import '../models/yahrtzeit.dart';
 import '../models/yahrtzeit_date.dart';
 import '../services/yahrtzeits_manager.dart';
 import '../widgets/yahrtzeit_tile.dart';

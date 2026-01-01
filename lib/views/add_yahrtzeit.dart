@@ -1,49 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/yahrtzeit.dart';
 import '../services/yahrtzeits_manager.dart';
+import '../providers/settings_provider.dart';
 import 'package:kosher_dart/kosher_dart.dart';
 import '../localizations/app_localizations.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../home_page.dart';
 
 class AddYahrtzeitPage extends StatefulWidget {
   final Yahrtzeit? yahrtzeit;
   final bool isEditing;
-  final int yearsToSync;
-  final bool syncSettings;
-  final bool notifications;
-  final String language;
-  final String jewishLanguage;
-  final String calendar;
-  final int years;
-  final int days;
-  final VoidCallback toggleSyncSettings;
-  final VoidCallback toggleNotifications;
-  final Function(String) changeLanguage;
-  final Function(String) changeJewishLanguage;
-  final Function(String) changeCalendar;
-  final Function(int) changeYears;
-  final Function(int) changeDays;
 
   AddYahrtzeitPage({
     this.yahrtzeit,
     this.isEditing = false,
-    required this.yearsToSync,
-    required this.syncSettings,
-    required this.notifications,
-    required this.language,
-    required this.jewishLanguage,
-    required this.calendar,
-    required this.years,
-    required this.days,
-    required this.toggleSyncSettings,
-    required this.toggleNotifications,
-    required this.changeLanguage,
-    required this.changeJewishLanguage,
-    required this.changeCalendar,
-    required this.changeYears,
-    required this.changeDays,
   });
 
   @override
@@ -105,21 +76,12 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       final localizations = AppLocalizations.of(context)!;
+      final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
 
       try {
         List<Map<String, dynamic>> jsonData = await readData();
 
-        int currentYear = JewishDate().getJewishYear();
         List<Yahrtzeit> newYahrtzeits = [];
-
-        JewishDate jewishDate = JewishDate.initDate(
-            jewishYear: currentYear,
-            jewishMonth: _selectedMonth!,
-            jewishDayOfMonth: _selectedDay!);
-        DateTime gregorianDate = DateTime(
-            jewishDate.getGregorianYear(),
-            jewishDate.getGregorianMonth(),
-            jewishDate.getGregorianDayOfMonth());
 
         final newYahrtzeit = Yahrtzeit(
           englishName: _englishNameController.text,
@@ -127,20 +89,52 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
           day: _selectedDay!,
           month: _selectedMonth!,
           group: _groupController.text,
+          id: widget.isEditing && widget.yahrtzeit != null 
+              ? widget.yahrtzeit!.id 
+              : null, // Preserve ID when editing
         );
 
-        newYahrtzeits.add(newYahrtzeit);
+        if (widget.isEditing && widget.yahrtzeit != null) {
+          // Update existing yahrtzeit - manager handles file updates
+          await manager.updateYahrtzeit(
+            widget.yahrtzeit!,
+            newYahrtzeit,
+            settingsProvider.years,
+            settingsProvider.syncSettings);
+          
+          // Reschedule notifications if enabled
+          if (settingsProvider.notifications) {
+            await manager.rescheduleAllNotifications(
+              true, 
+              settingsProvider.days);
+          }
+        } else {
+          // Add new yahrtzeit
+          newYahrtzeits.add(newYahrtzeit);
+          jsonData.addAll(newYahrtzeits.map((y) => y.toJson()).toList());
+          await writeData(jsonData);
 
-        jsonData.addAll(newYahrtzeits.map((y) => y.toJson()).toList());
-
-        if (widget.syncSettings) {
-          for (var yahrtzeit in newYahrtzeits) {
-            await manager.addYahrtzeit(
-                yahrtzeit, widget.yearsToSync, widget.syncSettings);
+          if (settingsProvider.syncSettings) {
+            for (var yahrtzeit in newYahrtzeits) {
+              await manager.addYahrtzeit(
+                  yahrtzeit, 
+                  settingsProvider.years, 
+                  settingsProvider.syncSettings,
+                  notificationsEnabled: settingsProvider.notifications,
+                  daysBefore: settingsProvider.days);
+            }
+          } else if (settingsProvider.notifications) {
+            // If sync is off but notifications are on, still schedule notifications
+            for (var yahrtzeit in newYahrtzeits) {
+              await manager.addYahrtzeit(
+                  yahrtzeit, 
+                  settingsProvider.years, 
+                  false,
+                  notificationsEnabled: true,
+                  daysBefore: settingsProvider.days);
+            }
           }
         }
-
-        await writeData(jsonData);
         print('JSON file content: ${json.encode(jsonData)}');
 
         // Log the new data to ensure it's saved correctly
@@ -151,27 +145,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
           SnackBar(content: Text('Data saved!')),
         );
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomePage(
-              syncSettings: widget.syncSettings,
-              notifications: widget.notifications,
-              language: widget.language,
-              jewishLanguage: widget.jewishLanguage,
-              years: widget.years,
-              days: widget.days,
-              calendar: widget.calendar,
-              toggleSyncSettings: widget.toggleSyncSettings,
-              toggleNotifications: widget.toggleNotifications,
-              changeLanguage: widget.changeLanguage,
-              changeJewishLanguage: widget.changeJewishLanguage,
-              changeCalendar: widget.changeCalendar,
-              changeYears: widget.changeYears,
-              changeDays: widget.changeDays,
-            ),
-          ),
-        );
+        Navigator.pop(context, true);
       } catch (e) {
         showDialog(
           context: context,

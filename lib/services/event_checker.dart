@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:device_calendar/device_calendar.dart';
-import 'package:timezone/timezone.dart' as tz;
 import '../global.dart' as globals;
 import 'calendar_service.dart';
 

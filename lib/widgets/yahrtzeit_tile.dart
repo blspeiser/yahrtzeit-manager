@@ -3,7 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:kosher_dart/kosher_dart.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:cross_file/cross_file.dart';
 import '../models/yahrtzeit_date.dart';
 import '../views/yahrtzeit_details.dart';
 import 'package:intl/intl.dart';
@@ -83,7 +84,10 @@ class YahrtzeitTile extends StatelessWidget {
     final icsContent = _createICSContent(yahrtzeitDate);
     await file.writeAsString(icsContent);
 
-    await Share.shareFiles([file.path], text: 'Yahrtzeit Details');
+    await Share.shareXFiles(
+      [XFile(file.path)],
+      text: 'Yahrtzeit Details',
+    );
   }
 
   String _createICSContent(YahrtzeitDate yahrtzeitDate) {

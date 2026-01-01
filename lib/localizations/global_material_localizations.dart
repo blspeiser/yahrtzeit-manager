@@ -12,11 +12,6 @@ class HebrewMaterialLocalizations extends DefaultMaterialLocalizations {
 
   // ... ניתן להוסיף כאן תרגומים נוספים ...
 
-  static const _localizedValues = {
-    'he': HebrewMaterialLocalizations(),
-  };
-
-  @override
   String get aboutListTileTitleRaw => r'אודות $applicationName';
 }
 

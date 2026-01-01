@@ -1,43 +1,10 @@
 import 'package:flutter/material.dart';
 import 'settings/settings.dart';
-import 'views/add_yahrtzeit.dart';
 import 'views/manage_yahrtzeits.dart';
 import 'views/upcoming_yahrtzeits.dart';
 import '../localizations/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
-  bool syncSettings;
-  bool notifications;
-  String language;
-  String jewishLanguage;
-  String calendar;
-  int years;
-  int days;
-  final VoidCallback toggleSyncSettings;
-  final VoidCallback toggleNotifications;
-  final Function(String) changeLanguage;
-  final Function(String) changeJewishLanguage;
-  final Function(String) changeCalendar;
-  final Function(int) changeYears;
-  final Function(int) changeDays;
-
-  HomePage({
-    required this.syncSettings,
-    required this.notifications,
-    required this.language,
-    required this.jewishLanguage,
-    required this.calendar,
-    required this.years,
-    required this.days,
-    required this.toggleSyncSettings,
-    required this.toggleNotifications,
-    required this.changeLanguage,
-    required this.changeJewishLanguage,
-    required this.changeCalendar,
-    required this.changeYears,
-    required this.changeDays,
-  });
-
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -52,39 +19,8 @@ class _HomePageState extends State<HomePage> {
         index: _selectedIndex,
         children: <Widget>[
           UpcomingYahrtzeits(),
-          ManageYahrtzeits(
-            yearsToSync: widget.years,
-            syncSettings: widget.syncSettings,
-            notifications: widget.notifications,
-            language: widget.language,
-            jewishLanguage: widget.jewishLanguage,
-            calendar: widget.calendar,
-            years: widget.years,
-            days: widget.days,
-            toggleSyncSettings: widget.toggleSyncSettings,
-            toggleNotifications: widget.toggleNotifications,
-            changeLanguage: widget.changeLanguage,
-            changeJewishLanguage: widget.changeJewishLanguage,
-            changeCalendar: widget.changeCalendar,
-            changeYears: widget.changeYears,
-            changeDays: widget.changeDays,
-          ),
-          SettingsPage(
-            syncSettings: widget.syncSettings,
-            notifications: widget.notifications,
-            language: widget.language,
-            jewishLanguage: widget.jewishLanguage,
-            calendar: widget.calendar,
-            years: widget.years,
-            days: widget.days,
-            toggleSyncSettings: widget.toggleSyncSettings,
-            toggleNotifications: widget.toggleNotifications,
-            changeLanguage: widget.changeLanguage,
-            changeJewishLanguage: widget.changeJewishLanguage,
-            changeCalendar: widget.changeCalendar,
-            changeYears: widget.changeYears,
-            changeDays: widget.changeDays,
-          ),
+          ManageYahrtzeits(),
+          SettingsPage(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
