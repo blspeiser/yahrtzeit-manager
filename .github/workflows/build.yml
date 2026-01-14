@@ -39,7 +39,7 @@ jobs:
         with:
           name: android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 400
+          retention-days: 90
 
   build-ios:
     name: Build iOS IPA
@@ -72,6 +72,6 @@ jobs:
         with:
           name: ios-ipa
           path: build/ios/ipa/*.ipa
-          retention-days: 400
+          retention-days: 90
 
 
