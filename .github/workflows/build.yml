@@ -1,4 +1,4 @@
-name: Build Android APK and iOS IPA
+name: Build Android APK and iOS App
 
 on:
   push:
@@ -42,7 +42,7 @@ jobs:
           retention-days: 90
 
   build-ios:
-    name: Build iOS IPA
+    name: Build iOS App (Unsigned)
     runs-on: macos-latest
     
     steps:
@@ -64,14 +64,14 @@ jobs:
           pod install
           cd ..
 
-      - name: Build iOS IPA
-        run: flutter build ipa --release
+      - name: Build iOS App (without code signing)
+        run: flutter build ios --release --no-codesign
 
-      - name: Upload iOS IPA artifact
+      - name: Upload iOS App artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ios-ipa
-          path: build/ios/ipa/*.ipa
+          name: ios-app-bundle
+          path: build/ios/iphoneos/Runner.app
           retention-days: 90
 
 
