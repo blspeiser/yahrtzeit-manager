@@ -11,28 +11,49 @@ import 'home_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize notification service
-  await NotificationService().initialize();
+  String languageCode = 'en';
+  SettingsProvider settingsProvider = SettingsProvider();
   
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? languageCode = prefs.getString('languageCode') ?? 'en';
+  try {
+    // Initialize notification service
+    await NotificationService().initialize();
+    
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    languageCode = prefs.getString('languageCode') ?? 'en';
+    
+    // Initialize settings and schedule notifications
+    await settingsProvider.loadSettings();
+    
+    if (settingsProvider.notifications) {
+      try {
+        final manager = YahrtzeitsManager();
+        await manager.loadYahrtzeitsFromPreferences();
+        await manager.rescheduleAllNotifications(
+          settingsProvider.notifications, 
+          settingsProvider.days);
+      } catch (e) {
+        print('Error scheduling notifications: $e');
+        // Continue app startup even if notifications fail
+      }
+    }
+  } catch (e) {
+    print('Error during initialization: $e');
+    // Continue app startup with default settings
+  }
   
-  // Initialize settings and schedule notifications
-  final settingsProvider = SettingsProvider();
-  await settingsProvider.loadSettings();
-  
-  if (settingsProvider.notifications) {
-    final manager = YahrtzeitsManager();
-    await manager.loadYahrtzeitsFromPreferences();
-    await manager.rescheduleAllNotifications(
-      settingsProvider.notifications, 
-      settingsProvider.days);
+  // Initialize locale provider
+  final localeProvider = LocaleProvider();
+  try {
+    await localeProvider.loadLocale();
+  } catch (e) {
+    print('Error loading locale: $e');
+    // Continue with default locale
   }
   
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => LocaleProvider()..loadLocale()),
+        ChangeNotifierProvider.value(value: localeProvider),
         ChangeNotifierProvider.value(value: settingsProvider),
       ],
       child: YahrtzeitManagerApp(initialLocale: Locale(languageCode)),
