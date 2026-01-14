@@ -1,4 +1,4 @@
-package com.example.yahrtzeit_manager
+package me.speiser.baruch.apps.ym
 
 import io.flutter.embedding.android.FlutterActivity
 
