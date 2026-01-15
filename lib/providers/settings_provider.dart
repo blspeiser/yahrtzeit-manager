@@ -9,6 +9,7 @@ class SettingsProvider with ChangeNotifier {
   String _calendar = 'device';
   int _years = 5;
   int _days = 10;
+  int _upcomingRangeMonths = 3;
 
   // Getters
   bool get syncSettings => _syncSettings;
@@ -18,6 +19,7 @@ class SettingsProvider with ChangeNotifier {
   String get calendar => _calendar;
   int get years => _years;
   int get days => _days;
+  int get upcomingRangeMonths => _upcomingRangeMonths;
 
   SettingsProvider() {
     loadSettings();
@@ -32,6 +34,7 @@ class SettingsProvider with ChangeNotifier {
     setCalendar(prefs.getString('calendar') ?? 'device', notify: false);
     setYears(prefs.getInt('years') ?? 5, notify: false);
     setDays(prefs.getInt('days') ?? 10, notify: false);
+    setUpcomingRangeMonths(prefs.getInt('upcomingRangeMonths') ?? 3, notify: false);
     notifyListeners();
   }
 
@@ -44,6 +47,7 @@ class SettingsProvider with ChangeNotifier {
     await prefs.setString('calendar', _calendar);
     await prefs.setInt('years', _years);
     await prefs.setInt('days', _days);
+    await prefs.setInt('upcomingRangeMonths', _upcomingRangeMonths);
   }
 
   Future<void> setSyncSettings(bool value, {bool notify = true}) async {
@@ -84,6 +88,12 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> setDays(int value, {bool notify = true}) async {
     _days = value;
+    await _saveSettings();
+    if (notify) notifyListeners();
+  }
+
+  Future<void> setUpcomingRangeMonths(int value, {bool notify = true}) async {
+    _upcomingRangeMonths = value;
     await _saveSettings();
     if (notify) notifyListeners();
   }

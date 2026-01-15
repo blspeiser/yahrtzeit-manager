@@ -6,7 +6,8 @@ import '../models/yahrtzeit.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
-  final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notifications =
+      FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
   factory NotificationService() {
@@ -26,7 +27,8 @@ class NotificationService {
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
     // iOS initialization settings
-    const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
+    const DarwinInitializationSettings iosSettings =
+        DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
@@ -76,8 +78,8 @@ class NotificationService {
     print('Notification tapped: ${response.payload}');
   }
 
-  Future<void> scheduleYahrtzeitNotifications(
-      List<Yahrtzeit> yahrtzeits, int daysBefore, bool notificationsEnabled) async {
+  Future<void> scheduleYahrtzeitNotifications(List<Yahrtzeit> yahrtzeits,
+      int daysBefore, bool notificationsEnabled) async {
     if (!notificationsEnabled) {
       await cancelAllNotifications();
       return;
@@ -90,15 +92,33 @@ class NotificationService {
     final currentJewishYear = JewishDate().getJewishYear();
 
     for (var yahrtzeit in yahrtzeits) {
+      // Skip yahrtzeits without day/month (incomplete entries)
+      if (yahrtzeit.day == null || yahrtzeit.month == null) {
+        continue;
+      }
       // Schedule for current year and next year
       for (int yearOffset = 0; yearOffset <= 1; yearOffset++) {
         int jewishYear = currentJewishYear + yearOffset;
-        
+
         try {
+          // Handle Adar II (month 13) in non-leap years: convert to Adar (month 12)
+          int monthToUse = yahrtzeit.month!;
+          if (yahrtzeit.month == JewishDate.ADAR_II) {
+            // Check if this is a leap year by testing if ADAR becomes ADAR_II
+            final testDate = JewishDate.initDate(
+                jewishYear: jewishYear,
+                jewishMonth: JewishDate.ADAR,
+                jewishDayOfMonth: 1);
+            if (testDate.getJewishMonth() != JewishDate.ADAR_II) {
+              // Not a leap year, so ADAR_II should be treated as ADAR
+              monthToUse = JewishDate.ADAR;
+            }
+          }
+
           JewishDate jewishDate = JewishDate.initDate(
             jewishYear: jewishYear,
-            jewishMonth: yahrtzeit.month,
-            jewishDayOfMonth: yahrtzeit.day,
+            jewishMonth: monthToUse,
+            jewishDayOfMonth: yahrtzeit.day!,
           );
 
           DateTime gregorianDate = DateTime(
@@ -108,17 +128,19 @@ class NotificationService {
           );
 
           final notificationDate = tz.TZDateTime.from(gregorianDate, tz.local);
-          
+
           // Only schedule if the date is in the future
           if (notificationDate.isAfter(now)) {
-            final reminderDate = notificationDate.subtract(Duration(days: daysBefore));
-            
+            final reminderDate =
+                notificationDate.subtract(Duration(days: daysBefore));
+
             // Only schedule reminder if it's in the future
             if (reminderDate.isAfter(now)) {
               await _scheduleNotification(
                 id: _getNotificationId(yahrtzeit.id, yearOffset),
                 title: 'Yahrtzeit Reminder',
-                body: 'Yahrtzeit for ${yahrtzeit.englishName ?? yahrtzeit.hebrewName} is in $daysBefore day${daysBefore == 1 ? '' : 's'}',
+                body:
+                    'Yahrtzeit for ${yahrtzeit.englishName ?? yahrtzeit.hebrewName} is in $daysBefore day${daysBefore == 1 ? '' : 's'}',
                 scheduledDate: reminderDate,
                 payload: yahrtzeit.id,
               );
@@ -128,13 +150,15 @@ class NotificationService {
             await _scheduleNotification(
               id: _getNotificationId(yahrtzeit.id, yearOffset) + 10000,
               title: 'Yahrtzeit Today',
-              body: 'Today is the Yahrtzeit of ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}',
+              body:
+                  'Today is the Yahrtzeit of ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}',
               scheduledDate: notificationDate,
               payload: yahrtzeit.id,
             );
           }
         } catch (e) {
-          print('Error scheduling notification for ${yahrtzeit.englishName}: $e');
+          print(
+              'Error scheduling notification for ${yahrtzeit.englishName}: $e');
         }
       }
     }
@@ -168,7 +192,8 @@ class NotificationService {
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       payload: payload,
     );
   }
@@ -184,7 +209,8 @@ class NotificationService {
     for (int yearOffset = 0; yearOffset <= 1; yearOffset++) {
       final id = _getNotificationId(yahrtzeitId, yearOffset);
       await _notifications.cancel(id);
-      await _notifications.cancel(id + 10000); // Also cancel the day-of notification
+      await _notifications
+          .cancel(id + 10000); // Also cancel the day-of notification
     }
   }
 
@@ -196,5 +222,3 @@ class NotificationService {
     return await _notifications.pendingNotificationRequests();
   }
 }
-
-

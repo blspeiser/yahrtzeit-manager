@@ -3,45 +3,98 @@ import 'package:provider/provider.dart';
 import 'package:kosher_dart/kosher_dart.dart';
 import '../localizations/app_localizations.dart';
 import '../models/yahrtzeit.dart';
-import '../models/yahrtzeit_date.dart';
 import '../providers/settings_provider.dart';
 import '../services/yahrtzeits_manager.dart';
+import '../theme/app_theme.dart';
 import 'add_yahrtzeit.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ManageYahrtzeits extends StatefulWidget {
-  const ManageYahrtzeits({Key? key}) : super(key: key);
+  final VoidCallback? onDataChanged;
+
+  const ManageYahrtzeits({Key? key, this.onDataChanged}) : super(key: key);
 
   @override
   _ManageYahrtzeitsState createState() => _ManageYahrtzeitsState();
 }
 
 class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
-  List<YahrtzeitDate> yahrtzeitDates = [];
+  List<Yahrtzeit> yahrtzeits = [];
+  List<Yahrtzeit> filteredYahrtzeits = [];
   bool isLoading = true;
+  String? selectedGroup;
+  List<String> availableGroups = [];
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-
-  static const Map<int, String> hebrewMonths = {
-    JewishDate.NISSAN: 'Nissan',
-    JewishDate.IYAR: 'Iyar',
-    JewishDate.SIVAN: 'Sivan',
-    JewishDate.TAMMUZ: 'Tammuz',
-    JewishDate.AV: 'Av',
-    JewishDate.ELUL: 'Elul',
-    JewishDate.TISHREI: 'Tishrei',
-    JewishDate.CHESHVAN: 'Cheshvan',
-    JewishDate.KISLEV: 'Kislev',
-    JewishDate.TEVES: 'Teves',
-    JewishDate.SHEVAT: 'Shevat',
-    JewishDate.ADAR: 'Adar',
-    JewishDate.ADAR_II: 'Adar II',
-  };
+  final YahrtzeitsManager manager = YahrtzeitsManager();
 
   @override
   void initState() {
     super.initState();
+    print('=== initState CALLED ===');
     fetchYahrtzeits();
+    _loadGroups();
+  }
+
+  Future<void> _loadGroups() async {
+    print('=== _loadGroups START ===');
+    final groups = await manager.getAllGroups();
+    print('DEBUG: Loaded ${groups.length} groups: $groups');
+    setState(() {
+      availableGroups = groups;
+      print(
+          'DEBUG: Before filter reset - yahrtzeits: ${yahrtzeits.length}, filteredYahrtzeits: ${filteredYahrtzeits.length}, selectedGroup: $selectedGroup');
+      // Reset filter to show all if no group is selected
+      if (selectedGroup == null) {
+        filteredYahrtzeits = List.from(yahrtzeits);
+        print(
+            'DEBUG: Reset filter - filteredYahrtzeits now: ${filteredYahrtzeits.length}');
+      } else {
+        // Reapply current filter
+        print('DEBUG: Reapplying filter for group: $selectedGroup');
+        _filterByGroup(selectedGroup);
+      }
+    });
+    print('=== _loadGroups END ===');
+  }
+
+  void _filterByGroup(String? group) {
+    print('=== _filterByGroup START ===');
+    print('DEBUG: Filtering by group: $group');
+    print('DEBUG: Current yahrtzeits count: ${yahrtzeits.length}');
+
+    // Safety check: if no data, reset filter
+    if (yahrtzeits.isEmpty) {
+      print(
+          'WARNING: _filterByGroup called but yahrtzeits is empty! Resetting filter.');
+      setState(() {
+        selectedGroup = null;
+        filteredYahrtzeits = [];
+      });
+      print('=== _filterByGroup END (early exit - no data) ===');
+      return;
+    }
+
+    for (var y in yahrtzeits) {
+      print('DEBUG: Yahrtzeit group: "${y.group}" (null: ${y.group == null})');
+    }
+    setState(() {
+      selectedGroup = group;
+      if (group == null || group.isEmpty) {
+        filteredYahrtzeits = List.from(yahrtzeits);
+        print(
+            'DEBUG: Showing all - filteredYahrtzeits: ${filteredYahrtzeits.length}');
+      } else {
+        filteredYahrtzeits = yahrtzeits.where((yahrtzeit) {
+          final matches = yahrtzeit.group == group;
+          print('DEBUG: Checking "${yahrtzeit.group}" == "$group": $matches');
+          return matches;
+        }).toList();
+        print(
+            'DEBUG: Filtered to ${filteredYahrtzeits.length} items for group: $group');
+      }
+    });
+    print('=== _filterByGroup END ===');
   }
 
   Future<void> writeData(List<Map<String, dynamic>> data) async {
@@ -62,58 +115,120 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   }
 
   Future<void> fetchYahrtzeits() async {
+    print('=== fetchYahrtzeits CALLED ===');
     try {
-      final fetchedYahrtzeits = await readData();
+      print('=== fetchYahrtzeits START ===');
+      // Use manager to ensure consistency with how data is saved
+      final fetchedYahrtzeits = await manager.getAllYahrtzeits();
+      print(
+          'DEBUG: Fetched ${fetchedYahrtzeits.length} yahrtzeits from manager');
+      for (var y in fetchedYahrtzeits) {
+        print(
+            'DEBUG: Yahrtzeit - ID: ${y.id}, English: ${y.englishName}, Hebrew: ${y.hebrewName}, Group: ${y.group}, Day: ${y.day}, Month: ${y.month}');
+      }
+
+      final filteredYahrtzeits = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
+      print(
+          'DEBUG: After _filterDuplicateYahrtzeits: ${filteredYahrtzeits.length} yahrtzeits');
+      for (var y in filteredYahrtzeits) {
+        print(
+            'DEBUG: Yahrtzeit - English: ${y.englishName}, Hebrew: ${y.hebrewName}, Group: ${y.group}');
+      }
 
       setState(() {
-        yahrtzeitDates = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
+        this.yahrtzeits = filteredYahrtzeits;
+        // Reset filter when data loads - show all by default if we have data
+        if (filteredYahrtzeits.isEmpty) {
+          selectedGroup = null;
+          this.filteredYahrtzeits = [];
+        } else {
+          // Only reset filter if we had a selectedGroup but no matching data
+          if (selectedGroup != null && filteredYahrtzeits.isNotEmpty) {
+            // Check if selectedGroup still exists in the data
+            final hasMatchingGroup =
+                filteredYahrtzeits.any((y) => y.group == selectedGroup);
+            if (!hasMatchingGroup) {
+              print(
+                  'DEBUG: selectedGroup "$selectedGroup" has no matches, resetting to null');
+              selectedGroup = null;
+            }
+          }
+          this.filteredYahrtzeits = List.from(filteredYahrtzeits);
+        }
         isLoading = false;
+        print(
+            'DEBUG: State updated - yahrtzeits: ${this.yahrtzeits.length}, filteredYahrtzeits: ${this.filteredYahrtzeits.length}, selectedGroup: $selectedGroup');
       });
+      print('=== fetchYahrtzeits END ===');
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_listKey.currentState != null) {
-          for (var i = 0; i < yahrtzeitDates.length; i++) {
+          for (var i = 0; i < yahrtzeits.length; i++) {
             _listKey.currentState?.insertItem(i);
           }
         }
       });
-    } catch (e) {
-      print('Error fetching yahrtzeits: $e');
+    } catch (e, stackTrace) {
+      print('ERROR: Exception in fetchYahrtzeits: $e');
+      print('Stack trace: $stackTrace');
       setState(() {
         isLoading = false;
+        yahrtzeits = [];
+        filteredYahrtzeits = [];
       });
     }
   }
 
-  List<YahrtzeitDate> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
+  List<Yahrtzeit> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
+    print('=== _filterDuplicateYahrtzeits START ===');
+    print('DEBUG: Input yahrtzeits count: ${yahrtzeits.length}');
     final uniqueNames = <String>{};
-    final filteredList = <YahrtzeitDate>[];
+    final filteredList = <Yahrtzeit>[];
 
-    for (var yahrtzeit in yahrtzeits) {
-      if (yahrtzeit.englishName != null &&
-          uniqueNames.add(yahrtzeit.englishName!)) {
-        filteredList.add(YahrtzeitDate.fromYahrtzeit(yahrtzeit));
+    for (var i = 0; i < yahrtzeits.length; i++) {
+      final yahrtzeit = yahrtzeits[i];
+      try {
+        print(
+            'DEBUG: Processing yahrtzeit [$i/${yahrtzeits.length}] - ID: ${yahrtzeit.id}, English: ${yahrtzeit.englishName}, Hebrew: ${yahrtzeit.hebrewName}, Group: ${yahrtzeit.group}, Day: ${yahrtzeit.day}, Month: ${yahrtzeit.month}');
+
+        // Show all yahrtzeits, including those without day/month (incomplete entries)
+        // Filter duplicates by English name, but allow empty strings and null values
+        final englishName = yahrtzeit.englishName?.trim();
+        if (englishName != null && englishName.isNotEmpty) {
+          // Has English name - check for duplicates
+          if (uniqueNames.add(englishName)) {
+            filteredList.add(yahrtzeit);
+            print(
+                'DEBUG: Successfully added to filtered list - English: $englishName');
+          } else {
+            print('DEBUG: Skipped duplicate englishName: $englishName');
+          }
+        } else {
+          // No English name or empty - still include it (English name is required but might be missing in old data)
+          // Use ID as unique identifier for entries without English name
+          final uniqueId = 'no_name_${yahrtzeit.id}';
+          if (uniqueNames.add(uniqueId)) {
+            filteredList.add(yahrtzeit);
+            print(
+                'DEBUG: Added yahrtzeit without English name - ID: ${yahrtzeit.id}');
+          } else {
+            print('DEBUG: Skipped duplicate ID: ${yahrtzeit.id}');
+          }
+        }
+      } catch (e, stackTrace) {
+        print('ERROR: Exception processing yahrtzeit at index $i: $e');
+        print('Stack trace: $stackTrace');
+        print(
+            'Yahrtzeit details - English: ${yahrtzeit.englishName}, Hebrew: ${yahrtzeit.hebrewName}, Month: ${yahrtzeit.month}, Day: ${yahrtzeit.day}');
       }
     }
 
+    print('DEBUG: Output filteredList count: ${filteredList.length}');
+    if (filteredList.isEmpty && yahrtzeits.isNotEmpty) {
+      print('WARNING: All ${yahrtzeits.length} yahrtzeits were filtered out!');
+    }
+    print('=== _filterDuplicateYahrtzeits END ===');
     return filteredList;
-  }
-
-  String _getHebrewDateString(JewishDate date) {
-    final hebrewFormatter = HebrewDateFormatter()
-      ..hebrewFormat = true
-      ..useGershGershayim = true;
-    String fullDate = hebrewFormatter.format(date);
-    List<String> dateParts = fullDate.split(' ');
-    return '${dateParts[0]} ${dateParts[1]}';
-  }
-
-  String _getEnglishDateString(JewishDate date) {
-    return '${date.getJewishDayOfMonth()} ${_getEnglishMonthName(date.getJewishMonth())}';
-  }
-
-  String _getEnglishMonthName(int month) {
-    return hebrewMonths[month] ?? '';
   }
 
   Future<void> _editYahrtzeit(Yahrtzeit yahrtzeit) async {
@@ -130,9 +245,16 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
 
       if (result == true) {
         // Reload data and refresh UI
-        setState(() {
-          fetchYahrtzeits();
-        });
+        await fetchYahrtzeits();
+        _loadGroups();
+        // Reapply filter if one is selected
+        if (selectedGroup != null) {
+          _filterByGroup(selectedGroup);
+        }
+        // Notify parent to refresh Upcoming tab
+        if (widget.onDataChanged != null) {
+          widget.onDataChanged!();
+        }
       }
     } catch (e) {
       print('Error editing Yahrtzeit: $e');
@@ -146,96 +268,66 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
 
   Future<void> _deleteYahrtzeitFromFile(Yahrtzeit yahrtzeit) async {
     try {
-      List<Yahrtzeit> yahrtzeits = await readData();
-
-      print('Current IDs in file: ${yahrtzeits.map((item) => item.id).toList()}');
-      print('Attempting to delete Yahrtzeit with ID: ${yahrtzeit.id}');
-
-      yahrtzeits.removeWhere((element) {
-        bool match = element.id == yahrtzeit.id;
-        if (match) {
-          print('Removing Yahrtzeit with ID: ${element.id}');
-        }
-        return match;
-      });
-
-      List<Map<String, dynamic>> jsonData =
-          yahrtzeits.map((yahrtzeit) => yahrtzeit.toJson()).toList();
-      print('Data to be written: ${json.encode(jsonData)}');
-
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('yahrtzeit_data', json.encode(jsonData));
-
+      // Use manager to delete - it handles everything consistently
+      await manager.deleteYahrtzeit(yahrtzeit);
       print('Yahrtzeit deleted successfully');
     } catch (e) {
       print('Error deleting yahrtzeit: $e');
     }
   }
 
-  void _deleteYahrtzeit(Yahrtzeit yahrtzeit) async {
-    try {
-      final index =
-          yahrtzeitDates.indexWhere((date) => date.yahrtzeit == yahrtzeit);
-      if (index >= 0 && index < yahrtzeitDates.length) {
-        setState(() {
-          yahrtzeitDates.removeAt(index);
-          _listKey.currentState?.removeItem(
-            index,
-            (context, animation) {
-              return SlideTransition(
-                position: animation.drive(
-                  Tween<Offset>(
-                    begin: Offset(0, 0),
-                    end: Offset(1, 0),
-                  ).chain(CurveTween(curve: Curves.easeInOut)),
-                ),
-                child: _buildYahrtzeitTile(yahrtzeitDates[index]),
-              );
-            },
-            duration: Duration(milliseconds: 300),
-          );
-        });
-        await _deleteYahrtzeitFromFile(yahrtzeit);
-      }
-    } catch (e) {
-      print('Error while deleting yahrtzeit: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              AppLocalizations.of(context)!.translate('deletion_failed')),
-        ),
-      );
-    }
-  }
-
-  void _showStoredData() async {
-    List<Yahrtzeit> data = await readData();
+  void _showDeleteConfirmation(Yahrtzeit yahrtzeit) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Stored Yahrtzeits'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: data.map((yahrtzeit) {
-                return ListTile(
-                  title: Text(yahrtzeit.englishName ?? ''),
-                  subtitle: Text(yahrtzeit.hebrewName),
-                );
-              }).toList(),
-            ),
+          title: Text(AppLocalizations.of(context)!.translate('delete')),
+          content: Text(
+            '${AppLocalizations.of(context)!.translate('delete')} ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}?',
           ),
           actions: [
             TextButton(
-              child: Text('Close'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(AppLocalizations.of(context)!.translate('close')),
+            ),
+            TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
+                _deleteYahrtzeit(yahrtzeit);
               },
+              child: Text(
+                AppLocalizations.of(context)!.translate('delete'),
+                style: TextStyle(color: Colors.red),
+              ),
             ),
           ],
         );
       },
     );
+  }
+
+  void _deleteYahrtzeit(Yahrtzeit yahrtzeit) async {
+    try {
+      await _deleteYahrtzeitFromFile(yahrtzeit);
+      await fetchYahrtzeits();
+      _loadGroups();
+      // Reapply filter if one is selected
+      if (selectedGroup != null) {
+        _filterByGroup(selectedGroup);
+      }
+      // Notify parent to refresh Upcoming tab
+      if (widget.onDataChanged != null) {
+        widget.onDataChanged!();
+      }
+    } catch (e) {
+      print('Error while deleting yahrtzeit: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text(AppLocalizations.of(context)!.translate('deletion_failed')),
+        ),
+      );
+    }
   }
 
   @override
@@ -247,10 +339,10 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       appBar: AppBar(
         title: Text(
           AppLocalizations.of(context)!.translate('manage_yahrzeits'),
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
-        backgroundColor: Color.fromARGB(255, 50, 4, 129),
+        backgroundColor: AppTheme.primaryColor,
         elevation: 0,
         actions: [
           if (settingsProvider.syncSettings)
@@ -263,12 +355,14 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                     SnackBar(
                       content: Text(result.message),
                       duration: Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
                     ),
                   );
                   fetchYahrtzeits();
                 }
               },
-              tooltip: 'Sync with calendar',
+              tooltip:
+                  AppLocalizations.of(context)!.translate('sync_with_calendar'),
             ),
           IconButton(
             icon: Icon(Icons.add, color: Colors.white),
@@ -281,59 +375,206 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
               ).then((result) {
                 if (result == true) {
                   fetchYahrtzeits();
+                  _loadGroups();
+                  // Notify parent to refresh Upcoming tab
+                  if (widget.onDataChanged != null) {
+                    widget.onDataChanged!();
+                  }
                 }
               });
             },
           ),
-          IconButton(
-            icon: Icon(Icons.info, color: Colors.white),
-            onPressed: _showStoredData,
-          ),
         ],
       ),
-      body: Container(
-        color: Colors.white,
-        child: isLoading
-            ? Center(
-                child: CircularProgressIndicator(
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Colors.deepPurple),
-                ),
-              )
-            : yahrtzeitDates.isEmpty
-                ? Center(
-                    child: Text(
-                      AppLocalizations.of(context)!
-                          .translate('you_have_not_added_any_yahrtzeits_yet.'),
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
+      body: Column(
+        children: [
+          if (availableGroups.isNotEmpty)
+            Container(
+              color: AppTheme.backgroundColor,
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildFilterChip(
+                      context,
+                      label: AppLocalizations.of(context)!.translate('all'),
+                      isSelected: selectedGroup == null,
+                      onTap: () => _filterByGroup(null),
                     ),
-                  )
-                : AnimatedList(
-                    key: _listKey,
-                    initialItemCount: yahrtzeitDates.length,
-                    itemBuilder: (context, index, animation) {
-                      if (index >= yahrtzeitDates.length) {
-                        return SizedBox.shrink();
-                      }
-                      return FadeTransition(
-                        opacity: animation,
-                        child: _buildYahrtzeitTile(yahrtzeitDates[index]),
+                    SizedBox(width: 8),
+                    ...availableGroups.map((group) {
+                      return Padding(
+                        padding: EdgeInsets.only(right: 8),
+                        child: _buildFilterChip(
+                          context,
+                          label: group,
+                          isSelected: selectedGroup == group,
+                          onTap: () => _filterByGroup(group),
+                        ),
                       );
-                    },
-                  ),
+                    }),
+                  ],
+                ),
+              ),
+            ),
+          Expanded(
+            child: Container(
+              color: AppTheme.backgroundColor,
+              child: Builder(
+                builder: (context) {
+                  print(
+                      'DEBUG: Building list - isLoading: $isLoading, filteredYahrtzeits.length: ${filteredYahrtzeits.length}, yahrtzeits.length: ${yahrtzeits.length}, selectedGroup: $selectedGroup');
+                  return isLoading
+                      ? Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                AppTheme.primaryColor),
+                          ),
+                        )
+                      : filteredYahrtzeits.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    AppLocalizations.of(context)!.translate(
+                                        'you_have_not_added_any_yahrtzeits_yet'),
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        color: AppTheme.textTertiary),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'DEBUG: yahrtzeits: ${yahrtzeits.length}, filtered: ${filteredYahrtzeits.length}, selectedGroup: $selectedGroup',
+                                    style: TextStyle(
+                                        fontSize: 12, color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: filteredYahrtzeits.length,
+                              itemBuilder: (context, index) {
+                                print(
+                                    'DEBUG: Building tile $index of ${filteredYahrtzeits.length}');
+                                return _buildYahrtzeitTile(
+                                    filteredYahrtzeits[index]);
+                              },
+                            );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildYahrtzeitTile(YahrtzeitDate yahrtzeitDate) {
-    String hebrewDate = _getHebrewDateString(yahrtzeitDate.hebrewDate);
-    String englishDate = _getEnglishDateString(yahrtzeitDate.hebrewDate);
+  Widget _buildFilterChip(
+    BuildContext context, {
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primaryColor : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color:
+                isSelected ? AppTheme.primaryColor : AppTheme.cardBorderColor,
+            width: 1.5,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppTheme.primaryColorWithOpacity(0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: isSelected ? Colors.white : AppTheme.inactiveTextColor,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildYahrtzeitTile(Yahrtzeit yahrtzeit) {
+    final settingsProvider =
+        Provider.of<SettingsProvider>(context, listen: false);
+    final jewishLanguage = settingsProvider.jewishLanguage;
+
+    // English month names
+    const Map<int, String> englishMonths = {
+      JewishDate.TISHREI: 'Tishrei',
+      JewishDate.CHESHVAN: 'Cheshvan',
+      JewishDate.KISLEV: 'Kislev',
+      JewishDate.TEVES: 'Tevet',
+      JewishDate.SHEVAT: 'Shevat',
+      JewishDate.ADAR: 'Adar',
+      JewishDate.ADAR_II: 'Adar II',
+      JewishDate.NISSAN: 'Nissan',
+      JewishDate.IYAR: 'Iyar',
+      JewishDate.SIVAN: 'Sivan',
+      JewishDate.TAMMUZ: 'Tammuz',
+      JewishDate.AV: 'Av',
+      JewishDate.ELUL: 'Elul',
+    };
+
+    // Build date display string
+    String? dateDisplay;
+    if (yahrtzeit.day != null && yahrtzeit.month != null) {
+      var day = null, month = null;
+      if (jewishLanguage == 'he') {
+        // Hebrew format: Use HebrewDateFormatter methods
+        try {
+          final hebrewFormatter = HebrewDateFormatter()
+            ..hebrewFormat = true
+            ..useGershGershayim = true;
+
+          day = hebrewFormatter.formatHebrewNumber(yahrtzeit.day!);
+          month = hebrewFormatter.hebrewMonths[yahrtzeit.month!];
+          if (month == JewishDate.ADAR_II || month == 14) {
+            //14 is technically Adar I instead of just Adar
+            month = month + '\'';
+          }
+        } catch (e) {
+          //fall through as if we wanted English
+        }
+      } //otherwise use English:
+      if (day == null || month == null) {
+        day = yahrtzeit.day.toString();
+        month = englishMonths[yahrtzeit.month] ?? 'Unknown';
+      }
+      dateDisplay = '$day $month';
+    }
+    // If date is not configured, dateDisplay remains null and won't be shown
 
     return Dismissible(
-      key: Key(yahrtzeitDate.yahrtzeit.id.toString()),
+      key: Key(yahrtzeit.id.toString()),
       direction: DismissDirection.endToStart,
       onDismissed: (direction) {
-        _deleteYahrtzeit(yahrtzeitDate.yahrtzeit);
+        _deleteYahrtzeit(yahrtzeit);
       },
       background: Container(
         color: Colors.red,
@@ -348,72 +589,103 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
         ),
       ),
       child: Card(
-        elevation: 5,
-        margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        elevation: 0,
+        margin: EdgeInsets.symmetric(vertical: 6, horizontal: 16),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: AppTheme.cardBorderColor, width: 1),
         ),
-        child: ListTile(
-          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    yahrtzeitDate.yahrtzeit.englishName!,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+        color: Colors.white,
+        child: InkWell(
+          onTap: () {
+            _editYahrtzeit(yahrtzeit);
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        yahrtzeit.englishName ?? '',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textCardTitle,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        yahrtzeit.hebrewName ?? '',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textCardTitle,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
+                      if (dateDisplay != null) ...[
+                        SizedBox(height: 6),
+                        Text(
+                          dateDisplay,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppTheme.textSecondary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ],
+                    ],
                   ),
-                  SizedBox(height: 5),
-                  Text(
-                    englishDate,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
+                ),
+                SizedBox(width: 4),
+                PopupMenuButton<String>(
+                  iconSize: 20,
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(),
+                  icon: Icon(Icons.more_vert, size: 20),
+                  onSelected: (value) {
+                    if (value == 'edit') {
+                      _editYahrtzeit(yahrtzeit);
+                    } else if (value == 'delete') {
+                      _showDeleteConfirmation(yahrtzeit);
+                    }
+                  },
+                  itemBuilder: (BuildContext context) => [
+                    PopupMenuItem<String>(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit,
+                              size: 18, color: AppTheme.primaryColor),
+                          SizedBox(width: 8),
+                          Text(AppLocalizations.of(context)!.translate('edit')),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    yahrtzeitDate.yahrtzeit.hebrewName,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                    PopupMenuItem<String>(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete, size: 18, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text(AppLocalizations.of(context)!
+                              .translate('delete')),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    hebrewDate,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: () => _deleteYahrtzeit(yahrtzeitDate.yahrtzeit),
-              ),
-              IconButton(
-                icon: Icon(Icons.edit, color: Colors.deepPurple),
-                onPressed: () => _editYahrtzeit(yahrtzeitDate.yahrtzeit),
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

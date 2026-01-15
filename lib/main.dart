@@ -6,6 +6,7 @@ import 'localizations/global_material_localizations.dart';
 import 'providers/settings_provider.dart';
 import 'services/notification_service.dart';
 import 'services/yahrtzeits_manager.dart';
+import 'theme/app_theme.dart';
 import 'home_page.dart';
 
 void main() async {
@@ -83,8 +84,13 @@ class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {
         return MaterialApp(
           title: 'Yahrtzeit Manager',
           theme: ThemeData(
-            primarySwatch: Colors.blue,
+            primarySwatch: Colors.grey,
+            primaryColor: AppTheme.primaryColor,
             visualDensity: VisualDensity.adaptivePlatformDensity,
+            colorScheme: ColorScheme.light(
+              primary: AppTheme.primaryColor,
+              secondary: AppTheme.selectedColor,
+            ),
             textTheme: TextTheme(
               bodyLarge: TextStyle(color: const Color.fromARGB(221, 179, 108, 108)),
               bodyMedium: TextStyle(color: Colors.black54),

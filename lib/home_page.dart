@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'settings/settings.dart';
+import 'views/about.dart';
 import 'views/manage_yahrtzeits.dart';
 import 'views/upcoming_yahrtzeits.dart';
 import '../localizations/app_localizations.dart';
+import '../theme/app_theme.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -11,6 +13,23 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  final GlobalKey<UpcomingYahrtzeitsState> _upcomingKey = GlobalKey<UpcomingYahrtzeitsState>();
+
+  void _refreshUpcomingYahrtzeits() {
+    if (_upcomingKey.currentState != null) {
+      _upcomingKey.currentState!.fetchYahrtzeits();
+    }
+  }
+
+  void _onTabTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    // Refresh Upcoming tab when switching to it
+    if (index == 0) {
+      _refreshUpcomingYahrtzeits();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,9 +37,10 @@ class _HomePageState extends State<HomePage> {
       body: IndexedStack(
         index: _selectedIndex,
         children: <Widget>[
-          UpcomingYahrtzeits(),
-          ManageYahrtzeits(),
+          UpcomingYahrtzeits(key: _upcomingKey, onDataChanged: _refreshUpcomingYahrtzeits),
+          ManageYahrtzeits(onDataChanged: _refreshUpcomingYahrtzeits),
           SettingsPage(),
+          AboutPage(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -37,15 +57,22 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.settings),
             label: AppLocalizations.of(context)!.translate('settings'),
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.info),
+            label: 'About',
+          ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+        selectedItemColor: AppTheme.selectedColor,
+        unselectedItemColor: AppTheme.unselectedColor,
+        selectedIconTheme: IconThemeData(color: AppTheme.selectedColor, size: 26),
+        unselectedIconTheme: IconThemeData(color: AppTheme.unselectedColor, size: 24),
+        selectedFontSize: 13,
+        unselectedFontSize: 12,
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
+        backgroundColor: Colors.white,
+        onTap: _onTabTapped,
       ),
     );
   }
