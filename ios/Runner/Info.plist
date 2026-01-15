@@ -45,5 +45,40 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Yahrtzeit Library</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.yahrtzeit.library</string>
+			</array>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>yzl</string>
+			</array>
+		</dict>
+	</array>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.yahrtzeit.library</string>
+			<key>UTTypeDescription</key>
+			<string>Yahrtzeit Library File</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>yzl</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/json</string>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

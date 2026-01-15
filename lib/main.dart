@@ -6,8 +6,10 @@ import 'localizations/global_material_localizations.dart';
 import 'providers/settings_provider.dart';
 import 'services/notification_service.dart';
 import 'services/yahrtzeits_manager.dart';
+import 'services/file_handler_service.dart';
 import 'theme/app_theme.dart';
 import 'home_page.dart';
+import 'views/import_yahrtzeits.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -77,6 +79,24 @@ class YahrtzeitManagerApp extends StatefulWidget {
 }
 
 class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {
+  final FileHandlerService _fileHandlerService = FileHandlerService();
+  String? _initialFile;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkForInitialFile();
+  }
+
+  Future<void> _checkForInitialFile() async {
+    final filePath = await _fileHandlerService.getInitialFile();
+    if (filePath != null && mounted) {
+      setState(() {
+        _initialFile = filePath;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<LocaleProvider>(
@@ -96,7 +116,9 @@ class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {
               bodyMedium: TextStyle(color: Colors.black54),
             ),
           ),
-          home: HomePage(),
+          home: _initialFile != null
+              ? ImportYahrtzeitsPage(filePath: _initialFile!)
+              : HomePage(),
           locale: localeProvider.locale,
           supportedLocales: [
             Locale('en', 'US'),

@@ -5,9 +5,11 @@ import '../localizations/app_localizations.dart';
 import '../models/yahrtzeit.dart';
 import '../providers/settings_provider.dart';
 import '../services/yahrtzeits_manager.dart';
+import '../services/export_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_icon_decorative.dart';
 import 'add_yahrtzeit.dart';
+import 'share_yahrtzeits.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,6 +30,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   List<String> availableGroups = [];
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
   final YahrtzeitsManager manager = YahrtzeitsManager();
+  final ExportService _exportService = ExportService();
 
   @override
   void initState() {
@@ -331,6 +334,148 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     }
   }
 
+  void _showShareDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.translate('share_yahrtzeits')),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.list),
+                title: Text(AppLocalizations.of(context)!.translate('share_all')),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _shareAll();
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.filter_list),
+                title: Text(AppLocalizations.of(context)!.translate('share_by_group')),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _showGroupSelectionDialog();
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.check_box),
+                title: Text(AppLocalizations.of(context)!.translate('select_individual')),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _shareIndividual();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _shareAll() async {
+    try {
+      await _exportService.exportYahrtzeits(yahrtzeits, fileName: 'all');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!
+                .translate('yahrtzeits_shared_successfully')),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error sharing: $e'),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showGroupSelectionDialog() {
+    if (availableGroups.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!
+              .translate('no_groups_available')),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.translate('select_group')),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: availableGroups.map((group) {
+                return ListTile(
+                  title: Text(group),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _shareByGroup(group);
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _shareByGroup(String group) async {
+    try {
+      final groupYahrtzeits = yahrtzeits
+          .where((y) => y.group == group)
+          .toList();
+      
+      if (groupYahrtzeits.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!
+                .translate('no_yahrtzeits_in_group')),
+          ),
+        );
+        return;
+      }
+
+      await _exportService.exportYahrtzeits(groupYahrtzeits, fileName: group);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!
+                .translate('yahrtzeits_shared_successfully')),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error sharing: $e'),
+          ),
+        );
+      }
+    }
+  }
+
+  void _shareIndividual() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ShareYahrtzeitsPage(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final settingsProvider = Provider.of<SettingsProvider>(context);
@@ -366,6 +511,11 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
               tooltip:
                   AppLocalizations.of(context)!.translate('sync_with_calendar'),
             ),
+          IconButton(
+            icon: Icon(Icons.share, color: Colors.white),
+            onPressed: _showShareDialog,
+            tooltip: AppLocalizations.of(context)!.translate('share'),
+          ),
           IconButton(
             icon: Icon(Icons.add, color: Colors.white),
             onPressed: () {

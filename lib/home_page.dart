@@ -7,13 +7,23 @@ import '../localizations/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class HomePage extends StatefulWidget {
+  final int? initialTab;
+
+  const HomePage({Key? key, this.initialTab}) : super(key: key);
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
   final GlobalKey<UpcomingYahrtzeitsState> _upcomingKey = GlobalKey<UpcomingYahrtzeitsState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialTab ?? 0;
+  }
 
   void _refreshUpcomingYahrtzeits() {
     if (_upcomingKey.currentState != null) {

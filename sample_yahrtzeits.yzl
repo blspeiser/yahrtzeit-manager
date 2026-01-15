@@ -1,0 +1,240 @@
+{
+  "version": "1.0",
+  "exportDate": "2024-01-15T12:00:00Z",
+  "yahrtzeits": [
+    {
+      "id": "grandma",
+      "englishName": "Lillian Barry",
+      "hebrewName": "הינדא לאה בת דוד וחנה",
+      "day": 20,
+      "month": 7,
+      "group": "Barry/Norkin/Raider",
+      "selected": false
+    },
+    {
+      "id": "grandpa",
+      "englishName": "Nathan Barry",
+      "hebrewName": "נחום בן יוסף ושרה",
+      "day": 15,
+      "month": 2,
+      "group": "Barry/Norkin/Raider",
+      "selected": false
+    },
+    {
+      "id": "aunt_anne",
+      "englishName": "Anne Raider",
+      "hebrewName": "הנסא בת יוסף ושרה",
+      "day": 2,
+      "month": 7,
+      "group": "Barry/Norkin/Raider",
+      "selected": false
+    },
+    {
+      "id": "uncle_irv",
+      "englishName": "Irv Raider",
+      "hebrewName": "ישראל בן משה וחנה",
+      "day": 17,
+      "month": 2,
+      "group": "Barry/Norkin/Raider",
+      "selected": false
+    },
+    {
+      "id": "aunt_lita",
+      "englishName": "Lita Norkin",
+      "hebrewName": "זלאטע בת משה הלוי",
+      "day": 2,
+      "month": 11,
+      "group": "Barry/Norkin/Raider",
+      "selected": false
+    },
+    {
+      "id": "david_norkin",
+      "englishName": "David Norkin",
+      "hebrewName": "דוד בן אברהם",
+      "day": 1,
+      "month": 11,
+      "group": "Barry/Norkin/Raider",
+      "selected": false
+    },
+    {
+      "id": "cousin_robbie",
+      "englishName": "Robbie Raider",
+      "hebrewName": "מרדכי בן ישראל והנסא",
+      "day": 3,
+      "month": 13,
+      "group": "Barry/Norkin/Raider",
+      "selected": false
+    },
+    {
+      "id": "mom",
+      "englishName": "Lora Barry Goldberg",
+      "hebrewName": "רחל בת נחום והינדא לאה",
+      "day": 22,
+      "month": 2,
+      "group": "Barry/Norkin/Raider",
+      "selected": false
+    },
+    {
+      "id": "isaac",
+      "englishName": "Isaac Speiser",
+      "hebrewName": "יצחק אמת בן דוד רפאל",
+      "day": 15,
+      "month": 5,
+      "group": "Speisers",
+      "selected": false
+    },
+    {
+      "id": "bubbie",
+      "englishName": "Rose Speiser",
+      "hebrewName": "ביילא רחל בת יהושע שלימה ודודא",
+      "day": 24,
+      "month": 4,
+      "group": "Speisers",
+      "selected": false
+    },
+    {
+      "id": "zaydie",
+      "englishName": "Baruch Lockspeiser (Zaydie)",
+      "hebrewName": "ברוך בן ישראל צבי ויתי יהודית",
+      "day": 22,
+      "month": 10,
+      "group": "Speisers",
+      "selected": false
+    },
+    {
+      "id": "uncle_sruli",
+      "englishName": "Israel Speiser",
+      "hebrewName": "ישראל בן ברוך וביילא רחל",
+      "day": null,
+      "month": null,
+      "group": "Speisers",
+      "selected": false
+    },
+    {
+      "id": "kim",
+      "englishName": "Kim Nathanson",
+      "hebrewName": "שושנה בת ירון ורות",
+      "day": null,
+      "month": null,
+      "group": "Speiser Friends",
+      "selected": false
+    },
+    {
+      "id": "nathan",
+      "englishName": "Nathan Chapman",
+      "hebrewName": "נתן חיים בן שושנה",
+      "day": null,
+      "month": null,
+      "group": "Speiser Friends",
+      "selected": false
+    },
+    {
+      "id": "grandma_ruth",
+      "englishName": "Ruth Gland",
+      "hebrewName": "רות רייזל בת חיה שרה",
+      "day": 8,
+      "month": 2,
+      "group": "Extended Speiser Family",
+      "selected": false
+    },
+    {
+      "id": "grandpa_abe",
+      "englishName": "Abe Goldstein",
+      "hebrewName": "אברהם בן יעקב",
+      "day": 4,
+      "month": 13,
+      "group": "Extended Speiser Family",
+      "selected": false
+    },
+    {
+      "id": "grandma_lilly",
+      "englishName": "Lillian Goldstein",
+      "hebrewName": "לאה בת ציפורה",
+      "day": 10,
+      "month": 10,
+      "group": "Extended Speiser Family",
+      "selected": false
+    },
+    {
+      "id": "avi",
+      "englishName": "Avi Mandelbaum",
+      "hebrewName": "אברהם מנשה בן חנה ברכה",
+      "day": null,
+      "month": null,
+      "group": "Friends",
+      "selected": false
+    },
+    {
+      "id": "ruth",
+      "englishName": "Ruth Levine",
+      "hebrewName": "רחל בת לאה ונפתלי",
+      "day": 9,
+      "month": 11,
+      "group": "Levine Family",
+      "selected": false
+    },
+    {
+      "id": "irwin",
+      "englishName": "Irwin Levine",
+      "hebrewName": "יצחק בן ישעיה הלוי",
+      "day": 7,
+      "month": 5,
+      "group": "Levine Family",
+      "selected": false
+    },
+    {
+      "id": "gg",
+      "englishName": "Lillian Retter",
+      "hebrewName": null,
+      "day": null,
+      "month": null,
+      "group": "Retter/Kammerman",
+      "selected": false
+    },
+    {
+      "id": "grandpa_milton",
+      "englishName": "Milton Retter",
+      "hebrewName": null,
+      "day": null,
+      "month": null,
+      "group": "Retter/Kammerman",
+      "selected": false
+    },
+    {
+      "id": "aunt_syd",
+      "englishName": "Sydney Kammerman",
+      "hebrewName": null,
+      "day": null,
+      "month": null,
+      "group": "Retter/Kammerman",
+      "selected": false
+    },
+    {
+      "id": "davie",
+      "englishName": "David Kammerman",
+      "hebrewName": null,
+      "day": null,
+      "month": null,
+      "group": "Retter/Kammerman",
+      "selected": false
+    },
+    {
+      "id": "ellie",
+      "englishName": "Ellen Retter",
+      "hebrewName": null,
+      "day": null,
+      "month": null,
+      "group": "Retter/Kammerman",
+      "selected": false
+    },
+    {
+      "id": "steven",
+      "englishName": "Steven Albert",
+      "hebrewName": null,
+      "day": null,
+      "month": null,
+      "group": "Levine Family",
+      "selected": false
+    }
+  ]
+}
