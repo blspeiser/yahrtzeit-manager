@@ -4,6 +4,7 @@ import '../localizations/app_localizations.dart';
 import '../providers/settings_provider.dart';
 import '../services/yahrtzeits_manager.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_icon_decorative.dart';
 
 class SettingsPage extends StatelessWidget {
   Widget _buildSectionHeader(BuildContext context, String title) {
@@ -39,6 +40,7 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: AppIconDecorative(),
         title: Text(AppLocalizations.of(context)!.translate('settings'),
             style: TextStyle(color: Colors.white)),
         backgroundColor: AppTheme.primaryColor,

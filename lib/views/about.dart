@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_icon_decorative.dart';
 
 class AboutPage extends StatefulWidget {
   @override
@@ -43,6 +44,7 @@ class _AboutPageState extends State<AboutPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: AppIconDecorative(),
         title: Text(
           'About',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),

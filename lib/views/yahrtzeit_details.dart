@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import '../models/yahrtzeit_date.dart';
 import '../localizations/app_localizations.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_icon_decorative.dart';
 import 'package:intl/intl.dart';
 
 class YahrtzeitDetailsPage extends StatelessWidget {
@@ -21,8 +22,10 @@ class YahrtzeitDetailsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: AppIconDecorative(),
         title: Text(
             '${yahrtzeitDate.yahrtzeit.englishName} ${localizations.translate("details")}'),
+        backgroundColor: AppTheme.primaryColor,
         actions: [
           IconButton(
             icon: Icon(Icons.share),

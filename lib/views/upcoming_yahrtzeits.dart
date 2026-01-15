@@ -6,6 +6,7 @@ import '../providers/settings_provider.dart';
 import '../services/yahrtzeits_manager.dart';
 import '../theme/app_theme.dart';
 import '../widgets/yahrtzeit_tile.dart';
+import '../widgets/app_icon_decorative.dart';
 
 class UpcomingYahrtzeits extends StatefulWidget {
   final VoidCallback? onDataChanged;
@@ -159,6 +160,7 @@ class UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
       builder: (context, settings, child) {
         return Scaffold(
           appBar: AppBar(
+            leading: AppIconDecorative(),
             title: Text(
               AppLocalizations.of(context)!.translate('upcoming_yahrtzeits'),
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),

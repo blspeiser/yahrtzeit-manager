@@ -6,6 +6,7 @@ import '../models/yahrtzeit.dart';
 import '../providers/settings_provider.dart';
 import '../services/yahrtzeits_manager.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_icon_decorative.dart';
 import 'add_yahrtzeit.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -337,6 +338,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: AppIconDecorative(),
         title: Text(
           AppLocalizations.of(context)!.translate('manage_yahrzeits'),
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),

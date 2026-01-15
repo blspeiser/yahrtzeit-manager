@@ -4,6 +4,7 @@ import '../models/yahrtzeit.dart';
 import '../services/yahrtzeits_manager.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_icon_decorative.dart';
 import 'package:kosher_dart/kosher_dart.dart';
 import '../localizations/app_localizations.dart';
 
@@ -151,6 +152,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     final localizations = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
+        leading: AppIconDecorative(),
         title: Text(
           widget.isEditing
               ? localizations.translate('edit_yahrtzeit')
