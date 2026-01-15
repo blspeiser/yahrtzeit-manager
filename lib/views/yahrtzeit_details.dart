@@ -21,14 +21,19 @@ class YahrtzeitDetailsPage extends StatelessWidget {
       ..useGershGershayim = true;
 
     return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         leading: AppIconDecorative(),
         title: Text(
-            '${yahrtzeitDate.yahrtzeit.englishName} ${localizations.translate("details")}'),
+          localizations.translate("details"),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
+        centerTitle: true,
         backgroundColor: AppTheme.primaryColor,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: Icon(Icons.share),
+            icon: Icon(Icons.share, color: Colors.white),
             onPressed: () {
               Share.share(
                 '${localizations.translate("yahrtzeit_details")}:\n\n'
@@ -41,51 +46,105 @@ class YahrtzeitDetailsPage extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Card(
-          elevation: 5,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildDetailRow(localizations.translate('english_name'),
-                    yahrtzeitDate.yahrtzeit.englishName ?? ''),
-                _buildDetailRow(localizations.translate('hebrew_name'),
-                    yahrtzeitDate.yahrtzeit.hebrewName ?? ''),
-                _buildDetailRow(localizations.translate('gregorian_date'),
-                    gregorianFormatter.format(yahrtzeitDate.gregorianDate)),
-                _buildDetailRow(localizations.translate('hebrew_date'),
-                    hebrewFormatter.format(yahrtzeitDate.hebrewDate)),
-              ],
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Name Card
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: AppTheme.cardBorderColor, width: 1),
+              ),
+              color: Colors.white,
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      yahrtzeitDate.yahrtzeit.englishName ?? '',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textCardTitle,
+                      ),
+                    ),
+                    if (yahrtzeitDate.yahrtzeit.hebrewName != null &&
+                        yahrtzeitDate.yahrtzeit.hebrewName!.isNotEmpty) ...[
+                      SizedBox(height: 8),
+                      Text(
+                        yahrtzeitDate.yahrtzeit.hebrewName!,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textCardTitle,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
-          ),
+            SizedBox(height: 16),
+            // Date Card
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: AppTheme.cardBorderColor, width: 1),
+              ),
+              color: Colors.white,
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      localizations.translate('gregorian_date'),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      gregorianFormatter.format(yahrtzeitDate.gregorianDate),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textCardTitle,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Divider(color: AppTheme.cardBorderColor),
+                    SizedBox(height: 20),
+                    Text(
+                      localizations.translate('hebrew_date'),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      hebrewFormatter.format(yahrtzeitDate.hebrewDate),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textCardTitle,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '$label:',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          Flexible(
-            child: Text(
-              value,
-              style: TextStyle(fontSize: 18, color: AppTheme.textSecondary),
-              textAlign: TextAlign.right,
-            ),
-          ),
-        ],
       ),
     );
   }

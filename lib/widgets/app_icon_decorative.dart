@@ -16,29 +16,13 @@ class AppIconDecorative extends StatelessWidget {
     final canPop = Navigator.canPop(context);
     
     if (canPop) {
-      // Show back button and icon side by side
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.of(context).pop(),
-            padding: EdgeInsets.zero,
-            constraints: BoxConstraints(),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 4.0, right: 8.0),
-            child: Image.asset(
-              'assets/images/app_icon.png',
-              width: size,
-              height: size,
-              fit: BoxFit.contain,
-            ),
-          ),
-        ],
+      // Show only back button (no icon) for screens with navigation
+      return IconButton(
+        icon: Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.of(context).pop(),
       );
     } else {
-      // Just show the icon
+      // Just show the icon for top-level screens
       return Padding(
         padding: const EdgeInsets.only(left: 8.0),
         child: Image.asset(

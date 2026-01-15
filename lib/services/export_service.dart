@@ -12,7 +12,8 @@ class ExportService {
   /// Converts a string to snake_case
   String _toSnakeCase(String input) {
     return input
-        .replaceAllMapped(RegExp(r'[A-Z]'), (match) => '_${match.group(0)!.toLowerCase()}')
+        .replaceAllMapped(
+            RegExp(r'[A-Z]'), (match) => '_${match.group(0)!.toLowerCase()}')
         .replaceAll(RegExp(r'[^a-z0-9_]'), '_')
         .replaceAll(RegExp(r'_+'), '_')
         .replaceAll(RegExp(r'^_|_$'), '')
@@ -20,7 +21,7 @@ class ExportService {
   }
 
   /// Exports a list of yahrtzeits to a .YZL file and shares it via native share dialog
-  /// 
+  ///
   /// [yahrtzeits] - List of yahrtzeits to export
   /// [fileName] - Optional custom filename (without extension). If not provided, generates based on content
   /// Returns the file path if successful, null otherwise
@@ -45,7 +46,10 @@ class ExportService {
           finalFileName = _toSnakeCase(name);
         } else {
           // Multiple yahrtzeits - check if they're all from the same group
-          final groups = yahrtzeits.map((y) => y.group).where((g) => g != null && g.isNotEmpty).toSet();
+          final groups = yahrtzeits
+              .map((y) => y.group)
+              .where((g) => g != null && g.isNotEmpty)
+              .toSet();
           if (groups.length == 1) {
             // All from same group - use group name
             finalFileName = _toSnakeCase(groups.first!);

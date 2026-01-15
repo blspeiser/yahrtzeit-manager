@@ -492,10 +492,28 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
         backgroundColor: AppTheme.primaryColor,
         elevation: 0,
         actions: [
-          if (settingsProvider.syncSettings)
-            IconButton(
-              icon: Icon(Icons.sync, color: Colors.white),
-              onPressed: () async {
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: Colors.white),
+            onSelected: (value) async {
+              if (value == 'add') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddYahrtzeitPage(),
+                  ),
+                ).then((result) {
+                  if (result == true) {
+                    fetchYahrtzeits();
+                    _loadGroups();
+                    // Notify parent to refresh Upcoming tab
+                    if (widget.onDataChanged != null) {
+                      widget.onDataChanged!();
+                    }
+                  }
+                });
+              } else if (value == 'share') {
+                _showShareDialog();
+              } else if (value == 'sync') {
                 final result = await manager.syncWithCalendar();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -507,34 +525,41 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                   );
                   fetchYahrtzeits();
                 }
-              },
-              tooltip:
-                  AppLocalizations.of(context)!.translate('sync_with_calendar'),
-            ),
-          IconButton(
-            icon: Icon(Icons.share, color: Colors.white),
-            onPressed: _showShareDialog,
-            tooltip: AppLocalizations.of(context)!.translate('share'),
-          ),
-          IconButton(
-            icon: Icon(Icons.add, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddYahrtzeitPage(),
-                ),
-              ).then((result) {
-                if (result == true) {
-                  fetchYahrtzeits();
-                  _loadGroups();
-                  // Notify parent to refresh Upcoming tab
-                  if (widget.onDataChanged != null) {
-                    widget.onDataChanged!();
-                  }
-                }
-              });
+              }
             },
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem<String>(
+                value: 'add',
+                child: Row(
+                  children: [
+                    Icon(Icons.add, size: 20, color: AppTheme.primaryColor),
+                    SizedBox(width: 12),
+                    Text(AppLocalizations.of(context)!.translate('add_yahrtzeit')),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'share',
+                child: Row(
+                  children: [
+                    Icon(Icons.share, size: 20, color: AppTheme.primaryColor),
+                    SizedBox(width: 12),
+                    Text(AppLocalizations.of(context)!.translate('share')),
+                  ],
+                ),
+              ),
+              if (settingsProvider.syncSettings)
+                PopupMenuItem<String>(
+                  value: 'sync',
+                  child: Row(
+                    children: [
+                      Icon(Icons.sync, size: 20, color: AppTheme.primaryColor),
+                      SizedBox(width: 12),
+                      Text(AppLocalizations.of(context)!.translate('sync_with_calendar')),
+                    ],
+                  ),
+                ),
+            ],
           ),
         ],
       ),
