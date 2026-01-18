@@ -14,7 +14,6 @@ class CalendarService {
       }
       return permissionsGranted.data!;
     } on PlatformException catch (e) {
-      print(e);
       return false;
     }
   }
@@ -28,7 +27,6 @@ class CalendarService {
         return [];
       }
     } on PlatformException catch (e) {
-      print(e);
       return [];
     }
   }
@@ -47,7 +45,6 @@ class CalendarService {
         return [];
       }
     } on PlatformException catch (e) {
-      print(e);
       return [];
     }
   }

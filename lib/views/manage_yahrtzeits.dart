@@ -35,70 +35,44 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   @override
   void initState() {
     super.initState();
-    print('=== initState CALLED ===');
     fetchYahrtzeits();
     _loadGroups();
   }
 
   Future<void> _loadGroups() async {
-    print('=== _loadGroups START ===');
     final groups = await manager.getAllGroups();
-    print('DEBUG: Loaded ${groups.length} groups: $groups');
     setState(() {
       availableGroups = groups;
-      print(
-          'DEBUG: Before filter reset - yahrtzeits: ${yahrtzeits.length}, filteredYahrtzeits: ${filteredYahrtzeits.length}, selectedGroup: $selectedGroup');
       // Reset filter to show all if no group is selected
       if (selectedGroup == null) {
         filteredYahrtzeits = List.from(yahrtzeits);
-        print(
-            'DEBUG: Reset filter - filteredYahrtzeits now: ${filteredYahrtzeits.length}');
       } else {
         // Reapply current filter
-        print('DEBUG: Reapplying filter for group: $selectedGroup');
         _filterByGroup(selectedGroup);
       }
     });
-    print('=== _loadGroups END ===');
   }
 
   void _filterByGroup(String? group) {
-    print('=== _filterByGroup START ===');
-    print('DEBUG: Filtering by group: $group');
-    print('DEBUG: Current yahrtzeits count: ${yahrtzeits.length}');
-
     // Safety check: if no data, reset filter
     if (yahrtzeits.isEmpty) {
-      print(
-          'WARNING: _filterByGroup called but yahrtzeits is empty! Resetting filter.');
       setState(() {
         selectedGroup = null;
         filteredYahrtzeits = [];
       });
-      print('=== _filterByGroup END (early exit - no data) ===');
       return;
     }
 
-    for (var y in yahrtzeits) {
-      print('DEBUG: Yahrtzeit group: "${y.group}" (null: ${y.group == null})');
-    }
     setState(() {
       selectedGroup = group;
       if (group == null || group.isEmpty) {
         filteredYahrtzeits = List.from(yahrtzeits);
-        print(
-            'DEBUG: Showing all - filteredYahrtzeits: ${filteredYahrtzeits.length}');
       } else {
         filteredYahrtzeits = yahrtzeits.where((yahrtzeit) {
-          final matches = yahrtzeit.group == group;
-          print('DEBUG: Checking "${yahrtzeit.group}" == "$group": $matches');
-          return matches;
+          return yahrtzeit.group == group;
         }).toList();
-        print(
-            'DEBUG: Filtered to ${filteredYahrtzeits.length} items for group: $group');
       }
     });
-    print('=== _filterByGroup END ===');
   }
 
   Future<void> writeData(List<Map<String, dynamic>> data) async {
@@ -119,25 +93,11 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   }
 
   Future<void> fetchYahrtzeits() async {
-    print('=== fetchYahrtzeits CALLED ===');
     try {
-      print('=== fetchYahrtzeits START ===');
       // Use manager to ensure consistency with how data is saved
       final fetchedYahrtzeits = await manager.getAllYahrtzeits();
-      print(
-          'DEBUG: Fetched ${fetchedYahrtzeits.length} yahrtzeits from manager');
-      for (var y in fetchedYahrtzeits) {
-        print(
-            'DEBUG: Yahrtzeit - ID: ${y.id}, English: ${y.englishName}, Hebrew: ${y.hebrewName}, Group: ${y.group}, Day: ${y.day}, Month: ${y.month}');
-      }
 
       final filteredYahrtzeits = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
-      print(
-          'DEBUG: After _filterDuplicateYahrtzeits: ${filteredYahrtzeits.length} yahrtzeits');
-      for (var y in filteredYahrtzeits) {
-        print(
-            'DEBUG: Yahrtzeit - English: ${y.englishName}, Hebrew: ${y.hebrewName}, Group: ${y.group}');
-      }
 
       setState(() {
         this.yahrtzeits = filteredYahrtzeits;
@@ -152,18 +112,13 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
             final hasMatchingGroup =
                 filteredYahrtzeits.any((y) => y.group == selectedGroup);
             if (!hasMatchingGroup) {
-              print(
-                  'DEBUG: selectedGroup "$selectedGroup" has no matches, resetting to null');
               selectedGroup = null;
             }
           }
           this.filteredYahrtzeits = List.from(filteredYahrtzeits);
         }
         isLoading = false;
-        print(
-            'DEBUG: State updated - yahrtzeits: ${this.yahrtzeits.length}, filteredYahrtzeits: ${this.filteredYahrtzeits.length}, selectedGroup: $selectedGroup');
       });
-      print('=== fetchYahrtzeits END ===');
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_listKey.currentState != null) {
@@ -172,9 +127,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
           }
         }
       });
-    } catch (e, stackTrace) {
-      print('ERROR: Exception in fetchYahrtzeits: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
       setState(() {
         isLoading = false;
         yahrtzeits = [];
@@ -184,17 +137,12 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   }
 
   List<Yahrtzeit> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
-    print('=== _filterDuplicateYahrtzeits START ===');
-    print('DEBUG: Input yahrtzeits count: ${yahrtzeits.length}');
     final uniqueNames = <String>{};
     final filteredList = <Yahrtzeit>[];
 
     for (var i = 0; i < yahrtzeits.length; i++) {
       final yahrtzeit = yahrtzeits[i];
       try {
-        print(
-            'DEBUG: Processing yahrtzeit [$i/${yahrtzeits.length}] - ID: ${yahrtzeit.id}, English: ${yahrtzeit.englishName}, Hebrew: ${yahrtzeit.hebrewName}, Group: ${yahrtzeit.group}, Day: ${yahrtzeit.day}, Month: ${yahrtzeit.month}');
-
         // Show all yahrtzeits, including those without day/month (incomplete entries)
         // Filter duplicates by English name, but allow empty strings and null values
         final englishName = yahrtzeit.englishName?.trim();
@@ -202,10 +150,6 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
           // Has English name - check for duplicates
           if (uniqueNames.add(englishName)) {
             filteredList.add(yahrtzeit);
-            print(
-                'DEBUG: Successfully added to filtered list - English: $englishName');
-          } else {
-            print('DEBUG: Skipped duplicate englishName: $englishName');
           }
         } else {
           // No English name or empty - still include it (English name is required but might be missing in old data)
@@ -213,25 +157,13 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
           final uniqueId = 'no_name_${yahrtzeit.id}';
           if (uniqueNames.add(uniqueId)) {
             filteredList.add(yahrtzeit);
-            print(
-                'DEBUG: Added yahrtzeit without English name - ID: ${yahrtzeit.id}');
-          } else {
-            print('DEBUG: Skipped duplicate ID: ${yahrtzeit.id}');
           }
         }
-      } catch (e, stackTrace) {
-        print('ERROR: Exception processing yahrtzeit at index $i: $e');
-        print('Stack trace: $stackTrace');
-        print(
-            'Yahrtzeit details - English: ${yahrtzeit.englishName}, Hebrew: ${yahrtzeit.hebrewName}, Month: ${yahrtzeit.month}, Day: ${yahrtzeit.day}');
+      } catch (e) {
+        // Skip invalid entries
       }
     }
 
-    print('DEBUG: Output filteredList count: ${filteredList.length}');
-    if (filteredList.isEmpty && yahrtzeits.isNotEmpty) {
-      print('WARNING: All ${yahrtzeits.length} yahrtzeits were filtered out!');
-    }
-    print('=== _filterDuplicateYahrtzeits END ===');
     return filteredList;
   }
 
@@ -274,9 +206,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     try {
       // Use manager to delete - it handles everything consistently
       await manager.deleteYahrtzeit(yahrtzeit);
-      print('Yahrtzeit deleted successfully');
     } catch (e) {
-      print('Error deleting yahrtzeit: $e');
+      // Error handled by caller
     }
   }
 
@@ -605,8 +536,6 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
               color: AppTheme.backgroundColor,
               child: Builder(
                 builder: (context) {
-                  print(
-                      'DEBUG: Building list - isLoading: $isLoading, filteredYahrtzeits.length: ${filteredYahrtzeits.length}, yahrtzeits.length: ${yahrtzeits.length}, selectedGroup: $selectedGroup');
                   return isLoading
                       ? Center(
                           child: CircularProgressIndicator(
@@ -616,30 +545,16 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                         )
                       : filteredYahrtzeits.isEmpty
                           ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    AppLocalizations.of(context)!.translate(
-                                        'you_have_not_added_any_yahrtzeits_yet'),
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        color: AppTheme.textTertiary),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'DEBUG: yahrtzeits: ${yahrtzeits.length}, filtered: ${filteredYahrtzeits.length}, selectedGroup: $selectedGroup',
-                                    style: TextStyle(
-                                        fontSize: 12, color: Colors.red),
-                                  ),
-                                ],
+                              child: Text(
+                                AppLocalizations.of(context)!.translate(
+                                    'you_have_not_added_any_yahrtzeits_yet'),
+                                style: TextStyle(
+                                    fontSize: 18, color: AppTheme.textTertiary),
                               ),
                             )
                           : ListView.builder(
                               itemCount: filteredYahrtzeits.length,
                               itemBuilder: (context, index) {
-                                print(
-                                    'DEBUG: Building tile $index of ${filteredYahrtzeits.length}');
                                 return _buildYahrtzeitTile(
                                     filteredYahrtzeits[index]);
                               },

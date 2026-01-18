@@ -75,7 +75,6 @@ class NotificationService {
 
   void _onNotificationTapped(NotificationResponse response) {
     // Handle notification tap if needed
-    print('Notification tapped: ${response.payload}');
   }
 
   Future<void> scheduleYahrtzeitNotifications(List<Yahrtzeit> yahrtzeits,
@@ -157,8 +156,7 @@ class NotificationService {
             );
           }
         } catch (e) {
-          print(
-              'Error scheduling notification for ${yahrtzeit.englishName}: $e');
+          // Error scheduling notification - continue with others
         }
       }
     }

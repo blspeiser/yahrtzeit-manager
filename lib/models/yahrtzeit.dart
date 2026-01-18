@@ -52,33 +52,24 @@ class Yahrtzeit {
       // Handle Adar II (month 13) in non-leap years: convert to Adar (month 12)
       int monthToUse = month!;
       if (monthToUse == JewishDate.ADAR_II) {
-        print('DEBUG: Processing Adar II (month 13) for year $year');
         // Check if this is a leap year by testing if ADAR becomes ADAR_II
         final testDate = JewishDate.initDate(
             jewishYear: year,
             jewishMonth: JewishDate.ADAR,
             jewishDayOfMonth: 1);
         final actualMonth = testDate.getJewishMonth();
-        print('DEBUG: Test date month: $actualMonth (ADAR=${JewishDate.ADAR}, ADAR_II=${JewishDate.ADAR_II})');
         if (actualMonth != JewishDate.ADAR_II) {
           // Not a leap year, so ADAR_II should be treated as ADAR
-          print('DEBUG: Not a leap year, converting ADAR_II to ADAR');
           monthToUse = JewishDate.ADAR;
-        } else {
-          print('DEBUG: Leap year confirmed, keeping ADAR_II');
         }
       }
       
-      print('DEBUG: Creating JewishDate with year=$year, month=$monthToUse, day=$day');
       JewishDate jewishDate = JewishDate.initDate(
           jewishYear: year, jewishMonth: monthToUse, jewishDayOfMonth: day!);
       final gregorianDate = DateTime(jewishDate.getGregorianYear(),
           jewishDate.getGregorianMonth(), jewishDate.getGregorianDayOfMonth());
-      print('DEBUG: Successfully converted to Gregorian: $gregorianDate');
       return gregorianDate;
-    } catch (e, stackTrace) {
-      print('ERROR: Exception in getGregorianDate() for month=$month, day=$day: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
       rethrow;
     }
   }

@@ -36,12 +36,10 @@ void main() async {
           settingsProvider.notifications, 
           settingsProvider.days);
       } catch (e) {
-        print('Error scheduling notifications: $e');
         // Continue app startup even if notifications fail
       }
     }
   } catch (e) {
-    print('Error during initialization: $e');
     // Continue app startup with default settings
   }
   
@@ -50,7 +48,6 @@ void main() async {
   try {
     await localeProvider.loadLocale();
   } catch (e) {
-    print('Error loading locale: $e');
     // Continue with default locale
   }
   

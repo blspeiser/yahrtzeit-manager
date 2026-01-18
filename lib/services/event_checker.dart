@@ -11,7 +11,6 @@ class EventChecker {
       try {
         bool permissionsGranted = await calendarService.requestPermissions();
         if (!permissionsGranted) {
-          print('Permissions not granted');
           return;
         }
 
@@ -23,7 +22,7 @@ class EventChecker {
           }
         }
       } catch (e) {
-        print('Error checking today\'s events: $e');
+        // Error checking events - continue silently
       }
       globals.isAlertShown = true;
     }

@@ -31,7 +31,6 @@ class UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
   Future<void> fetchYahrtzeits() async {
     try {
       final yahrtzeits = await manager.getAllYahrtzeits();
-      print('Fetched yahrtzeits: ${yahrtzeits.length}');
 
       // Get all yahrtzeit dates
       final allDates = manager.nextMultiple(yahrtzeits);
@@ -58,7 +57,6 @@ class UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching yahrtzeits: $e');
       setState(() {
         isLoading = false;
       });

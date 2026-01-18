@@ -134,23 +134,13 @@ class YahrtzeitsManager {
   Future<void> loadYahrtzeitsFromPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? jsonString = prefs.getString('yahrtzeit_data');
-    print(
-        'DEBUG: loadYahrtzeitsFromPreferences - jsonString is null: ${jsonString == null}');
     if (jsonString != null) {
-      print(
-          'DEBUG: loadYahrtzeitsFromPreferences - jsonString length: ${jsonString.length}');
       List<Map<String, dynamic>> jsonData =
           List<Map<String, dynamic>>.from(json.decode(jsonString));
-      print(
-          'DEBUG: loadYahrtzeitsFromPreferences - decoded ${jsonData.length} yahrtzeits');
       _yahrtzeits.clear();
       _yahrtzeits
           .addAll(jsonData.map((data) => Yahrtzeit.fromJson(data)).toList());
-      print(
-          'DEBUG: loadYahrtzeitsFromPreferences - loaded ${_yahrtzeits.length} yahrtzeits into memory');
     } else {
-      print(
-          'DEBUG: loadYahrtzeitsFromPreferences - no data found in SharedPreferences');
       _yahrtzeits.clear();
     }
   }
@@ -187,12 +177,7 @@ class YahrtzeitsManager {
         await _notificationService
             .scheduleYahrtzeitNotifications([newYahrtzeit], daysBefore, true);
       }
-
-      print('Yahrtzeit added: ${newYahrtzeit.englishName}');
-    } else {
-      print('Yahrtzeit already exists: ${yahrtzeit.englishName}');
     }
-    print('Current yahrtzeits: ${_yahrtzeits.length}');
   }
 
   Future<void> rescheduleAllNotifications(
@@ -233,8 +218,6 @@ class YahrtzeitsManager {
         await _notificationService
             .scheduleYahrtzeitNotifications([newYahrtzeit], daysBefore, true);
       }
-
-      print('Yahrtzeit updated: ${newYahrtzeit.englishName}');
     }
   }
 
@@ -245,7 +228,6 @@ class YahrtzeitsManager {
       await saveYahrtzeitsToPreferences();
       await _deleteFromCalendar(yahrtzeit);
       await _notificationService.cancelYahrtzeitNotifications(yahrtzeit.id);
-      print('Yahrtzeit deleted: ${yahrtzeit.englishName}');
     } catch (e) {
       print('Error deleting yahrtzeit: $e');
     }
@@ -253,7 +235,6 @@ class YahrtzeitsManager {
 
   Future<List<Yahrtzeit>> getAllYahrtzeits() async {
     await loadYahrtzeitsFromPreferences(); // טען את הנתונים מ-SharedPreferences
-    print('All yahrtzeits fetched: ${_yahrtzeits.length}');
     return _yahrtzeits;
   }
 
@@ -276,11 +257,8 @@ class YahrtzeitsManager {
           tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local);
       final isUpcoming = yahrtzeitDate.isAfter(now) &&
           yahrtzeitDate.isBefore(now.add(Duration(days: days)));
-      print(
-          'Yahrtzeit: ${yahrtzeit.englishName}, Date: $yahrtzeitDate, Is upcoming: $isUpcoming');
       return isUpcoming;
     }).toList();
-    print('Upcoming yahrtzeits fetched: ${upcomingYahrtzeits.length}');
     return upcomingYahrtzeits;
   }
 
@@ -348,12 +326,7 @@ class YahrtzeitsManager {
               end: tz.TZDateTime.from(gregorianDate, tz.local)
                   .add(Duration(hours: 1)),
             );
-            final result =
-                await _deviceCalendarPlugin.createOrUpdateEvent(event);
-            if (result?.isSuccess == false) {
-              print(
-                  'Error creating or updating event for ${calendar.name}: ${result?.data}');
-            }
+            await _deviceCalendarPlugin.createOrUpdateEvent(event);
           }
         }
       }
@@ -400,12 +373,8 @@ class YahrtzeitsManager {
                       yahrtzeit.hebrewName != null &&
                       event.description?.contains(yahrtzeit.hebrewName!) ==
                           true)) {
-                final result = await _deviceCalendarPlugin.deleteEvent(
+                await _deviceCalendarPlugin.deleteEvent(
                     calendar.id!, event.eventId!);
-                if (result.isSuccess == false) {
-                  print(
-                      'Error deleting event for ${calendar.name}: ${result.data}');
-                }
               }
             }
           }
@@ -426,25 +395,18 @@ class YahrtzeitsManager {
       // Validate month and day before attempting conversion
       // Jewish months are 1-12, or 13 (Adar II) in leap years
       if (yahrtzeit.month! < 1 || yahrtzeit.month! > 13) {
-        print(
-            'WARNING: Skipping yahrtzeit ${yahrtzeit.englishName ?? yahrtzeit.hebrewName} - invalid month ${yahrtzeit.month}');
         continue;
       }
       if (yahrtzeit.day! < 1 || yahrtzeit.day! > 30) {
-        print(
-            'WARNING: Skipping yahrtzeit ${yahrtzeit.englishName ?? yahrtzeit.hebrewName} - invalid day ${yahrtzeit.day}');
         continue;
       }
       try {
         dates.add(YahrtzeitDate.fromYahrtzeit(yahrtzeit));
       } catch (e) {
-        print(
-            'ERROR: Failed to convert yahrtzeit ${yahrtzeit.englishName ?? yahrtzeit.hebrewName} to date: $e');
+        // Skip invalid dates
       }
     }
     dates.sort((a, b) => a.gregorianDate.compareTo(b.gregorianDate));
-    print(
-        'Sorted yahrtzeit dates: ${dates.map((d) => d.gregorianDate).toList()}');
     return dates;
   }
 

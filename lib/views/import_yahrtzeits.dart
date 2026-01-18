@@ -77,7 +77,6 @@ class _ImportYahrtzeitsPageState extends State<ImportYahrtzeitsPage> {
       final library = YahrtzeitLibrary.fromJsonString(jsonString);
       return library;
     } catch (e) {
-      print('Error reading file for preview: $e');
       return null;
     }
   }
@@ -147,7 +146,7 @@ class _ImportYahrtzeitsPageState extends State<ImportYahrtzeitsPage> {
       try {
         await tempFile.delete();
       } catch (e) {
-        print('Error deleting temp file: $e');
+        // Ignore deletion errors
       }
 
       if (mounted) {

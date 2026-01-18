@@ -11,7 +11,6 @@ class FileHandlerService {
       final result = await _channel.invokeMethod<String>('getInitialFile');
       return result;
     } on PlatformException catch (e) {
-      print('Error getting initial file: $e');
       return null;
     }
   }
@@ -23,7 +22,6 @@ class FileHandlerService {
       final result = await _channel.invokeMethod<String>('getFileFromIntent');
       return result;
     } on PlatformException catch (e) {
-      print('Error getting file from intent: $e');
       return null;
     }
   }

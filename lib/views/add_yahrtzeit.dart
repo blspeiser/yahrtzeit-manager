@@ -172,8 +172,6 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
 
         Navigator.pop(context, true);
       } catch (e) {
-        print('Error saving yahrtzeit: $e');
-        print('Stack trace: ${StackTrace.current}');
         if (mounted) {
           showDialog(
             context: context,

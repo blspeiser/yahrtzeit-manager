@@ -86,7 +86,6 @@ class ExportService {
 
       return file.path;
     } catch (e) {
-      print('Error exporting yahrtzeits: $e');
       rethrow;
     }
   }
