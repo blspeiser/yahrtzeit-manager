@@ -651,124 +651,104 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     }
     // If date is not configured, dateDisplay remains null and won't be shown
 
-    return Dismissible(
-      key: Key(yahrtzeit.id.toString()),
-      direction: DismissDirection.endToStart,
-      onDismissed: (direction) {
-        _deleteYahrtzeit(yahrtzeit);
-      },
-      background: Container(
-        color: Colors.red,
-        alignment: Alignment.centerRight,
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Icon(Icons.delete, color: Colors.white),
-            SizedBox(width: 20),
-          ],
-        ),
+    return Card(
+      elevation: 0,
+      margin: EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: AppTheme.cardBorderColor, width: 1),
       ),
-      child: Card(
-        elevation: 0,
-        margin: EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: AppTheme.cardBorderColor, width: 1),
-        ),
-        color: Colors.white,
-        child: InkWell(
-          onTap: () {
-            _editYahrtzeit(yahrtzeit);
-          },
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {
+          _editYahrtzeit(yahrtzeit);
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      yahrtzeit.englishName ?? '',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.textCardTitle,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      yahrtzeit.hebrewName ?? '',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.textCardTitle,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                    if (dateDisplay != null) ...[
+                      SizedBox(height: 6),
                       Text(
-                        yahrtzeit.englishName ?? '',
+                        dateDisplay,
+                        textDirection: textDirection,
+                        textAlign: textAlign,
                         style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.textCardTitle,
+                          fontSize: 14,
+                          color: AppTheme.textSecondary,
                         ),
                         overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
+                        maxLines: 1,
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        yahrtzeit.hebrewName ?? '',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.textCardTitle,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                      if (dateDisplay != null) ...[
-                        SizedBox(height: 6),
-                        Text(
-                          dateDisplay,
-                          textDirection: textDirection,
-                          textAlign: textAlign,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppTheme.textSecondary,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ],
                     ],
-                  ),
-                ),
-                SizedBox(width: 4),
-                PopupMenuButton<String>(
-                  iconSize: 20,
-                  padding: EdgeInsets.zero,
-                  constraints: BoxConstraints(),
-                  icon: Icon(Icons.more_vert, size: 20),
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      _editYahrtzeit(yahrtzeit);
-                    } else if (value == 'delete') {
-                      _showDeleteConfirmation(yahrtzeit);
-                    }
-                  },
-                  itemBuilder: (BuildContext context) => [
-                    PopupMenuItem<String>(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit,
-                              size: 18, color: AppTheme.primaryColor),
-                          SizedBox(width: 8),
-                          Text(AppLocalizations.of(context)!.translate('edit')),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete, size: 18, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text(AppLocalizations.of(context)!
-                              .translate('delete')),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              SizedBox(width: 4),
+              PopupMenuButton<String>(
+                iconSize: 20,
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(),
+                icon: Icon(Icons.more_vert, size: 20),
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    _editYahrtzeit(yahrtzeit);
+                  } else if (value == 'delete') {
+                    _showDeleteConfirmation(yahrtzeit);
+                  }
+                },
+                itemBuilder: (BuildContext context) => [
+                  PopupMenuItem<String>(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit,
+                            size: 18, color: AppTheme.primaryColor),
+                        SizedBox(width: 8),
+                        Text(AppLocalizations.of(context)!.translate('edit')),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete, size: 18, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text(AppLocalizations.of(context)!.translate('delete')),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

@@ -102,8 +102,12 @@ class YahrtzeitsManager {
     return selectedCalendar;
   }
 
+  /// Syncs local yahrtzeits to the calendar (ONE-WAY: app → calendar only).
+  /// This method does NOT read from the calendar or modify local data.
+  /// It only ensures that all local yahrtzeits are present in the calendar.
   Future<SyncResult> syncWithCalendar() async {
-    print('DEBUG SYNC: Starting syncWithCalendar()');
+    print(
+        'DEBUG SYNC: Starting syncWithCalendar() - ONE-WAY sync (app → calendar)');
     try {
       print('DEBUG SYNC: Checking calendar permissions...');
       var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
@@ -134,126 +138,60 @@ class YahrtzeitsManager {
       print(
           'DEBUG SYNC: Selected calendar for sync - Name: "${selectedCalendar.name}", ID: ${selectedCalendar.id}');
 
-      final existingYahrtzeits = List<Yahrtzeit>.from(_yahrtzeits);
+      // Load local yahrtzeits from preferences (DO NOT clear or modify them!)
+      await loadYahrtzeitsFromPreferences();
       print(
-          'DEBUG SYNC: Existing yahrtzeits in memory: ${existingYahrtzeits.length}');
-      _yahrtzeits.clear();
+          'DEBUG SYNC: Loaded ${_yahrtzeits.length} local yahrtzeits from storage');
+
+      // Get years setting from SharedPreferences (default: 5)
+      final prefs = await SharedPreferences.getInstance();
+      final yearsToSync = prefs.getInt('years') ?? 5;
+      print(
+          'DEBUG SYNC: Will sync ${yearsToSync} years of events for each yahrtzeit');
+
+      if (_yahrtzeits.isEmpty) {
+        print('DEBUG SYNC: No local yahrtzeits to sync');
+        return SyncResult.success(
+          0,
+          'No yahrtzeits to sync',
+        );
+      }
+
+      // Sync each local yahrtzeit to the calendar
       int syncedCount = 0;
-      int totalEventsProcessed = 0;
-      int eventsMatchingPattern = 0;
-      int eventsWithHebrewName = 0;
-      int eventsAdded = 0;
-      int eventsSkippedDuplicate = 0;
+      int skippedCount = 0;
 
-      // Process events only from the selected calendar
-      final startDate =
-          tz.TZDateTime.now(tz.local).subtract(Duration(days: 365));
-      final endDate = tz.TZDateTime.now(tz.local).add(Duration(days: 365));
-      print(
-          'DEBUG SYNC: Retrieving events from calendar "${selectedCalendar.name}" (${startDate.toString().substring(0, 10)} to ${endDate.toString().substring(0, 10)})');
-      final eventsResult = await _deviceCalendarPlugin.retrieveEvents(
-        selectedCalendar.id!,
-        dc.RetrieveEventsParams(
-          startDate: startDate,
-          endDate: endDate,
-        ),
-      );
-      print(
-          'DEBUG SYNC: Found ${eventsResult.data?.length ?? 0} events in calendar "${selectedCalendar.name}"');
-
-      if (eventsResult.isSuccess && eventsResult.data!.isNotEmpty == true) {
-        for (var event in eventsResult.data!) {
-          totalEventsProcessed++;
-
-          // Improved matching: check title pattern and description
-          final titleContainsYahrtzeit =
-              event.title?.contains('Yahrtzeit') == true;
-          final titleStartsWithYahrtzeit =
-              event.title?.startsWith('Yahrtzeit:') == true;
-          final hasDescription = event.description != null;
-
-          if ((titleContainsYahrtzeit || titleStartsWithYahrtzeit) &&
-              hasDescription) {
-            eventsMatchingPattern++;
-            final hebrewName = _extractHebrewNameFromEvent(event);
-            final englishName = _extractEnglishNameFromEvent(event);
-
-            if (hebrewName.isNotEmpty) {
-              eventsWithHebrewName++;
-              // Try to get Hebrew date from event
-              final jewishDate = _extractJewishDateFromEvent(event);
-
-              final day = jewishDate != null
-                  ? jewishDate.getJewishDayOfMonth()
-                  : event.start!.day;
-              final month = jewishDate != null
-                  ? jewishDate.getJewishMonth()
-                  : event.start!.month;
-
-              final yahrtzeit = Yahrtzeit(
-                englishName: englishName,
-                hebrewName: hebrewName,
-                day: day,
-                month: month,
-              );
-
-              // Check if already exists by ID or by name+date combination
-              final existingById = _yahrtzeits.any((y) => y.id == yahrtzeit.id);
-              final existingByNameAndDate = _yahrtzeits.any((y) =>
-                  y.englishName == yahrtzeit.englishName &&
-                  y.hebrewName == yahrtzeit.hebrewName &&
-                  y.day == yahrtzeit.day &&
-                  y.month == yahrtzeit.month);
-
-              if (!existingById && !existingByNameAndDate) {
-                _yahrtzeits.add(yahrtzeit);
-                syncedCount++;
-                eventsAdded++;
-                print(
-                    'DEBUG SYNC: Added "${englishName}" (${hebrewName.substring(0, hebrewName.length > 20 ? 20 : hebrewName.length)}${hebrewName.length > 20 ? "..." : ""}) - ${month}/${day}');
-              } else {
-                eventsSkippedDuplicate++;
-              }
-            }
-          }
+      for (var yahrtzeit in _yahrtzeits) {
+        // Skip yahrtzeits without required data
+        if (yahrtzeit.day == null || yahrtzeit.month == null) {
+          print(
+              'DEBUG SYNC: Skipping yahrtzeit "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}" - missing day or month');
+          skippedCount++;
+          continue;
         }
-      } else {
-        print(
-            'DEBUG SYNC: No events found in calendar "${selectedCalendar.name}"');
-      }
 
-      print(
-          'DEBUG SYNC: Event processing summary - Total processed: $totalEventsProcessed, Matched pattern: $eventsMatchingPattern, Had Hebrew name: $eventsWithHebrewName, Added: $eventsAdded, Skipped duplicates: $eventsSkippedDuplicate');
-
-      // Merge with existing yahrtzeits that weren't found in calendar
-      print(
-          'DEBUG SYNC: Merging with existing yahrtzeits that weren\'t found in calendar...');
-      int mergedCount = 0;
-      for (var existing in existingYahrtzeits) {
-        // Check if this yahrtzeit already exists by ID OR by name+date combination
-        final existsById = _yahrtzeits.any((y) => y.id == existing.id);
-        final existsByNameAndDate = _yahrtzeits.any((y) =>
-            y.englishName == existing.englishName &&
-            y.hebrewName == existing.hebrewName &&
-            y.day == existing.day &&
-            y.month == existing.month);
-
-        if (!existsById && !existsByNameAndDate) {
-          _yahrtzeits.add(existing);
-          mergedCount++;
+        try {
+          // Use the existing _addToCalendar method to sync this yahrtzeit
+          await _addToCalendar(yahrtzeit, yearsToSync);
+          syncedCount++;
+          print(
+              'DEBUG SYNC: Synced "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}" (group: ${yahrtzeit.group ?? "none"}) to calendar');
+        } catch (e) {
+          print(
+              'DEBUG SYNC: Error syncing yahrtzeit "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}": $e');
+          skippedCount++;
         }
       }
-      print(
-          'DEBUG SYNC: Merged $mergedCount existing yahrtzeits that weren\'t found in calendar');
 
       print(
-          'DEBUG SYNC: Saving yahrtzeits to preferences. Total yahrtzeits: ${_yahrtzeits.length}');
-      await saveYahrtzeitsToPreferences();
-      print(
-          'DEBUG SYNC: Sync completed successfully. Synced $syncedCount new yahrtzeits from calendar "${selectedCalendar.name}", total yahrtzeits: ${_yahrtzeits.length}');
+          'DEBUG SYNC: Sync completed successfully. Synced $syncedCount yahrtzeits to calendar "${selectedCalendar.name}", skipped $skippedCount');
+
+      // IMPORTANT: Do NOT save yahrtzeits to preferences - we didn't modify them!
+      // Local data remains unchanged.
+
       return SyncResult.success(
         syncedCount,
-        'Synced $syncedCount yahrtzeits from calendar',
+        'Synced $syncedCount yahrtzeits to calendar',
       );
     } on PlatformException catch (e) {
       print('DEBUG SYNC: PlatformException during sync: $e');
@@ -559,63 +497,11 @@ class YahrtzeitsManager {
     return dates;
   }
 
-  String _extractHebrewNameFromEvent(dc.Event event) {
-    if (event.description == null) {
-      return '';
-    }
-    // Try to extract Hebrew name from description
-    // Format can be either:
-    // 1. Multi-line: "EnglishName\nHebrewName\nDate"
-    // 2. Parentheses: "Yahrtzeit for EnglishName (HebrewName)\nID: ..."
-    final description = event.description!;
-
-    // First, try multi-line format: split by newlines and take the second line
-    final lines = description.split('\n');
-    if (lines.length >= 2) {
-      final secondLine = lines[1].trim();
-      // Check if second line contains Hebrew characters or looks like a Hebrew name
-      // Hebrew Unicode range: \u0590-\u05FF
-      final hebrewRegex = RegExp(r'[\u0590-\u05FF]');
-      if (secondLine.isNotEmpty && hebrewRegex.hasMatch(secondLine)) {
-        return secondLine;
-      }
-    }
-
-    // Fallback: try parentheses format
-    final regex = RegExp(r'\(([^)]+)\)');
-    final match = regex.firstMatch(description);
-    return match != null ? match.group(1)! : '';
-  }
-
-  String _extractEnglishNameFromEvent(dc.Event event) {
-    if (event.title == null) {
-      return '';
-    }
-    // Extract from title: "Yahrtzeit: EnglishName"
-    if (event.title!.startsWith('Yahrtzeit:')) {
-      return event.title!.substring('Yahrtzeit:'.length).trim();
-    }
-    return event.title!;
-  }
-
   String? _extractIdFromEvent(dc.Event event) {
     if (event.description == null) return null;
     // Extract ID from description: "ID: ..."
     final regex = RegExp(r'ID:\s*([^\n]+)');
     final match = regex.firstMatch(event.description!);
     return match != null ? match.group(1)!.trim() : null;
-  }
-
-  JewishDate? _extractJewishDateFromEvent(dc.Event event) {
-    // Try to extract Jewish date if stored in event metadata
-    // For now, convert from Gregorian date
-    if (event.start == null) {
-      return null;
-    }
-    try {
-      return JewishDate.fromDateTime(event.start!);
-    } catch (e) {
-      return null;
-    }
   }
 }
