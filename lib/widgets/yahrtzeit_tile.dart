@@ -14,11 +14,13 @@ import 'package:intl/intl.dart';
 class YahrtzeitTile extends StatelessWidget {
   final YahrtzeitDate yahrtzeitDate;
 
-  const YahrtzeitTile({Key? key, required this.yahrtzeitDate}) : super(key: key);
+  const YahrtzeitTile({Key? key, required this.yahrtzeitDate})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final gregorianFormatter = DateFormat('MMMM d, yyyy');
+    final locale = Localizations.localeOf(context);
+    final gregorianFormatter = DateFormat('MMMM d, yyyy', locale.toString());
     final hebrewFormatter = HebrewDateFormatter()
       ..hebrewFormat = true
       ..useGershGershayim = true;
@@ -36,7 +38,8 @@ class YahrtzeitTile extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => YahrtzeitDetailsPage(yahrtzeitDate: yahrtzeitDate),
+              builder: (context) =>
+                  YahrtzeitDetailsPage(yahrtzeitDate: yahrtzeitDate),
             ),
           );
         },
@@ -75,15 +78,18 @@ class YahrtzeitTile extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          gregorianFormatter.format(yahrtzeitDate.gregorianDate),
-                          style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+                          gregorianFormatter
+                              .format(yahrtzeitDate.gregorianDate),
+                          style: TextStyle(
+                              fontSize: 14, color: AppTheme.textSecondary),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),
                         SizedBox(width: 12),
                         Text(
                           hebrewFormatter.format(yahrtzeitDate.hebrewDate),
-                          style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+                          style: TextStyle(
+                              fontSize: 14, color: AppTheme.textSecondary),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),
@@ -105,7 +111,8 @@ class YahrtzeitTile extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => YahrtzeitDetailsPage(yahrtzeitDate: yahrtzeitDate),
+                        builder: (context) =>
+                            YahrtzeitDetailsPage(yahrtzeitDate: yahrtzeitDate),
                       ),
                     );
                   }
@@ -117,7 +124,8 @@ class YahrtzeitTile extends StatelessWidget {
                       children: [
                         Icon(Icons.info_outline, size: 18),
                         SizedBox(width: 8),
-                        Text(AppLocalizations.of(context)!.translate('details')),
+                        Text(
+                            AppLocalizations.of(context)!.translate('details')),
                       ],
                     ),
                   ),
@@ -156,10 +164,12 @@ class YahrtzeitTile extends StatelessWidget {
 
   String _createICSContent(YahrtzeitDate yahrtzeitDate) {
     final start = _formatDateTime(yahrtzeitDate.gregorianDate);
-    final end = _formatDateTime(yahrtzeitDate.gregorianDate.add(Duration(hours: 1)));
+    final end =
+        _formatDateTime(yahrtzeitDate.gregorianDate.add(Duration(hours: 1)));
     final now = _formatDateTime(DateTime.now());
-    final uid = '${yahrtzeitDate.gregorianDate.microsecondsSinceEpoch}@yourdomain.com';
-    
+    final uid =
+        '${yahrtzeitDate.gregorianDate.microsecondsSinceEpoch}@yourdomain.com';
+
     return '''
 BEGIN:VCALENDAR
 VERSION:2.0
@@ -180,6 +190,12 @@ END:VCALENDAR
   }
 
   String _formatDateTime(DateTime dateTime) {
-    return dateTime.toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '').split('.')[0] + 'Z';
+    return dateTime
+            .toUtc()
+            .toIso8601String()
+            .replaceAll('-', '')
+            .replaceAll(':', '')
+            .split('.')[0] +
+        'Z';
   }
 }

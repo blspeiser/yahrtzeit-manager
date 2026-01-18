@@ -76,5 +76,14 @@
     "no_groups_available": "No groups available",
     "no_yahrtzeits_in_group": "No yahrtzeits in this group",
     "selected": "selected",
-    "please_select_yahrtzeits_to_import": "Please select yahrtzeits to import"
+    "please_select_yahrtzeits_to_import": "Please select yahrtzeits to import",
+    "english": "English",
+    "hebrew": "Hebrew",
+    "calendar_and_sync": "Calendar & Sync",
+    "about": "About",
+    "version": "Version",
+    "developed_by": "Developed by",
+    "author_name": "Baruch Speiser",
+    "all_rights_reserved": "All Rights Reserved",
+    "month_abbreviation": "mo"
 }

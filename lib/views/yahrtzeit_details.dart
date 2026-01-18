@@ -15,7 +15,8 @@ class YahrtzeitDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final gregorianFormatter = DateFormat('MMMM d, yyyy');
+    final locale = Localizations.localeOf(context);
+    final gregorianFormatter = DateFormat('MMMM d, yyyy', locale.toString());
     final hebrewFormatter = HebrewDateFormatter()
       ..hebrewFormat = true
       ..useGershGershayim = true;

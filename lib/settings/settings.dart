@@ -22,7 +22,8 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingTile(BuildContext context, String title, Widget trailing) {
+  Widget _buildSettingTile(
+      BuildContext context, String title, Widget trailing) {
     return ListTile(
       contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       title: Text(
@@ -54,7 +55,7 @@ class SettingsPage extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: 12),
               children: [
                 // Language Settings Section
-                _buildSectionHeader(context, 'Language'),
+                _buildSectionHeader(context, AppLocalizations.of(context)!.translate('language')),
                 Card(
                   margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   elevation: 0,
@@ -85,7 +86,9 @@ class SettingsPage extends StatelessWidget {
                           ],
                           onChanged: (Locale? newValue) {
                             if (newValue != null) {
-                              final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
+                              final localeProvider =
+                                  Provider.of<LocaleProvider>(context,
+                                      listen: false);
                               localeProvider.setLocale(newValue);
                               settings.setLanguage(newValue.languageCode);
                             }
@@ -95,7 +98,8 @@ class SettingsPage extends StatelessWidget {
                       Divider(height: 1, indent: 20, endIndent: 20),
                       _buildSettingTile(
                         context,
-                        AppLocalizations.of(context)!.translate('jewish_language'),
+                        AppLocalizations.of(context)!
+                            .translate('jewish_language'),
                         DropdownButton<String>(
                           value: settings.jewishLanguage,
                           underline: SizedBox(),
@@ -103,9 +107,12 @@ class SettingsPage extends StatelessWidget {
                           iconEnabledColor: AppTheme.textPrimary,
                           style: TextStyle(color: AppTheme.textPrimary),
                           items: [
-                            DropdownMenuItem(value: 'en', child: Text('English')),
-                            DropdownMenuItem(value: 'he', child: Text('Hebrew')),
-                            DropdownMenuItem(value: 'es', child: Text('Spanish')),
+                            DropdownMenuItem(
+                                value: 'en', child: Text('English')),
+                            DropdownMenuItem(
+                                value: 'he',
+                                child: Text(AppLocalizations.of(context)!
+                                    .translate('hebrew'))),
                           ],
                           onChanged: (value) {
                             if (value != null) {
@@ -117,9 +124,9 @@ class SettingsPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 // Calendar & Sync Section
-                _buildSectionHeader(context, 'Calendar & Sync'),
+                _buildSectionHeader(context, AppLocalizations.of(context)!.translate('calendar_and_sync')),
                 Card(
                   margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   elevation: 0,
@@ -131,18 +138,21 @@ class SettingsPage extends StatelessWidget {
                     children: [
                       _buildSettingTile(
                         context,
-                        AppLocalizations.of(context)!.translate('sync_settings'),
+                        AppLocalizations.of(context)!
+                            .translate('sync_settings'),
                         Switch(
                           value: settings.syncSettings,
                           onChanged: (value) => settings.setSyncSettings(value),
                           activeColor: AppTheme.primaryColor,
-                          activeTrackColor: AppTheme.primaryColorWithOpacity(0.5),
+                          activeTrackColor:
+                              AppTheme.primaryColorWithOpacity(0.5),
                         ),
                       ),
                       Divider(height: 1, indent: 20, endIndent: 20),
                       _buildSettingTile(
                         context,
-                        AppLocalizations.of(context)!.translate('calendar_settings'),
+                        AppLocalizations.of(context)!
+                            .translate('calendar_settings'),
                         DropdownButton<String>(
                           value: settings.calendar,
                           underline: SizedBox(),
@@ -152,11 +162,13 @@ class SettingsPage extends StatelessWidget {
                           items: [
                             DropdownMenuItem(
                               value: 'google',
-                              child: Text(AppLocalizations.of(context)!.translate('google_calendar')),
+                              child: Text(AppLocalizations.of(context)!
+                                  .translate('google_calendar')),
                             ),
                             DropdownMenuItem(
                               value: 'device',
-                              child: Text(AppLocalizations.of(context)!.translate('device_calendar')),
+                              child: Text(AppLocalizations.of(context)!
+                                  .translate('device_calendar')),
                             ),
                           ],
                           onChanged: (value) {
@@ -176,7 +188,8 @@ class SettingsPage extends StatelessWidget {
                           dropdownColor: Colors.white,
                           iconEnabledColor: AppTheme.textPrimary,
                           style: TextStyle(color: AppTheme.textPrimary),
-                          items: List.generate(10, (index) => index + 1).map((int value) {
+                          items: List.generate(10, (index) => index + 1)
+                              .map((int value) {
                             return DropdownMenuItem<int>(
                               value: value,
                               child: Text(value.toString()),
@@ -192,9 +205,9 @@ class SettingsPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 // Notifications Section
-                _buildSectionHeader(context, 'Notifications'),
+                _buildSectionHeader(context, AppLocalizations.of(context)!.translate('notifications')),
                 Card(
                   margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   elevation: 0,
@@ -206,16 +219,19 @@ class SettingsPage extends StatelessWidget {
                     children: [
                       _buildSettingTile(
                         context,
-                        AppLocalizations.of(context)!.translate('notifications'),
+                        AppLocalizations.of(context)!
+                            .translate('notifications'),
                         Switch(
                           value: settings.notifications,
                           onChanged: (value) async {
                             settings.setNotifications(value);
                             final manager = YahrtzeitsManager();
-                            await manager.rescheduleAllNotifications(value, settings.days);
+                            await manager.rescheduleAllNotifications(
+                                value, settings.days);
                           },
                           activeColor: AppTheme.primaryColor,
-                          activeTrackColor: AppTheme.primaryColorWithOpacity(0.5),
+                          activeTrackColor:
+                              AppTheme.primaryColorWithOpacity(0.5),
                         ),
                       ),
                       Divider(height: 1, indent: 20, endIndent: 20),
@@ -228,7 +244,8 @@ class SettingsPage extends StatelessWidget {
                           dropdownColor: Colors.white,
                           iconEnabledColor: AppTheme.textPrimary,
                           style: TextStyle(color: AppTheme.textPrimary),
-                          items: List.generate(15, (index) => index + 1).map((int value) {
+                          items: List.generate(15, (index) => index + 1)
+                              .map((int value) {
                             return DropdownMenuItem<int>(
                               value: value,
                               child: Text(value.toString()),
@@ -239,7 +256,8 @@ class SettingsPage extends StatelessWidget {
                               settings.setDays(value);
                               if (settings.notifications) {
                                 final manager = YahrtzeitsManager();
-                                await manager.rescheduleAllNotifications(true, value);
+                                await manager.rescheduleAllNotifications(
+                                    true, value);
                               }
                             }
                           },

@@ -339,13 +339,15 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.translate('share_yahrtzeits')),
+          title:
+              Text(AppLocalizations.of(context)!.translate('share_yahrtzeits')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
                 leading: Icon(Icons.list),
-                title: Text(AppLocalizations.of(context)!.translate('share_all')),
+                title:
+                    Text(AppLocalizations.of(context)!.translate('share_all')),
                 onTap: () {
                   Navigator.of(context).pop();
                   _shareAll();
@@ -353,7 +355,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
               ),
               ListTile(
                 leading: Icon(Icons.filter_list),
-                title: Text(AppLocalizations.of(context)!.translate('share_by_group')),
+                title: Text(
+                    AppLocalizations.of(context)!.translate('share_by_group')),
                 onTap: () {
                   Navigator.of(context).pop();
                   _showGroupSelectionDialog();
@@ -361,7 +364,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
               ),
               ListTile(
                 leading: Icon(Icons.check_box),
-                title: Text(AppLocalizations.of(context)!.translate('select_individual')),
+                title: Text(AppLocalizations.of(context)!
+                    .translate('select_individual')),
                 onTap: () {
                   Navigator.of(context).pop();
                   _shareIndividual();
@@ -400,8 +404,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     if (availableGroups.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!
-              .translate('no_groups_available')),
+          content: Text(
+              AppLocalizations.of(context)!.translate('no_groups_available')),
         ),
       );
       return;
@@ -433,10 +437,9 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
 
   Future<void> _shareByGroup(String group) async {
     try {
-      final groupYahrtzeits = yahrtzeits
-          .where((y) => y.group == group)
-          .toList();
-      
+      final groupYahrtzeits =
+          yahrtzeits.where((y) => y.group == group).toList();
+
       if (groupYahrtzeits.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -534,7 +537,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                   children: [
                     Icon(Icons.add, size: 20, color: AppTheme.primaryColor),
                     SizedBox(width: 12),
-                    Text(AppLocalizations.of(context)!.translate('add_yahrtzeit')),
+                    Text(AppLocalizations.of(context)!
+                        .translate('add_yahrtzeit')),
                   ],
                 ),
               ),
@@ -555,7 +559,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                     children: [
                       Icon(Icons.sync, size: 20, color: AppTheme.primaryColor),
                       SizedBox(width: 12),
-                      Text(AppLocalizations.of(context)!.translate('sync_with_calendar')),
+                      Text(AppLocalizations.of(context)!
+                          .translate('sync_with_calendar')),
                     ],
                   ),
                 ),
@@ -701,47 +706,31 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
         Provider.of<SettingsProvider>(context, listen: false);
     final jewishLanguage = settingsProvider.jewishLanguage;
 
-    // English month names
-    const Map<int, String> englishMonths = {
-      JewishDate.TISHREI: 'Tishrei',
-      JewishDate.CHESHVAN: 'Cheshvan',
-      JewishDate.KISLEV: 'Kislev',
-      JewishDate.TEVES: 'Tevet',
-      JewishDate.SHEVAT: 'Shevat',
-      JewishDate.ADAR: 'Adar',
-      JewishDate.ADAR_II: 'Adar II',
-      JewishDate.NISSAN: 'Nissan',
-      JewishDate.IYAR: 'Iyar',
-      JewishDate.SIVAN: 'Sivan',
-      JewishDate.TAMMUZ: 'Tammuz',
-      JewishDate.AV: 'Av',
-      JewishDate.ELUL: 'Elul',
-    };
-
     // Build date display string
     String? dateDisplay;
+    TextDirection textDirection =
+        (jewishLanguage == 'he') ? TextDirection.rtl : TextDirection.ltr;
+    TextAlign textAlign =
+        (jewishLanguage == 'he') ? TextAlign.right : TextAlign.left;
     if (yahrtzeit.day != null && yahrtzeit.month != null) {
       var day = null, month = null;
       if (jewishLanguage == 'he') {
         // Hebrew format: Use HebrewDateFormatter methods
-        try {
-          final hebrewFormatter = HebrewDateFormatter()
-            ..hebrewFormat = true
-            ..useGershGershayim = true;
+        final hebrewFormatter = HebrewDateFormatter()
+          ..hebrewFormat = true
+          ..useGershGershayim = true;
 
-          day = hebrewFormatter.formatHebrewNumber(yahrtzeit.day!);
-          month = hebrewFormatter.hebrewMonths[yahrtzeit.month!];
-          if (month == JewishDate.ADAR_II || month == 14) {
-            //14 is technically Adar I instead of just Adar
-            month = month + '\'';
-          }
-        } catch (e) {
-          //fall through as if we wanted English
+        day = hebrewFormatter.formatHebrewNumber(yahrtzeit.day!);
+        month = hebrewFormatter.hebrewMonths[yahrtzeit.month! - 1];
+        if (yahrtzeit.month! == JewishDate.ADAR_II || yahrtzeit.month! == 14) {
+          //14 is technically Adar I instead of just Adar (there isn't a constant on JewishDate for Adar I, but HebrewDateFormatter has a month for it)
+          month = month + '\'';
         }
       } //otherwise use English:
       if (day == null || month == null) {
+        final hebrewFormatter = HebrewDateFormatter();
         day = yahrtzeit.day.toString();
-        month = englishMonths[yahrtzeit.month] ?? 'Unknown';
+        month = hebrewFormatter.transliteratedMonths[yahrtzeit.month! - 1];
       }
       dateDisplay = '$day $month';
     }
@@ -812,6 +801,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                         SizedBox(height: 6),
                         Text(
                           dateDisplay,
+                          textDirection: textDirection,
+                          textAlign: textAlign,
                           style: TextStyle(
                             fontSize: 14,
                             color: AppTheme.textSecondary,

@@ -7,8 +7,8 @@
     "language": "שפה",
     "sync_settings": "הגדרות סנכרון",
     "notifications": "התראות",
-    "upcoming_yahrtzeits": "יארצייט קרובים",
-    "manage_yahrzeits": "ניהול יארצייט",
+    "upcoming_yahrtzeits": "יארצייטים קרובים",
+    "manage_yahrzeits": "ניהול יארצייטים",
     "english_name": "שם לועזי",
     "add_yahrtzeit": "הוסף יארצייט",
     "hebrew_name": "שם יהודי",
@@ -76,5 +76,15 @@
     "no_groups_available": "אין קבוצות זמינות",
     "no_yahrtzeits_in_group": "אין יארצייט בקבוצה זו",
     "selected": "נבחרו",
-    "please_select_yahrtzeits_to_import": "נא לבחור יארצייט לייבא"
+    "please_select_yahrtzeits_to_import": "נא לבחור יארצייט לייבא",
+    "english": "אנגלית",
+    "hebrew": "עברית",
+    "calendar_and_sync": "לוח שנה וסנכרון",
+    "about": "אודות",
+    "version": "גרסה",
+    "developed_by": "פותח על ידי",
+    "author_name": "ברוך שפייזער",
+    "all_rights_reserved": "כל הזכויות שמורות",
+    "month_abbreviation": "חו'"
+
 }

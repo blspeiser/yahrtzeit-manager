@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'localizations/app_localizations.dart';
@@ -124,9 +125,12 @@ class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {
             Locale('en', 'US'),
             Locale('he', 'IL'),
           ],
-          localizationsDelegates: [
+          localizationsDelegates: const [
             AppLocalizations.delegate,
             HebrewMaterialLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
           ],
           localeResolutionCallback: (locale, supportedLocales) {
             if (locale != null) {

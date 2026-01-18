@@ -37,7 +37,8 @@ class UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
       final allDates = manager.nextMultiple(yahrtzeits);
 
       // Filter to only show upcoming dates within the selected range
-      final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+      final settingsProvider =
+          Provider.of<SettingsProvider>(context, listen: false);
       final rangeMonths = settingsProvider.upcomingRangeMonths;
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
@@ -79,12 +80,15 @@ class UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
     return filteredList;
   }
 
-  Widget _buildSegmentedControl(BuildContext context, SettingsProvider settings) {
+  Widget _buildSegmentedControl(
+      BuildContext context, SettingsProvider settings) {
+    final localizations = AppLocalizations.of(context)!;
+    final monthAbbr = localizations.translate('month_abbreviation');
     final options = [
-      {'label': '1 mo', 'value': 1},
-      {'label': '3 mo', 'value': 3},
-      {'label': '6 mo', 'value': 6},
-      {'label': '12 mo', 'value': 12},
+      {'label': '1 $monthAbbr', 'value': 1},
+      {'label': '3 $monthAbbr', 'value': 3},
+      {'label': '6 $monthAbbr', 'value': 6},
+      {'label': '12 $monthAbbr', 'value': 12},
     ];
     final selectedValue = settings.upcomingRangeMonths;
 
@@ -115,7 +119,9 @@ class UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+                      color: isSelected
+                          ? AppTheme.primaryColor
+                          : Colors.transparent,
                       borderRadius: BorderRadius.only(
                         topLeft: isFirst ? Radius.circular(7) : Radius.zero,
                         bottomLeft: isFirst ? Radius.circular(7) : Radius.zero,
@@ -128,8 +134,11 @@ class UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                         option['label'] as String,
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                          color: isSelected ? Colors.white : AppTheme.inactiveTextColor,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w500,
+                          color: isSelected
+                              ? Colors.white
+                              : AppTheme.inactiveTextColor,
                         ),
                       ),
                     ),
@@ -163,7 +172,8 @@ class UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
             leading: AppIconDecorative(),
             title: Text(
               AppLocalizations.of(context)!.translate('upcoming_yahrtzeits'),
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
             ),
             centerTitle: true,
             backgroundColor: AppTheme.primaryColor,
@@ -185,8 +195,8 @@ class UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                   child: isLoading
                       ? Center(
                           child: CircularProgressIndicator(
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                AppTheme.primaryColor),
                           ),
                         )
                       : yahrtzeitDates.isEmpty
@@ -194,15 +204,16 @@ class UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
                               child: Text(
                                 AppLocalizations.of(context)!
                                     .translate('no_upcoming_yahrtzeits_found'),
-                                style:
-                                    TextStyle(fontSize: 18, color: AppTheme.textTertiary),
+                                style: TextStyle(
+                                    fontSize: 18, color: AppTheme.textTertiary),
                               ),
                             )
                           : ListView.builder(
                               itemCount: yahrtzeitDates.length,
                               itemBuilder: (context, index) {
                                 final yahrtzeitDate = yahrtzeitDates[index];
-                                return YahrtzeitTile(yahrtzeitDate: yahrtzeitDate);
+                                return YahrtzeitTile(
+                                    yahrtzeitDate: yahrtzeitDate);
                               },
                             ),
                 ),

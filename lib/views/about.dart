@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_icon_decorative.dart';
+import '../localizations/app_localizations.dart';
 
 class AboutPage extends StatefulWidget {
   @override
@@ -46,7 +47,7 @@ class _AboutPageState extends State<AboutPage> {
       appBar: AppBar(
         leading: AppIconDecorative(),
         title: Text(
-          'About',
+          AppLocalizations.of(context)!.translate('about'),
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
@@ -78,7 +79,7 @@ class _AboutPageState extends State<AboutPage> {
                   )
                 else
                   Text(
-                    'Version $_version',
+                    '${AppLocalizations.of(context)!.translate('version')} $_version',
                     style: TextStyle(
                       fontSize: 16,
                       color: AppTheme.textSecondary,
@@ -87,7 +88,7 @@ class _AboutPageState extends State<AboutPage> {
                 SizedBox(height: 32),
                 // Author
                 Text(
-                  'Developed by',
+                  AppLocalizations.of(context)!.translate('developed_by'),
                   style: TextStyle(
                     fontSize: 14,
                     color: AppTheme.textTertiary,
@@ -95,7 +96,7 @@ class _AboutPageState extends State<AboutPage> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Baruch Speiser',
+                  AppLocalizations.of(context)!.translate('author_name'),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
@@ -140,7 +141,7 @@ class _AboutPageState extends State<AboutPage> {
                 SizedBox(height: 48),
                 // All Rights Reserved
                 Text(
-                  'All Rights Reserved',
+                  AppLocalizations.of(context)!.translate('all_rights_reserved'),
                   style: TextStyle(
                     fontSize: 12,
                     color: AppTheme.textTertiary,

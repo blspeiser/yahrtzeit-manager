@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.info),
-            label: 'About',
+            label: AppLocalizations.of(context)!.translate('about'),
           ),
         ],
         currentIndex: _selectedIndex,
