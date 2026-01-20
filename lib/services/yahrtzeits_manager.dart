@@ -333,17 +333,32 @@ class YahrtzeitsManager {
     await loadYahrtzeitsFromPreferences(); // טען את הנתונים מ-SharedPreferences
     final now = tz.TZDateTime.now(tz.local);
     final upcomingYahrtzeits = _yahrtzeits.where((yahrtzeit) {
-      final yahrtzeitDate =
-          tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local);
-      final isUpcoming = yahrtzeitDate.isAfter(now) &&
-          yahrtzeitDate.isBefore(now.add(Duration(days: days)));
-      return isUpcoming;
+      // Skip yahrtzeits without day/month (incomplete entries)
+      if (yahrtzeit.day == null || yahrtzeit.month == null) {
+        return false;
+      }
+      try {
+        final yahrtzeitDate =
+            tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local);
+        final isUpcoming = yahrtzeitDate.isAfter(now) &&
+            yahrtzeitDate.isBefore(now.add(Duration(days: days)));
+        return isUpcoming;
+      } catch (e) {
+        // Skip invalid dates
+        return false;
+      }
     }).toList();
     return upcomingYahrtzeits;
   }
 
   Future<void> _addToCalendar(Yahrtzeit yahrtzeit, int yearsToSync) async {
     try {
+      // Skip yahrtzeits without day/month (incomplete entries)
+      if (yahrtzeit.day == null || yahrtzeit.month == null) {
+        print('DEBUG SYNC: Skipping yahrtzeit "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}" - missing day or month');
+        return;
+      }
+
       var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
       if (permissionsGranted.isSuccess && permissionsGranted.data == false) {
         permissionsGranted = await _deviceCalendarPlugin.requestPermissions();

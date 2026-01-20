@@ -44,14 +44,20 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     }
   }
 
-  List<DropdownMenuItem<int>> _buildDayItems(String jewishLanguage) {
-    final items = <DropdownMenuItem<int>>[];
+  List<DropdownMenuItem<int?>> _buildDayItems(String jewishLanguage, AppLocalizations localizations) {
+    final items = <DropdownMenuItem<int?>>[];
     HebrewDateFormatter? hebrewFormatter;
     if (jewishLanguage == 'he') {
       hebrewFormatter = HebrewDateFormatter()
         ..hebrewFormat = true
         ..useGershGershayim = true;
     }
+
+    // Add null option for "Not set"
+    items.add(DropdownMenuItem<int?>(
+      value: null,
+      child: Text(localizations.translate('not_set')),
+    ));
 
     for (int day = 1; day <= 30; day++) {
       String displayText;
@@ -60,7 +66,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
       } else {
         displayText = day.toString();
       }
-      items.add(DropdownMenuItem<int>(
+      items.add(DropdownMenuItem<int?>(
         value: day,
         child: Text(displayText),
       ));
@@ -68,18 +74,26 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     return items;
   }
 
-  List<DropdownMenuItem<int>> _buildMonthItems(String jewishLanguage) {
-    final items = <DropdownMenuItem<int>>[];
+  List<DropdownMenuItem<int?>> _buildMonthItems(String jewishLanguage, AppLocalizations localizations) {
+    final items = <DropdownMenuItem<int?>>[];
     HebrewDateFormatter hebrewFormatter = HebrewDateFormatter();
     TextDirection textDirection =
         (jewishLanguage == 'he') ? TextDirection.rtl : TextDirection.ltr;
     TextAlign textAlign =
         (jewishLanguage == 'he') ? TextAlign.right : TextAlign.left;
+    
+    // Add null option for "Not set"
+    items.add(DropdownMenuItem<int?>(
+      value: null,
+      child: Text(localizations.translate('not_set'),
+          textDirection: textDirection, textAlign: textAlign),
+    ));
+    
     for (int month = 0; month < 12; month++) {
       String displayText = (jewishLanguage == 'he')
           ? hebrewFormatter.hebrewMonths[month]
           : hebrewFormatter.transliteratedMonths[month];
-      items.add(DropdownMenuItem<int>(
+      items.add(DropdownMenuItem<int?>(
         value: month +
             1, //Months in JewishDate are 1-indexed, months in HebrewDateFormatter are 0-indexed
         child: Text(displayText,
@@ -88,7 +102,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
     }
     // Special handling for Adar I (month 13) && Adar II (month 12)
     String suffix = (jewishLanguage == 'he') ? '\'' : '';
-    items.add(DropdownMenuItem<int>(
+    items.add(DropdownMenuItem<int?>(
       value:
           14, //Months in JewishDate are 1-indexed, months in HebrewDateFormatter are 0-indexed
       child: Text(
@@ -99,7 +113,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
           textDirection: textDirection,
           textAlign: textAlign),
     ));
-    items.add(DropdownMenuItem<int>(
+    items.add(DropdownMenuItem<int?>(
         value:
             13, //Months in JewishDate are 1-indexed, months in HebrewDateFormatter are 0-indexed
         child: Text(
@@ -291,7 +305,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                       validator: null,
                     ),
                     SizedBox(height: 20),
-                    DropdownButtonFormField<int>(
+                    DropdownButtonFormField<int?>(
                       style: TextStyle(color: Colors.black),
                       dropdownColor: Colors.white,
                       decoration: InputDecoration(
@@ -318,7 +332,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                             EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       ),
                       value: _selectedDay,
-                      items: _buildDayItems(jewishLanguage),
+                      items: _buildDayItems(jewishLanguage, localizations),
                       onChanged: (value) {
                         setState(() {
                           _selectedDay = value;
@@ -328,7 +342,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                       validator: null,
                     ),
                     SizedBox(height: 20),
-                    DropdownButtonFormField<int>(
+                    DropdownButtonFormField<int?>(
                       style: TextStyle(color: Colors.black),
                       dropdownColor: Colors.white,
                       decoration: InputDecoration(
@@ -355,7 +369,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                             EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       ),
                       value: _selectedMonth,
-                      items: _buildMonthItems(jewishLanguage),
+                      items: _buildMonthItems(jewishLanguage, localizations),
                       onChanged: (value) {
                         setState(() {
                           _selectedMonth = value;
