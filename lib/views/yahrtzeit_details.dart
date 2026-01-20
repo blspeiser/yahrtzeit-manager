@@ -10,7 +10,7 @@ import 'package:intl/intl.dart';
 class YahrtzeitDetailsPage extends StatelessWidget {
   final YahrtzeitDate yahrtzeitDate;
 
-  YahrtzeitDetailsPage({required this.yahrtzeitDate});
+  const YahrtzeitDetailsPage({super.key, required this.yahrtzeitDate});
 
   @override
   Widget build(BuildContext context) {

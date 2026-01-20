@@ -67,13 +67,13 @@ class YahrtzeitManagerApp extends StatefulWidget {
   
   final Locale initialLocale;
 
-  YahrtzeitManagerApp({required this.initialLocale});
+  const YahrtzeitManagerApp({super.key, required this.initialLocale});
 
 
 
 
   @override
-  _YahrtzeitManagerAppState createState() => _YahrtzeitManagerAppState();
+  State<YahrtzeitManagerApp> createState() => _YahrtzeitManagerAppState();
 }
 
 class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {

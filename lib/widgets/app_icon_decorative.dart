@@ -7,9 +7,9 @@ class AppIconDecorative extends StatelessWidget {
   final double size;
   
   const AppIconDecorative({
-    Key? key,
+    super.key,
     this.size = 28.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

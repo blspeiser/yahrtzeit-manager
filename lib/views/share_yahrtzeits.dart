@@ -5,10 +5,10 @@ import '../services/yahrtzeits_manager.dart';
 import '../services/export_service.dart';
 
 class ShareYahrtzeitsPage extends StatefulWidget {
-  const ShareYahrtzeitsPage({Key? key}) : super(key: key);
+  const ShareYahrtzeitsPage({super.key});
 
   @override
-  _ShareYahrtzeitsPageState createState() => _ShareYahrtzeitsPageState();
+  State<ShareYahrtzeitsPage> createState() => _ShareYahrtzeitsPageState();
 }
 
 class _ShareYahrtzeitsPageState extends State<ShareYahrtzeitsPage> {

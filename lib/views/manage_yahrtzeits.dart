@@ -16,10 +16,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ManageYahrtzeits extends StatefulWidget {
   final VoidCallback? onDataChanged;
 
-  const ManageYahrtzeits({Key? key, this.onDataChanged}) : super(key: key);
+  const ManageYahrtzeits({super.key, this.onDataChanged});
 
   @override
-  _ManageYahrtzeitsState createState() => _ManageYahrtzeitsState();
+  State<ManageYahrtzeits> createState() => _ManageYahrtzeitsState();
 }
 
 class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
@@ -100,7 +100,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
       final filteredYahrtzeits = _filterDuplicateYahrtzeits(fetchedYahrtzeits);
 
       setState(() {
-        this.yahrtzeits = filteredYahrtzeits;
+        yahrtzeits = filteredYahrtzeits;
         // Reset filter when data loads - show all by default if we have data
         if (filteredYahrtzeits.isEmpty) {
           selectedGroup = null;
@@ -193,7 +193,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
         }
       }
     } catch (e) {
-      print('Error editing Yahrtzeit: $e');
+      debugPrint('Error editing Yahrtzeit: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.translate('edit_failed')),
@@ -255,7 +256,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
         widget.onDataChanged!();
       }
     } catch (e) {
-      print('Error while deleting yahrtzeit: $e');
+      debugPrint('Error while deleting yahrtzeit: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content:
@@ -598,7 +600,7 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                 ]
               : [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: Offset(0, 1),
                   ),
@@ -628,7 +630,8 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
     TextAlign textAlign =
         (jewishLanguage == 'he') ? TextAlign.right : TextAlign.left;
     if (yahrtzeit.day != null && yahrtzeit.month != null) {
-      var day = null, month = null;
+      String? day;
+      String? month;
       if (jewishLanguage == 'he') {
         // Hebrew format: Use HebrewDateFormatter methods
         final hebrewFormatter = HebrewDateFormatter()

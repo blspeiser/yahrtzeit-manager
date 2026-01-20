@@ -9,10 +9,10 @@ import '../theme/app_theme.dart';
 class HomePage extends StatefulWidget {
   final int? initialTab;
 
-  const HomePage({Key? key, this.initialTab}) : super(key: key);
+  const HomePage({super.key, this.initialTab});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {

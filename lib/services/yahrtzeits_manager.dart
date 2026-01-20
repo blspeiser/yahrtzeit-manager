@@ -1,11 +1,11 @@
-import 'package:device_calendar/device_calendar.dart';
+import 'package:device_calendar/device_calendar.dart' as dc;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../models/yahrtzeit.dart';
 import '../models/yahrtzeit_date.dart';
 import '../models/sync_result.dart';
 import 'package:kosher_dart/kosher_dart.dart';
-import 'package:device_calendar/device_calendar.dart' as dc;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:io' show Platform;
@@ -14,7 +14,7 @@ import 'notification_service.dart';
 class YahrtzeitsManager {
   static final YahrtzeitsManager _instance = YahrtzeitsManager._internal();
   final List<Yahrtzeit> _yahrtzeits = []; // In-memory storage
-  final DeviceCalendarPlugin _deviceCalendarPlugin = DeviceCalendarPlugin();
+  final dc.DeviceCalendarPlugin _deviceCalendarPlugin = dc.DeviceCalendarPlugin();
   final NotificationService _notificationService = NotificationService();
 
   static const platform = MethodChannel('com.yahrtzeits/manager');
@@ -38,18 +38,18 @@ class YahrtzeitsManager {
   /// Filters for writable, visible calendars and prefers the user's default/primary calendar.
   /// Returns null if no suitable calendar is found.
   Future<dc.Calendar?> _selectMainCalendar() async {
-    print('DEBUG SYNC: Starting calendar selection...');
+    debugPrint('DEBUG SYNC: Starting calendar selection...');
 
     final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
     if (!calendarsResult.isSuccess ||
         calendarsResult.data == null ||
         calendarsResult.data!.isEmpty) {
-      print('DEBUG SYNC: No calendars available for selection');
+      debugPrint('DEBUG SYNC: No calendars available for selection');
       return null;
     }
 
     final allCalendars = calendarsResult.data!;
-    print('DEBUG SYNC: Found ${allCalendars.length} calendars');
+    debugPrint('DEBUG SYNC: Found ${allCalendars.length} calendars');
 
     // Filter calendars: must be writable and not read-only
     final writableCalendars = allCalendars.where((cal) {
@@ -57,10 +57,10 @@ class YahrtzeitsManager {
       return !isReadOnly;
     }).toList();
 
-    print('DEBUG SYNC: ${writableCalendars.length} writable calendars found');
+    debugPrint('DEBUG SYNC: ${writableCalendars.length} writable calendars found');
 
     if (writableCalendars.isEmpty) {
-      print('DEBUG SYNC: No writable calendars found');
+      debugPrint('DEBUG SYNC: No writable calendars found');
       return null;
     }
 
@@ -96,8 +96,8 @@ class YahrtzeitsManager {
       selectedCalendar = writableCalendars.first;
     }
 
-    print(
-        'DEBUG SYNC: Selected calendar: "${selectedCalendar.name}" (${selectedCalendar.accountName})');
+    debugPrint(
+        'DEBUG SYNC: Selected calendar: "${selectedCalendar.name}" (${selectedCalendar.accountName ?? 'unknown'})');
 
     return selectedCalendar;
   }
@@ -106,51 +106,51 @@ class YahrtzeitsManager {
   /// This method does NOT read from the calendar or modify local data.
   /// It only ensures that all local yahrtzeits are present in the calendar.
   Future<SyncResult> syncWithCalendar() async {
-    print(
+    debugPrint(
         'DEBUG SYNC: Starting syncWithCalendar() - ONE-WAY sync (app → calendar)');
     try {
-      print('DEBUG SYNC: Checking calendar permissions...');
+      debugPrint('DEBUG SYNC: Checking calendar permissions...');
       var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
-      print(
+      debugPrint(
           'DEBUG SYNC: Initial permission check - isSuccess: ${permissionsGranted.isSuccess}, data: ${permissionsGranted.data}');
       if (permissionsGranted.isSuccess && permissionsGranted.data == false) {
-        print('DEBUG SYNC: Permissions not granted, requesting...');
+        debugPrint('DEBUG SYNC: Permissions not granted, requesting...');
         permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
-        print(
+        debugPrint(
             'DEBUG SYNC: Permission request result - isSuccess: ${permissionsGranted.isSuccess}, data: ${permissionsGranted.data}');
         if (permissionsGranted.isSuccess == false ||
             permissionsGranted.data == false) {
-          print('DEBUG SYNC: Calendar permissions not granted, aborting sync');
+          debugPrint('DEBUG SYNC: Calendar permissions not granted, aborting sync');
           return SyncResult.failure('Calendar permissions not granted');
         }
       }
-      print('DEBUG SYNC: Permissions granted, proceeding with sync');
+      debugPrint('DEBUG SYNC: Permissions granted, proceeding with sync');
 
       // Select the main calendar to use
       final selectedCalendar = await _selectMainCalendar();
       if (selectedCalendar == null) {
-        print('DEBUG SYNC: No suitable calendar found for syncing');
+        debugPrint('DEBUG SYNC: No suitable calendar found for syncing');
         return SyncResult.failure(
           'No suitable calendar found. Please ensure you have at least one writable calendar available.',
         );
       }
 
-      print(
+      debugPrint(
           'DEBUG SYNC: Selected calendar for sync - Name: "${selectedCalendar.name}", ID: ${selectedCalendar.id}');
 
       // Load local yahrtzeits from preferences (DO NOT clear or modify them!)
       await loadYahrtzeitsFromPreferences();
-      print(
+      debugPrint(
           'DEBUG SYNC: Loaded ${_yahrtzeits.length} local yahrtzeits from storage');
 
       // Get years setting from SharedPreferences (default: 5)
       final prefs = await SharedPreferences.getInstance();
       final yearsToSync = prefs.getInt('years') ?? 5;
-      print(
-          'DEBUG SYNC: Will sync ${yearsToSync} years of events for each yahrtzeit');
+      debugPrint(
+          'DEBUG SYNC: Will sync $yearsToSync years of events for each yahrtzeit');
 
       if (_yahrtzeits.isEmpty) {
-        print('DEBUG SYNC: No local yahrtzeits to sync');
+        debugPrint('DEBUG SYNC: No local yahrtzeits to sync');
         return SyncResult.success(
           0,
           'No yahrtzeits to sync',
@@ -164,7 +164,7 @@ class YahrtzeitsManager {
       for (var yahrtzeit in _yahrtzeits) {
         // Skip yahrtzeits without required data
         if (yahrtzeit.day == null || yahrtzeit.month == null) {
-          print(
+          debugPrint(
               'DEBUG SYNC: Skipping yahrtzeit "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}" - missing day or month');
           skippedCount++;
           continue;
@@ -174,16 +174,16 @@ class YahrtzeitsManager {
           // Use the existing _addToCalendar method to sync this yahrtzeit
           await _addToCalendar(yahrtzeit, yearsToSync);
           syncedCount++;
-          print(
+          debugPrint(
               'DEBUG SYNC: Synced "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}" (group: ${yahrtzeit.group ?? "none"}) to calendar');
         } catch (e) {
-          print(
+          debugPrint(
               'DEBUG SYNC: Error syncing yahrtzeit "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}": $e');
           skippedCount++;
         }
       }
 
-      print(
+      debugPrint(
           'DEBUG SYNC: Sync completed successfully. Synced $syncedCount yahrtzeits to calendar "${selectedCalendar.name}", skipped $skippedCount');
 
       // IMPORTANT: Do NOT save yahrtzeits to preferences - we didn't modify them!
@@ -194,11 +194,11 @@ class YahrtzeitsManager {
         'Synced $syncedCount yahrtzeits to calendar',
       );
     } on PlatformException catch (e) {
-      print('DEBUG SYNC: PlatformException during sync: $e');
+      debugPrint('DEBUG SYNC: PlatformException during sync: $e');
       return SyncResult.failure('Error syncing with calendar: $e');
     } catch (e, stackTrace) {
-      print('DEBUG SYNC: Unexpected exception during sync: $e');
-      print('DEBUG SYNC: Stack trace: $stackTrace');
+      debugPrint('DEBUG SYNC: Unexpected exception during sync: $e');
+      debugPrint('DEBUG SYNC: Stack trace: $stackTrace');
       return SyncResult.failure('Error syncing with calendar: $e');
     }
   }
@@ -309,7 +309,7 @@ class YahrtzeitsManager {
       await _deleteFromCalendar(yahrtzeit);
       await _notificationService.cancelYahrtzeitNotifications(yahrtzeit.id);
     } catch (e) {
-      print('Error deleting yahrtzeit: $e');
+      debugPrint('Error deleting yahrtzeit: $e');
     }
   }
 
@@ -355,7 +355,7 @@ class YahrtzeitsManager {
     try {
       // Skip yahrtzeits without day/month (incomplete entries)
       if (yahrtzeit.day == null || yahrtzeit.month == null) {
-        print('DEBUG SYNC: Skipping yahrtzeit "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}" - missing day or month');
+        debugPrint('DEBUG SYNC: Skipping yahrtzeit "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}" - missing day or month');
         return;
       }
 
@@ -371,11 +371,11 @@ class YahrtzeitsManager {
       // Select the main calendar to use
       final selectedCalendar = await _selectMainCalendar();
       if (selectedCalendar == null) {
-        print('DEBUG SYNC: No suitable calendar found for adding events');
+        debugPrint('DEBUG SYNC: No suitable calendar found for adding events');
         return;
       }
 
-      print(
+      debugPrint(
           'DEBUG SYNC: Selected calendar for adding events - Name: "${selectedCalendar.name}", ID: ${selectedCalendar.id}');
 
       // Add events only to the selected calendar
@@ -430,7 +430,7 @@ class YahrtzeitsManager {
         await _deviceCalendarPlugin.createOrUpdateEvent(event);
       }
     } on PlatformException catch (e) {
-      print('Error adding event to calendar: $e');
+      debugPrint('Error adding event to calendar: $e');
     }
   }
 
@@ -448,11 +448,11 @@ class YahrtzeitsManager {
       // Select the main calendar to use
       final selectedCalendar = await _selectMainCalendar();
       if (selectedCalendar == null) {
-        print('DEBUG SYNC: No suitable calendar found for deleting events');
+        debugPrint('DEBUG SYNC: No suitable calendar found for deleting events');
         return;
       }
 
-      print(
+      debugPrint(
           'DEBUG SYNC: Selected calendar for deleting events - Name: "${selectedCalendar.name}", ID: ${selectedCalendar.id}');
 
       // Search for and delete events only from the selected calendar
@@ -483,7 +483,7 @@ class YahrtzeitsManager {
         }
       }
     } on PlatformException catch (e) {
-      print('Error deleting event from calendar: $e');
+      debugPrint('Error deleting event from calendar: $e');
     }
   }
 
@@ -517,6 +517,6 @@ class YahrtzeitsManager {
     // Extract ID from description: "ID: ..."
     final regex = RegExp(r'ID:\s*([^\n]+)');
     final match = regex.firstMatch(event.description!);
-    return match != null ? match.group(1)!.trim() : null;
+    return match?.group(1)?.trim();
   }
 }

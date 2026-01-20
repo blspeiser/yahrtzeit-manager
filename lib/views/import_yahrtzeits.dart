@@ -11,11 +11,10 @@ import '../home_page.dart';
 class ImportYahrtzeitsPage extends StatefulWidget {
   final String filePath;
 
-  const ImportYahrtzeitsPage({Key? key, required this.filePath})
-      : super(key: key);
+  const ImportYahrtzeitsPage({super.key, required this.filePath});
 
   @override
-  _ImportYahrtzeitsPageState createState() => _ImportYahrtzeitsPageState();
+  State<ImportYahrtzeitsPage> createState() => _ImportYahrtzeitsPageState();
 }
 
 class _ImportYahrtzeitsPageState extends State<ImportYahrtzeitsPage> {
@@ -300,7 +299,7 @@ class _ImportYahrtzeitsPageState extends State<ImportYahrtzeitsPage> {
                                 ),
                                 SizedBox(height: 12),
                                 DropdownButtonFormField<String>(
-                                  value: _selectedGroup,
+                                  initialValue: _selectedGroup,
                                   decoration: InputDecoration(
                                     labelText: AppLocalizations.of(context)!
                                         .translate('select_group'),

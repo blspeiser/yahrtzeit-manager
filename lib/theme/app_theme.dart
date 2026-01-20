@@ -26,6 +26,6 @@ class AppTheme {
   
   // Helper method for primary color with opacity
   static Color primaryColorWithOpacity(double opacity) {
-    return primaryColor.withOpacity(opacity);
+    return primaryColor.withValues(alpha: opacity);
   }
 }

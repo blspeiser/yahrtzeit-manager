@@ -1,5 +1,5 @@
 import 'package:kosher_dart/kosher_dart.dart';
-import 'yahrtzeit.dart';
+import 'package:yahrtzeit_manager/models/yahrtzeit.dart';
 
 class YahrtzeitDate {
   final Yahrtzeit yahrtzeit;

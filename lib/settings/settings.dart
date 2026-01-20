@@ -7,6 +7,7 @@ import '../theme/app_theme.dart';
 import '../widgets/app_icon_decorative.dart';
 
 class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
   Widget _buildSectionHeader(BuildContext context, String title) {
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
@@ -143,7 +144,7 @@ class SettingsPage extends StatelessWidget {
                         Switch(
                           value: settings.syncSettings,
                           onChanged: (value) => settings.setSyncSettings(value),
-                          activeColor: AppTheme.primaryColor,
+                          activeThumbColor: AppTheme.primaryColor,
                           activeTrackColor:
                               AppTheme.primaryColorWithOpacity(0.5),
                         ),
@@ -229,7 +230,7 @@ class SettingsPage extends StatelessWidget {
                             await manager.rescheduleAllNotifications(
                                 value, settings.days);
                           },
-                          activeColor: AppTheme.primaryColor,
+                          activeThumbColor: AppTheme.primaryColor,
                           activeTrackColor:
                               AppTheme.primaryColorWithOpacity(0.5),
                         ),

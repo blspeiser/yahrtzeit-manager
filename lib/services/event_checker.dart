@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:device_calendar/device_calendar.dart';
-import '../global.dart' as globals;
-import 'calendar_service.dart';
+import 'package:yahrtzeit_manager/global.dart' as globals;
+import 'package:yahrtzeit_manager/services/calendar_service.dart';
 
 class EventChecker {
   final CalendarService calendarService = CalendarService();
@@ -15,9 +15,12 @@ class EventChecker {
         }
 
         List<Calendar> calendars = await calendarService.retrieveCalendars();
+        if (!context.mounted) return;
         for (var calendar in calendars) {
           List<Event> events = await calendarService.retrieveEventsForToday(calendar.id!);
+          if (!context.mounted) return;
           for (var event in events) {
+            if (!context.mounted) return;
             showAlert(context, event);
           }
         }

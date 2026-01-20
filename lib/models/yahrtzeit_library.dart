@@ -1,4 +1,4 @@
-import 'yahrtzeit.dart';
+import 'package:yahrtzeit_manager/models/yahrtzeit.dart';
 import 'dart:convert';
 
 class YahrtzeitLibrary {

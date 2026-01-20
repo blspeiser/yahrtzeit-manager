@@ -11,7 +11,7 @@ import '../widgets/app_icon_decorative.dart';
 class UpcomingYahrtzeits extends StatefulWidget {
   final VoidCallback? onDataChanged;
 
-  const UpcomingYahrtzeits({Key? key, this.onDataChanged}) : super(key: key);
+  const UpcomingYahrtzeits({super.key, this.onDataChanged});
 
   @override
   UpcomingYahrtzeitsState createState() => UpcomingYahrtzeitsState();
@@ -36,6 +36,7 @@ class UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
       final allDates = manager.nextMultiple(yahrtzeits);
 
       // Filter to only show upcoming dates within the selected range
+      if (!mounted) return;
       final settingsProvider =
           Provider.of<SettingsProvider>(context, listen: false);
       final rangeMonths = settingsProvider.upcomingRangeMonths;

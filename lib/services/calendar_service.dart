@@ -13,7 +13,7 @@ class CalendarService {
         return permissionsGranted.isSuccess && permissionsGranted.data!;
       }
       return permissionsGranted.data!;
-    } on PlatformException catch (e) {
+    } on PlatformException {
       return false;
     }
   }
@@ -26,7 +26,7 @@ class CalendarService {
       } else {
         return [];
       }
-    } on PlatformException catch (e) {
+    } on PlatformException {
       return [];
     }
   }
@@ -44,7 +44,7 @@ class CalendarService {
       } else {
         return [];
       }
-    } on PlatformException catch (e) {
+    } on PlatformException {
       return [];
     }
   }

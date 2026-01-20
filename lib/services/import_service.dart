@@ -1,7 +1,7 @@
 import 'dart:io';
-import '../models/yahrtzeit.dart';
-import '../models/yahrtzeit_library.dart';
-import 'yahrtzeits_manager.dart';
+import 'package:yahrtzeit_manager/models/yahrtzeit.dart';
+import 'package:yahrtzeit_manager/models/yahrtzeit_library.dart';
+import 'package:yahrtzeit_manager/services/yahrtzeits_manager.dart';
 
 class ImportResult {
   final int successCount;

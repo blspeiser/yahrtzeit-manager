@@ -12,13 +12,14 @@ class AddYahrtzeitPage extends StatefulWidget {
   final Yahrtzeit? yahrtzeit;
   final bool isEditing;
 
-  AddYahrtzeitPage({
+  const AddYahrtzeitPage({
+    super.key,
     this.yahrtzeit,
     this.isEditing = false,
   });
 
   @override
-  _AddYahrtzeitPageState createState() => _AddYahrtzeitPageState();
+  State<AddYahrtzeitPage> createState() => _AddYahrtzeitPageState();
 }
 
 class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
@@ -176,6 +177,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
               daysBefore: settingsProvider.days);
         }
 
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(localizations.translate('data_saved')),
@@ -184,25 +186,25 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
           ),
         );
 
+        if (!mounted) return;
         Navigator.pop(context, true);
       } catch (e) {
-        if (mounted) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(localizations.translate('error')),
-              content: Text('${localizations.translate('error')}: $e'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(localizations.translate('ok')),
-                ),
-              ],
-            ),
-          );
-        }
+        if (!mounted) return;
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(localizations.translate('error')),
+            content: Text('${localizations.translate('error')}: $e'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(localizations.translate('ok')),
+              ),
+            ],
+          ),
+        );
       }
     }
   }
@@ -331,7 +333,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                         contentPadding:
                             EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       ),
-                      value: _selectedDay,
+                      initialValue: _selectedDay,
                       items: _buildDayItems(jewishLanguage, localizations),
                       onChanged: (value) {
                         setState(() {
@@ -368,7 +370,7 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                         contentPadding:
                             EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       ),
-                      value: _selectedMonth,
+                      initialValue: _selectedMonth,
                       items: _buildMonthItems(jewishLanguage, localizations),
                       onChanged: (value) {
                         setState(() {
@@ -415,15 +417,13 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                           if (focusNode.hasFocus) {
                             // Wait for keyboard to appear, then scroll
                             Future.delayed(Duration(milliseconds: 500), () {
-                              if (mounted && focusNode.hasFocus) {
-                                Scrollable.ensureVisible(
-                                  context,
-                                  duration: Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                  alignment:
-                                      0.2, // Position field near top to leave room below
-                                );
-                              }
+                              if (!mounted || !focusNode.hasFocus) return;
+                              Scrollable.ensureVisible(
+                                context,
+                                duration: Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                                alignment: 0.2, // Position field near top to leave room below
+                              );
                             });
                           }
                         });

@@ -9,15 +9,12 @@ class SyncResult {
     required this.count,
   });
 
-  SyncResult.failure(String message)
+  SyncResult.failure(this.message)
       : success = false,
-        message = message,
         count = 0;
 
-  SyncResult.success(int count, String message)
-      : success = true,
-        message = message,
-        count = count;
+  SyncResult.success(this.count, this.message)
+      : success = true;
 }
 
 

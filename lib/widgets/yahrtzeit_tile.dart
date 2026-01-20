@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:kosher_dart/kosher_dart.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:cross_file/cross_file.dart';
 import '../models/yahrtzeit_date.dart';
 import '../views/yahrtzeit_details.dart';
 import '../localizations/app_localizations.dart';
@@ -14,8 +13,7 @@ import 'package:intl/intl.dart';
 class YahrtzeitTile extends StatelessWidget {
   final YahrtzeitDate yahrtzeitDate;
 
-  const YahrtzeitTile({Key? key, required this.yahrtzeitDate})
-      : super(key: key);
+  const YahrtzeitTile({super.key, required this.yahrtzeitDate});
 
   @override
   Widget build(BuildContext context) {
@@ -190,12 +188,6 @@ END:VCALENDAR
   }
 
   String _formatDateTime(DateTime dateTime) {
-    return dateTime
-            .toUtc()
-            .toIso8601String()
-            .replaceAll('-', '')
-            .replaceAll(':', '')
-            .split('.')[0] +
-        'Z';
+    return '${dateTime.toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '').split('.')[0]}Z';
   }
 }

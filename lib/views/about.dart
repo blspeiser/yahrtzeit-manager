@@ -6,8 +6,10 @@ import '../widgets/app_icon_decorative.dart';
 import '../localizations/app_localizations.dart';
 
 class AboutPage extends StatefulWidget {
+  const AboutPage({super.key});
+
   @override
-  _AboutPageState createState() => _AboutPageState();
+  State<AboutPage> createState() => _AboutPageState();
 }
 
 class _AboutPageState extends State<AboutPage> {
