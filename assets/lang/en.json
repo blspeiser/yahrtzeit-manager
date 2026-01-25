@@ -86,5 +86,7 @@
     "author_name": "Baruch Speiser",
     "all_rights_reserved": "All Rights Reserved",
     "month_abbreviation": "mo",
-    "not_set": "Not set"
+    "not_set": "Not set",
+    "search": "Search",
+    "no_results_found": "No results found"
 }
