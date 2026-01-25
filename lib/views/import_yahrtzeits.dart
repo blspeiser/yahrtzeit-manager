@@ -387,6 +387,18 @@ class _ImportYahrtzeitsPageState extends State<ImportYahrtzeitsPage> {
                                     _selectedGroup ?? yahrtzeit.group ?? '';
                                 final isSelected = _selectedIds.contains(yahrtzeit.id);
 
+                                // Determine primary and secondary names
+                                final hasEnglishName = yahrtzeit.englishName != null && 
+                                    yahrtzeit.englishName!.isNotEmpty;
+                                final hasHebrewName = yahrtzeit.hebrewName != null && 
+                                    yahrtzeit.hebrewName!.isNotEmpty;
+                                final primaryName = hasEnglishName 
+                                    ? yahrtzeit.englishName! 
+                                    : (hasHebrewName ? yahrtzeit.hebrewName! : '');
+                                final secondaryName = hasEnglishName && hasHebrewName 
+                                    ? yahrtzeit.hebrewName! 
+                                    : null;
+
                                 return Card(
                                   margin: EdgeInsets.symmetric(
                                     horizontal: 16,
@@ -398,7 +410,7 @@ class _ImportYahrtzeitsPageState extends State<ImportYahrtzeitsPage> {
                                     value: isSelected,
                                     onChanged: (_) => _toggleSelection(yahrtzeit.id),
                                     title: Text(
-                                      yahrtzeit.englishName ?? '',
+                                      primaryName,
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w500,
@@ -408,12 +420,11 @@ class _ImportYahrtzeitsPageState extends State<ImportYahrtzeitsPage> {
                                     subtitle: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        if (yahrtzeit.hebrewName != null &&
-                                            yahrtzeit.hebrewName!.isNotEmpty)
+                                        if (secondaryName != null)
                                           Padding(
                                             padding: EdgeInsets.only(top: 4),
                                             child: Text(
-                                              yahrtzeit.hebrewName!,
+                                              secondaryName,
                                               style: TextStyle(
                                                 fontSize: 14,
                                                 color: AppTheme.textSecondary,

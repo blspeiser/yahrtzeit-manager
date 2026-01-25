@@ -51,27 +51,48 @@ class YahrtzeitTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      yahrtzeitDate.yahrtzeit.englishName ?? '',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.textCardTitle,
+                    // Primary name: English (civil name) if available
+                    if (yahrtzeitDate.yahrtzeit.englishName != null && 
+                        yahrtzeitDate.yahrtzeit.englishName!.isNotEmpty) ...[
+                      Text(
+                        yahrtzeitDate.yahrtzeit.englishName!,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textCardTitle,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      yahrtzeitDate.yahrtzeit.hebrewName ?? '',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.textCardTitle,
+                      // Show Hebrew name as secondary if English is present
+                      if (yahrtzeitDate.yahrtzeit.hebrewName != null && 
+                          yahrtzeitDate.yahrtzeit.hebrewName!.isNotEmpty) ...[
+                        SizedBox(height: 4),
+                        Text(
+                          yahrtzeitDate.yahrtzeit.hebrewName!,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.textCardTitle,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ],
+                    ] else if (yahrtzeitDate.yahrtzeit.hebrewName != null && 
+                        yahrtzeitDate.yahrtzeit.hebrewName!.isNotEmpty) ...[
+                      // No English name - show Hebrew name as primary
+                      Text(
+                        yahrtzeitDate.yahrtzeit.hebrewName!,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textCardTitle,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    ),
+                    ],
                     SizedBox(height: 6),
                     Row(
                       children: [
@@ -148,7 +169,10 @@ class YahrtzeitTile extends StatelessWidget {
 
   Future<void> _shareYahrtzeit(YahrtzeitDate yahrtzeitDate) async {
     final directory = await getTemporaryDirectory();
-    final path = '${directory.path}/${yahrtzeitDate.yahrtzeit.englishName}.ics';
+    final fileName = yahrtzeitDate.yahrtzeit.englishName ?? 
+        yahrtzeitDate.yahrtzeit.hebrewName ?? 
+        'yahrtzeit';
+    final path = '${directory.path}/$fileName.ics';
     final file = File(path);
 
     final icsContent = _createICSContent(yahrtzeitDate);
@@ -168,6 +192,17 @@ class YahrtzeitTile extends StatelessWidget {
     final uid =
         '${yahrtzeitDate.gregorianDate.microsecondsSinceEpoch}@yourdomain.com';
 
+    // Build name display: show both names if available, otherwise just the one that exists
+    final englishName = yahrtzeitDate.yahrtzeit.englishName;
+    final hebrewName = yahrtzeitDate.yahrtzeit.hebrewName;
+    String nameDisplay;
+    if (englishName != null && englishName.isNotEmpty && 
+        hebrewName != null && hebrewName.isNotEmpty) {
+      nameDisplay = '$englishName ($hebrewName)';
+    } else {
+      nameDisplay = englishName ?? hebrewName ?? '';
+    }
+
     return '''
 BEGIN:VCALENDAR
 VERSION:2.0
@@ -178,8 +213,8 @@ UID:$uid
 DTSTAMP:$now
 DTSTART:$start
 DTEND:$end
-SUMMARY:Yahrtzeit for ${yahrtzeitDate.yahrtzeit.englishName ?? ''} (${yahrtzeitDate.yahrtzeit.hebrewName ?? ''})
-DESCRIPTION:Yahrtzeit for ${yahrtzeitDate.yahrtzeit.englishName ?? ''} (${yahrtzeitDate.yahrtzeit.hebrewName ?? ''})
+SUMMARY:Yahrtzeit for $nameDisplay
+DESCRIPTION:Yahrtzeit for $nameDisplay
 STATUS:CONFIRMED
 TRANSP:OPAQUE
 END:VEVENT

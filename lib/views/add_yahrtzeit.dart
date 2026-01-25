@@ -141,6 +141,20 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
       final settingsProvider =
           Provider.of<SettingsProvider>(context, listen: false);
 
+      // Validate that at least one name is provided
+      final englishName = _englishNameController.text.trim();
+      final hebrewName = _hebrewNameController.text.trim();
+      if (englishName.isEmpty && hebrewName.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(localizations.translate('please_enter_at_least_one_name')),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
       try {
         final newYahrtzeit = Yahrtzeit(
           englishName: _englishNameController.text.trim().isEmpty
@@ -268,13 +282,8 @@ class _AddYahrtzeitPageState extends State<AddYahrtzeitPage> {
                         contentPadding:
                             EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return localizations
-                              .translate('please_enter_english_name');
-                        }
-                        return null;
-                      },
+                      // English name is optional if Hebrew name is provided
+                      validator: null,
                     ),
                     SizedBox(height: 20),
                     TextFormField(

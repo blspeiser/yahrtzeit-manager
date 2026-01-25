@@ -137,27 +137,31 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
   }
 
   List<Yahrtzeit> _filterDuplicateYahrtzeits(List<Yahrtzeit> yahrtzeits) {
-    final uniqueNames = <String>{};
+    final uniqueKeys = <String>{};
     final filteredList = <Yahrtzeit>[];
 
     for (var i = 0; i < yahrtzeits.length; i++) {
       final yahrtzeit = yahrtzeits[i];
       try {
         // Show all yahrtzeits, including those without day/month (incomplete entries)
-        // Filter duplicates by English name, but allow empty strings and null values
+        // Filter duplicates using English name as primary key, fallback to Hebrew name, then ID
         final englishName = yahrtzeit.englishName?.trim();
+        final hebrewName = yahrtzeit.hebrewName?.trim();
+        
+        String uniqueKey;
         if (englishName != null && englishName.isNotEmpty) {
-          // Has English name - check for duplicates
-          if (uniqueNames.add(englishName)) {
-            filteredList.add(yahrtzeit);
-          }
+          // Has English name (civil name) - use as primary key
+          uniqueKey = englishName;
+        } else if (hebrewName != null && hebrewName.isNotEmpty) {
+          // No English name but has Hebrew name (jewish name) - use Hebrew name
+          uniqueKey = 'hebrew_$hebrewName';
         } else {
-          // No English name or empty - still include it (English name is required but might be missing in old data)
-          // Use ID as unique identifier for entries without English name
-          final uniqueId = 'no_name_${yahrtzeit.id}';
-          if (uniqueNames.add(uniqueId)) {
-            filteredList.add(yahrtzeit);
-          }
+          // No names - use ID as unique identifier
+          uniqueKey = 'id_${yahrtzeit.id}';
+        }
+        
+        if (uniqueKeys.add(uniqueKey)) {
+          filteredList.add(yahrtzeit);
         }
       } catch (e) {
         // Skip invalid entries
@@ -676,27 +680,45 @@ class _ManageYahrtzeitsState extends State<ManageYahrtzeits> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      yahrtzeit.englishName ?? '',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.textCardTitle,
+                    // Primary name: English (civil name) if available
+                    if (yahrtzeit.englishName != null && yahrtzeit.englishName!.isNotEmpty) ...[
+                      Text(
+                        yahrtzeit.englishName!,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textCardTitle,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      yahrtzeit.hebrewName ?? '',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.textCardTitle,
+                      // Show Hebrew name as secondary if English is present
+                      if (yahrtzeit.hebrewName != null && yahrtzeit.hebrewName!.isNotEmpty) ...[
+                        SizedBox(height: 4),
+                        Text(
+                          yahrtzeit.hebrewName!,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.textCardTitle,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ],
+                    ] else if (yahrtzeit.hebrewName != null && yahrtzeit.hebrewName!.isNotEmpty) ...[
+                      // No English name - show Hebrew name as primary
+                      Text(
+                        yahrtzeit.hebrewName!,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textCardTitle,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                    ),
+                    ],
                     if (dateDisplay != null) ...[
                       SizedBox(height: 6),
                       Text(

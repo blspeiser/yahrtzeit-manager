@@ -36,13 +36,22 @@ class YahrtzeitDetailsPage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.share, color: Colors.white),
             onPressed: () {
-              Share.share(
-                '${localizations.translate("yahrtzeit_details")}:\n\n'
-                '${localizations.translate("english_name")}: ${yahrtzeitDate.yahrtzeit.englishName}\n'
-                '${localizations.translate("hebrew_name")}: ${yahrtzeitDate.yahrtzeit.hebrewName ?? ''}\n'
-                '${localizations.translate("gregorian_date")}: ${gregorianFormatter.format(yahrtzeitDate.gregorianDate)}\n'
-                '${localizations.translate("hebrew_date")}: ${hebrewFormatter.format(yahrtzeitDate.hebrewDate)}',
-              );
+              final parts = <String>[
+                '${localizations.translate("yahrtzeit_details")}:\n',
+              ];
+              // Include English name (civil name) if available
+              if (yahrtzeitDate.yahrtzeit.englishName != null && 
+                  yahrtzeitDate.yahrtzeit.englishName!.isNotEmpty) {
+                parts.add('${localizations.translate("english_name")}: ${yahrtzeitDate.yahrtzeit.englishName}');
+              }
+              // Include Hebrew name (jewish name) if available
+              if (yahrtzeitDate.yahrtzeit.hebrewName != null && 
+                  yahrtzeitDate.yahrtzeit.hebrewName!.isNotEmpty) {
+                parts.add('${localizations.translate("hebrew_name")}: ${yahrtzeitDate.yahrtzeit.hebrewName}');
+              }
+              parts.add('${localizations.translate("gregorian_date")}: ${gregorianFormatter.format(yahrtzeitDate.gregorianDate)}');
+              parts.add('${localizations.translate("hebrew_date")}: ${hebrewFormatter.format(yahrtzeitDate.hebrewDate)}');
+              Share.share(parts.join('\n'));
             },
           ),
         ],
@@ -65,22 +74,38 @@ class YahrtzeitDetailsPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      yahrtzeitDate.yahrtzeit.englishName ?? '',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.textCardTitle,
+                    // Primary name: English (civil name) if available
+                    if (yahrtzeitDate.yahrtzeit.englishName != null &&
+                        yahrtzeitDate.yahrtzeit.englishName!.isNotEmpty) ...[
+                      Text(
+                        yahrtzeitDate.yahrtzeit.englishName!,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textCardTitle,
+                        ),
                       ),
-                    ),
-                    if (yahrtzeitDate.yahrtzeit.hebrewName != null &&
+                      // Show Hebrew name as secondary if English is present
+                      if (yahrtzeitDate.yahrtzeit.hebrewName != null &&
+                          yahrtzeitDate.yahrtzeit.hebrewName!.isNotEmpty) ...[
+                        SizedBox(height: 8),
+                        Text(
+                          yahrtzeitDate.yahrtzeit.hebrewName!,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.textCardTitle,
+                          ),
+                        ),
+                      ],
+                    ] else if (yahrtzeitDate.yahrtzeit.hebrewName != null &&
                         yahrtzeitDate.yahrtzeit.hebrewName!.isNotEmpty) ...[
-                      SizedBox(height: 8),
+                      // No English name - show Hebrew name as primary
                       Text(
                         yahrtzeitDate.yahrtzeit.hebrewName!,
                         style: TextStyle(
                           fontSize: 24,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                           color: AppTheme.textCardTitle,
                         ),
                       ),

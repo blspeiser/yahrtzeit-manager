@@ -1,6 +1,17 @@
 import 'package:kosher_dart/kosher_dart.dart';
 import 'package:uuid/uuid.dart';
 
+/// Represents a yahrtzeit (anniversary of death) record.
+/// 
+/// Naming convention note:
+/// - [englishName] represents the "שם לועזי" (Civil Name) - typically the person's
+///   legal/civic name in the format "FirstName Surname". Despite the field name,
+///   this may contain Hebrew characters (e.g., for Israeli users).
+/// - [hebrewName] represents the "שם יהודי" (Jewish Name) - typically in the format
+///   "FirstName ben/bat ParentName" as used in religious contexts and prayers.
+/// 
+/// At least one of [englishName] or [hebrewName] should be provided for a valid entry.
+/// The [englishName] (Civil Name) is considered the primary identifier when present.
 class Yahrtzeit {
   final String id;
   final String? englishName;

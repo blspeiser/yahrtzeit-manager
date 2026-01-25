@@ -9,15 +9,28 @@ class ExportService {
   static const String _version = '1.0';
   static const String _iconReference = 'com.yahrtzeit.library';
 
-  /// Converts a string to snake_case
-  String _toSnakeCase(String input) {
-    return input
+  /// Converts a string to a safe filename format.
+  /// Preserves Unicode characters (including Hebrew) while making ASCII text snake_case.
+  /// Falls back to 'yahrtzeit' if the result would be empty.
+  String _toSafeFileName(String input) {
+    var result = input
+        // Convert camelCase to snake_case for ASCII letters
         .replaceAllMapped(
             RegExp(r'[A-Z]'), (match) => '_${match.group(0)!.toLowerCase()}')
-        .replaceAll(RegExp(r'[^a-z0-9_]'), '_')
+        // Replace spaces and non-word characters with underscores, keeping Unicode letters/digits
+        .replaceAll(RegExp(r'[^\p{L}\p{N}_]', unicode: true), '_')
+        // Collapse multiple underscores
         .replaceAll(RegExp(r'_+'), '_')
+        // Remove leading/trailing underscores
         .replaceAll(RegExp(r'^_|_$'), '')
         .toLowerCase();
+    
+    // If result is empty (e.g., only had characters that got stripped), use fallback
+    if (result.isEmpty) {
+      result = 'yahrtzeit';
+    }
+    
+    return result;
   }
 
   /// Exports a list of yahrtzeits to a .YZL file and shares it via native share dialog
@@ -37,13 +50,15 @@ class ExportService {
       // Generate filename if not provided
       String finalFileName;
       if (fileName != null) {
-        finalFileName = _toSnakeCase(fileName);
+        finalFileName = _toSafeFileName(fileName);
       } else {
         // Determine filename based on content
         if (yahrtzeits.length == 1) {
-          // Single yahrtzeit - use english name in snake_case
-          final name = yahrtzeits.first.englishName ?? 'yahrtzeit';
-          finalFileName = _toSnakeCase(name);
+          // Single yahrtzeit - use english name (civil name), fallback to hebrew name (jewish name)
+          final name = yahrtzeits.first.englishName ?? 
+              yahrtzeits.first.hebrewName ?? 
+              'yahrtzeit';
+          finalFileName = _toSafeFileName(name);
         } else {
           // Multiple yahrtzeits - check if they're all from the same group
           final groups = yahrtzeits
@@ -52,7 +67,7 @@ class ExportService {
               .toSet();
           if (groups.length == 1) {
             // All from same group - use group name
-            finalFileName = _toSnakeCase(groups.first!);
+            finalFileName = _toSafeFileName(groups.first!);
           } else {
             // Mixed or no groups - use "all"
             finalFileName = 'all';

@@ -66,12 +66,25 @@ class UpcomingYahrtzeitsState extends State<UpcomingYahrtzeits> {
 
   List<YahrtzeitDate> _filterDuplicateYahrtzeits(
       List<YahrtzeitDate> yahrtzeits) {
-    final uniqueNames = <String>{};
+    final uniqueKeys = <String>{};
     final filteredList = <YahrtzeitDate>[];
 
     for (var yahrtzeitDate in yahrtzeits) {
-      if (yahrtzeitDate.yahrtzeit.englishName != null &&
-          uniqueNames.add(yahrtzeitDate.yahrtzeit.englishName!)) {
+      // Use English name as primary key, fallback to Hebrew name, then ID
+      final englishName = yahrtzeitDate.yahrtzeit.englishName?.trim();
+      final hebrewName = yahrtzeitDate.yahrtzeit.hebrewName?.trim();
+      
+      String uniqueKey;
+      if (englishName != null && englishName.isNotEmpty) {
+        uniqueKey = englishName;
+      } else if (hebrewName != null && hebrewName.isNotEmpty) {
+        uniqueKey = 'hebrew_$hebrewName';
+      } else {
+        // Fallback to ID for entries without any name
+        uniqueKey = 'id_${yahrtzeitDate.yahrtzeit.id}';
+      }
+      
+      if (uniqueKeys.add(uniqueKey)) {
         filteredList.add(yahrtzeitDate);
       }
     }

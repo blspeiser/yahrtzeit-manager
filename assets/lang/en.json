@@ -14,6 +14,7 @@
     "hebrew_name": "Hebrew Name",
     "please_enter_english_name": "Please enter English name",
     "please_enter_hebrew_name": "Please enter Hebrew name",
+    "please_enter_at_least_one_name": "Please enter at least one name (English or Hebrew)",
     "select_date": "Select Date",
     "save": "Save",
     "update": "Update",

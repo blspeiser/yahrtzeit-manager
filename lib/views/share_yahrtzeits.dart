@@ -131,8 +131,9 @@ class _ShareYahrtzeitsPageState extends State<ShareYahrtzeitsPage> {
       // Determine filename based on selection
       String? fileName;
       if (selectedYahrtzeits.length == 1) {
-        // Single yahrtzeit - use english name
-        fileName = selectedYahrtzeits.first.englishName;
+        // Single yahrtzeit - use english name (civil name), fallback to hebrew name (jewish name)
+        fileName = selectedYahrtzeits.first.englishName ?? 
+            selectedYahrtzeits.first.hebrewName;
       } else {
         // Multiple - check if all same group
         final groups = selectedYahrtzeits
@@ -288,7 +289,9 @@ class _ShareYahrtzeitsPageState extends State<ShareYahrtzeitsPage> {
                                       : _shareSelected,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.primaryColor,
+                                foregroundColor: Colors.white,
                                 disabledBackgroundColor: AppTheme.cardBorderColor,
+                                disabledForegroundColor: AppTheme.textTertiary,
                                 padding: EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -355,25 +358,39 @@ class _ShareYahrtzeitsPageState extends State<ShareYahrtzeitsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // English name
-                    Text(
-                      yahrtzeit.englishName ?? '',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.textCardTitle,
+                    // Primary name: English (civil name) if available, otherwise Hebrew (jewish name)
+                    if (yahrtzeit.englishName != null && yahrtzeit.englishName!.isNotEmpty) ...[
+                      Text(
+                        yahrtzeit.englishName!,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textCardTitle,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    // Hebrew name
-                    if (yahrtzeit.hebrewName != null && yahrtzeit.hebrewName!.isNotEmpty) ...[
-                      SizedBox(height: 3),
+                      // Show Hebrew name as secondary if English is present
+                      if (yahrtzeit.hebrewName != null && yahrtzeit.hebrewName!.isNotEmpty) ...[
+                        SizedBox(height: 3),
+                        Text(
+                          yahrtzeit.hebrewName!,
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: AppTheme.textSecondary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ],
+                    ] else if (yahrtzeit.hebrewName != null && yahrtzeit.hebrewName!.isNotEmpty) ...[
+                      // No English name - show Hebrew name as primary
                       Text(
                         yahrtzeit.hebrewName!,
                         style: TextStyle(
-                          fontSize: 15,
-                          color: AppTheme.textSecondary,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textCardTitle,
                         ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,

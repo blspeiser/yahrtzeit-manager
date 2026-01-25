@@ -14,6 +14,7 @@
     "hebrew_name": "שם יהודי",
     "please_enter_english_name": "נא להכניס שם לועזי",
     "please_enter_hebrew_name": "נא להכניס שם יהודי",
+    "please_enter_at_least_one_name": "נא להכניס לפחות שם אחד (לועזי או יהודי)",
     "select_date": "בחר תאריך",
     "save": "שמור",
     "update": "עדכן",
