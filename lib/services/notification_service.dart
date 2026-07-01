@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:kosher_dart/kosher_dart.dart';
@@ -19,14 +20,19 @@ class NotificationService {
   Future<void> initialize() async {
     if (_initialized) return;
 
-    // Initialize timezone
     tz.initializeTimeZones();
 
-    // Android initialization settings
+    // Detect and set the device's local timezone
+    try {
+      final tzInfo = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(tzInfo.identifier));
+    } catch (e) {
+      // If timezone detection fails, fall back to UTC rather than crashing
+    }
+
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    // iOS initialization settings
     const DarwinInitializationSettings iosSettings =
         DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -34,27 +40,25 @@ class NotificationService {
       requestSoundPermission: true,
     );
 
-    // Combined initialization settings
     const InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
     );
 
-    // Initialize the plugin
     await _notifications.initialize(
-      initSettings,
+      settings: initSettings,
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
-    // Request permissions for Android 13+
-    final androidImplementation = _notifications.resolvePlatformSpecificImplementation<
+    final androidImplementation =
+        _notifications.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
     if (androidImplementation != null) {
       await androidImplementation.requestNotificationsPermission();
     }
 
-    // Request permissions for iOS
-    final iosImplementation = _notifications.resolvePlatformSpecificImplementation<
+    final iosImplementation =
+        _notifications.resolvePlatformSpecificImplementation<
             IOSFlutterLocalNotificationsPlugin>();
     if (iosImplementation != null) {
       await iosImplementation.requestPermissions(
@@ -71,6 +75,11 @@ class NotificationService {
     // Handle notification tap if needed
   }
 
+  /// Schedules notifications for the given yahrtzeits.
+  /// 
+  /// When called with a subset of yahrtzeits (e.g., after add/update),
+  /// only those yahrtzeits' notifications are cancelled and rescheduled.
+  /// For a full reschedule, call [cancelAllNotifications] first, then this method.
   Future<void> scheduleYahrtzeitNotifications(List<Yahrtzeit> yahrtzeits,
       int daysBefore, bool notificationsEnabled) async {
     if (!notificationsEnabled) {
@@ -79,17 +88,18 @@ class NotificationService {
     }
 
     await initialize();
-    await cancelAllNotifications();
 
     final now = tz.TZDateTime.now(tz.local);
     final currentJewishYear = JewishDate().getJewishYear();
 
     for (var yahrtzeit in yahrtzeits) {
-      // Skip yahrtzeits without day/month (incomplete entries)
       if (yahrtzeit.day == null || yahrtzeit.month == null) {
         continue;
       }
-      // Schedule for current year and next year
+
+      // Cancel existing notifications for this specific yahrtzeit before rescheduling
+      await cancelYahrtzeitNotifications(yahrtzeit.id);
+
       for (int yearOffset = 0; yearOffset <= 1; yearOffset++) {
         int jewishYear = currentJewishYear + yearOffset;
 
@@ -122,15 +132,13 @@ class NotificationService {
 
           final notificationDate = tz.TZDateTime.from(gregorianDate, tz.local);
 
-          // Only schedule if the date is in the future
           if (notificationDate.isAfter(now)) {
             final reminderDate =
                 notificationDate.subtract(Duration(days: daysBefore));
 
-            // Only schedule reminder if it's in the future
             if (reminderDate.isAfter(now)) {
               await _scheduleNotification(
-                id: _getNotificationId(yahrtzeit.id, yearOffset),
+                id: _getNotificationId(yahrtzeit.id, yearOffset, 0),
                 title: 'Yahrtzeit Reminder',
                 body:
                     'Yahrtzeit for ${yahrtzeit.englishName ?? yahrtzeit.hebrewName} is in $daysBefore day${daysBefore == 1 ? '' : 's'}',
@@ -139,9 +147,8 @@ class NotificationService {
               );
             }
 
-            // Also schedule notification for the day of
             await _scheduleNotification(
-              id: _getNotificationId(yahrtzeit.id, yearOffset) + 10000,
+              id: _getNotificationId(yahrtzeit.id, yearOffset, 1),
               title: 'Yahrtzeit Today',
               body:
                   'Today is the Yahrtzeit of ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}',
@@ -150,7 +157,7 @@ class NotificationService {
             );
           }
         } catch (e) {
-          // Error scheduling notification - continue with others
+          // Skip this yahrtzeit/year if date conversion fails
         }
       }
     }
@@ -164,11 +171,11 @@ class NotificationService {
     String? payload,
   }) async {
     await _notifications.zonedSchedule(
-      id,
-      title,
-      body,
-      scheduledDate,
-      const NotificationDetails(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: scheduledDate,
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'yahrtzeit_channel',
           'Yahrtzeit Reminders',
@@ -184,25 +191,21 @@ class NotificationService {
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       payload: payload,
     );
   }
 
-  int _getNotificationId(String yahrtzeitId, int yearOffset) {
-    // Create a unique ID based on yahrtzeit ID and year offset
-    // Using hash code to ensure uniqueness
-    return (yahrtzeitId.hashCode + yearOffset * 1000).abs() % 10000;
+  /// Generates a notification ID using the full 31-bit positive integer range.
+  /// [type]: 0 = advance reminder, 1 = day-of notification
+  int _getNotificationId(String yahrtzeitId, int yearOffset, int type) {
+    final combined = '${yahrtzeitId}_${yearOffset}_$type';
+    return combined.hashCode.abs();
   }
 
   Future<void> cancelYahrtzeitNotifications(String yahrtzeitId) async {
-    // Cancel all notifications for this yahrtzeit (current and next year)
     for (int yearOffset = 0; yearOffset <= 1; yearOffset++) {
-      final id = _getNotificationId(yahrtzeitId, yearOffset);
-      await _notifications.cancel(id);
-      await _notifications
-          .cancel(id + 10000); // Also cancel the day-of notification
+      await _notifications.cancel(id: _getNotificationId(yahrtzeitId, yearOffset, 0));
+      await _notifications.cancel(id: _getNotificationId(yahrtzeitId, yearOffset, 1));
     }
   }
 

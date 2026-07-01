@@ -178,9 +178,11 @@ class YahrtzeitTile extends StatelessWidget {
     final icsContent = _createICSContent(yahrtzeitDate);
     await file.writeAsString(icsContent);
 
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      text: 'Yahrtzeit Details',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: 'Yahrtzeit Details',
+      ),
     );
   }
 

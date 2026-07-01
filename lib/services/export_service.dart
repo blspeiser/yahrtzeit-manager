@@ -94,9 +94,11 @@ class ExportService {
       await file.writeAsString(jsonString);
 
       // Share the file
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'Yahrtzeit Library',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: 'Yahrtzeit Library',
+        ),
       );
 
       return file.path;

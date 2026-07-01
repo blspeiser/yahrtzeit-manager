@@ -45,6 +45,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Access your calendar to add and manage yahrtzeit reminders.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Full access to view and manage yahrtzeit events on your calendar.</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>

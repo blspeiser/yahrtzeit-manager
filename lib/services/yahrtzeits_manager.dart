@@ -1,30 +1,19 @@
-import 'package:device_calendar/device_calendar.dart' as dc;
+import 'package:device_calendar_plus/device_calendar_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
-import 'package:timezone/timezone.dart' as tz;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kosher_dart/kosher_dart.dart' hide Calendar;
+import 'dart:convert';
+import 'dart:io' show Platform;
 import '../models/yahrtzeit.dart';
 import '../models/yahrtzeit_date.dart';
 import '../models/sync_result.dart';
-import 'package:kosher_dart/kosher_dart.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import 'dart:io' show Platform;
 import 'notification_service.dart';
 
 class YahrtzeitsManager {
   static final YahrtzeitsManager _instance = YahrtzeitsManager._internal();
-  final List<Yahrtzeit> _yahrtzeits = []; // In-memory storage
-  final dc.DeviceCalendarPlugin _deviceCalendarPlugin = dc.DeviceCalendarPlugin();
+  final List<Yahrtzeit> _yahrtzeits = [];
+  final DeviceCalendar _calendarPlugin = DeviceCalendar.instance;
   final NotificationService _notificationService = NotificationService();
-
-  static const platform = MethodChannel('com.yahrtzeits/manager');
-
-  Future<Map<String, dynamic>> nextYahrtzeit(
-      Map<String, dynamic> yahrtzeit) async {
-    final result = await platform.invokeMethod<Map<String, dynamic>>(
-        'nextYahrtzeit', yahrtzeit);
-    return result!;
-  }
 
   factory YahrtzeitsManager() {
     return _instance;
@@ -32,172 +21,136 @@ class YahrtzeitsManager {
 
   YahrtzeitsManager._internal();
 
-  dc.DeviceCalendarPlugin get deviceCalendarPlugin => _deviceCalendarPlugin;
-
-  /// Selects the main calendar to use for syncing.
-  /// Filters for writable, visible calendars and prefers the user's default/primary calendar.
+  /// Selects the appropriate calendar based on the user's preference setting.
   /// Returns null if no suitable calendar is found.
-  Future<dc.Calendar?> _selectMainCalendar() async {
-    debugPrint('DEBUG SYNC: Starting calendar selection...');
+  Future<Calendar?> _selectCalendarForSetting() async {
+    final prefs = await SharedPreferences.getInstance();
+    final calendarSetting = prefs.getString('calendar') ?? 'google';
 
-    final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
-    if (!calendarsResult.isSuccess ||
-        calendarsResult.data == null ||
-        calendarsResult.data!.isEmpty) {
-      debugPrint('DEBUG SYNC: No calendars available for selection');
+    final calendars = await _calendarPlugin.listCalendars();
+    if (calendars.isEmpty) {
+      debugPrint('DEBUG SYNC: No calendars available');
       return null;
     }
 
-    final allCalendars = calendarsResult.data!;
-    debugPrint('DEBUG SYNC: Found ${allCalendars.length} calendars');
-
-    // Filter calendars: must be writable and not read-only
-    final writableCalendars = allCalendars.where((cal) {
-      final isReadOnly = cal.isReadOnly ?? false;
-      return !isReadOnly;
-    }).toList();
-
-    debugPrint('DEBUG SYNC: ${writableCalendars.length} writable calendars found');
-
+    final writableCalendars = calendars.where((cal) => !cal.readOnly).toList();
     if (writableCalendars.isEmpty) {
       debugPrint('DEBUG SYNC: No writable calendars found');
       return null;
     }
 
-    // Platform-specific selection logic
-    dc.Calendar? selectedCalendar;
+    debugPrint('DEBUG SYNC: Found ${writableCalendars.length} writable calendars, preference: $calendarSetting');
 
-    if (Platform.isIOS) {
-      // Prefer calendars from common account types (user's own accounts)
-      final userAccountCalendars = writableCalendars.where((cal) {
+    Calendar? selectedCalendar;
+
+    if (calendarSetting == 'google') {
+      // User wants Google Calendar specifically
+      final googleCalendars = writableCalendars.where((cal) {
         final accountType = cal.accountType?.toLowerCase() ?? '';
-        return accountType.contains('local') ||
-            accountType.contains('google') ||
-            accountType.isEmpty;
+        return accountType.contains('google');
       }).toList();
 
-      selectedCalendar = userAccountCalendars.isNotEmpty
-          ? userAccountCalendars.first
-          : writableCalendars.first;
-    } else if (Platform.isAndroid) {
-      // Prefer primary calendar (user's own account, not shared)
-      final primaryCandidates = writableCalendars.where((cal) {
-        final accountName = cal.accountName?.toLowerCase() ?? '';
-        final accountType = cal.accountType?.toLowerCase() ?? '';
-        return !accountName.contains('shared') &&
-            !accountName.contains('subscription') &&
-            (accountType.contains('google') || accountType.isEmpty);
-      }).toList();
-
-      selectedCalendar = primaryCandidates.isNotEmpty
-          ? primaryCandidates.first
-          : writableCalendars.first;
+      if (googleCalendars.isNotEmpty) {
+        // Prefer the primary Google calendar, otherwise first Google calendar
+        selectedCalendar = googleCalendars.firstWhere(
+          (cal) => cal.isPrimary,
+          orElse: () => googleCalendars.first,
+        );
+      } else {
+        debugPrint('DEBUG SYNC: No Google calendar found, falling back to first writable');
+        selectedCalendar = writableCalendars.first;
+      }
     } else {
-      selectedCalendar = writableCalendars.first;
+      // User wants device/local calendar
+      if (Platform.isIOS) {
+        final localCalendars = writableCalendars.where((cal) {
+          final accountType = cal.accountType?.toLowerCase() ?? '';
+          return accountType.contains('local') || accountType.isEmpty;
+        }).toList();
+        selectedCalendar = localCalendars.isNotEmpty
+            ? localCalendars.first
+            : writableCalendars.first;
+      } else {
+        // On Android, prefer non-Google calendars
+        final nonGoogleCalendars = writableCalendars.where((cal) {
+          final accountType = cal.accountType?.toLowerCase() ?? '';
+          return !accountType.contains('google');
+        }).toList();
+        selectedCalendar = nonGoogleCalendars.isNotEmpty
+            ? nonGoogleCalendars.first
+            : writableCalendars.first;
+      }
     }
 
-    debugPrint(
-        'DEBUG SYNC: Selected calendar: "${selectedCalendar.name}" (${selectedCalendar.accountName ?? 'unknown'})');
-
+    debugPrint('DEBUG SYNC: Selected calendar: "${selectedCalendar.name}" (${selectedCalendar.accountName ?? "unknown"})');
     return selectedCalendar;
   }
 
-  /// Syncs local yahrtzeits to the calendar (ONE-WAY: app → calendar only).
-  /// This method does NOT read from the calendar or modify local data.
-  /// It only ensures that all local yahrtzeits are present in the calendar.
-  Future<SyncResult> syncWithCalendar() async {
-    debugPrint(
-        'DEBUG SYNC: Starting syncWithCalendar() - ONE-WAY sync (app → calendar)');
-    try {
-      debugPrint('DEBUG SYNC: Checking calendar permissions...');
-      var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
-      debugPrint(
-          'DEBUG SYNC: Initial permission check - isSuccess: ${permissionsGranted.isSuccess}, data: ${permissionsGranted.data}');
-      if (permissionsGranted.isSuccess && permissionsGranted.data == false) {
-        debugPrint('DEBUG SYNC: Permissions not granted, requesting...');
-        permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
-        debugPrint(
-            'DEBUG SYNC: Permission request result - isSuccess: ${permissionsGranted.isSuccess}, data: ${permissionsGranted.data}');
-        if (permissionsGranted.isSuccess == false ||
-            permissionsGranted.data == false) {
-          debugPrint('DEBUG SYNC: Calendar permissions not granted, aborting sync');
-          return SyncResult.failure('Calendar permissions not granted');
-        }
-      }
-      debugPrint('DEBUG SYNC: Permissions granted, proceeding with sync');
+  /// Ensures calendar permissions are granted, requesting if needed.
+  /// Returns true if permissions are granted.
+  Future<bool> _ensureCalendarPermissions() async {
+    var status = await _calendarPlugin.hasPermissions();
+    if (status == CalendarPermissionStatus.granted) return true;
 
-      // Select the main calendar to use
-      final selectedCalendar = await _selectMainCalendar();
+    if (status == CalendarPermissionStatus.notDetermined) {
+      status = await _calendarPlugin.requestPermissions();
+    }
+
+    return status == CalendarPermissionStatus.granted;
+  }
+
+  /// Syncs local yahrtzeits to the calendar (ONE-WAY: app -> calendar only).
+  Future<SyncResult> syncWithCalendar() async {
+    debugPrint('DEBUG SYNC: Starting syncWithCalendar() - ONE-WAY sync (app -> calendar)');
+    try {
+      if (!await _ensureCalendarPermissions()) {
+        debugPrint('DEBUG SYNC: Calendar permissions not granted');
+        return SyncResult.failure('Calendar permissions not granted');
+      }
+
+      final selectedCalendar = await _selectCalendarForSetting();
       if (selectedCalendar == null) {
-        debugPrint('DEBUG SYNC: No suitable calendar found for syncing');
         return SyncResult.failure(
           'No suitable calendar found. Please ensure you have at least one writable calendar available.',
         );
       }
 
-      debugPrint(
-          'DEBUG SYNC: Selected calendar for sync - Name: "${selectedCalendar.name}", ID: ${selectedCalendar.id}');
+      debugPrint('DEBUG SYNC: Selected calendar: "${selectedCalendar.name}", ID: ${selectedCalendar.id}');
 
-      // Load local yahrtzeits from preferences (DO NOT clear or modify them!)
       await loadYahrtzeitsFromPreferences();
-      debugPrint(
-          'DEBUG SYNC: Loaded ${_yahrtzeits.length} local yahrtzeits from storage');
+      debugPrint('DEBUG SYNC: Loaded ${_yahrtzeits.length} local yahrtzeits');
 
-      // Get years setting from SharedPreferences (default: 5)
       final prefs = await SharedPreferences.getInstance();
       final yearsToSync = prefs.getInt('years') ?? 5;
-      debugPrint(
-          'DEBUG SYNC: Will sync $yearsToSync years of events for each yahrtzeit');
 
       if (_yahrtzeits.isEmpty) {
-        debugPrint('DEBUG SYNC: No local yahrtzeits to sync');
-        return SyncResult.success(
-          0,
-          'No yahrtzeits to sync',
-        );
+        return SyncResult.success(0, 'No yahrtzeits to sync');
       }
 
-      // Sync each local yahrtzeit to the calendar
       int syncedCount = 0;
       int skippedCount = 0;
 
       for (var yahrtzeit in _yahrtzeits) {
-        // Skip yahrtzeits without required data
         if (yahrtzeit.day == null || yahrtzeit.month == null) {
-          debugPrint(
-              'DEBUG SYNC: Skipping yahrtzeit "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}" - missing day or month');
           skippedCount++;
           continue;
         }
 
         try {
-          // Use the existing _addToCalendar method to sync this yahrtzeit
-          await _addToCalendar(yahrtzeit, yearsToSync);
+          await _addToCalendar(yahrtzeit, yearsToSync, selectedCalendar);
           syncedCount++;
-          debugPrint(
-              'DEBUG SYNC: Synced "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}" (group: ${yahrtzeit.group ?? "none"}) to calendar');
         } catch (e) {
-          debugPrint(
-              'DEBUG SYNC: Error syncing yahrtzeit "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}": $e');
+          debugPrint('DEBUG SYNC: Error syncing "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}": $e');
           skippedCount++;
         }
       }
 
-      debugPrint(
-          'DEBUG SYNC: Sync completed successfully. Synced $syncedCount yahrtzeits to calendar "${selectedCalendar.name}", skipped $skippedCount');
+      await saveYahrtzeitsToPreferences();
 
-      // IMPORTANT: Do NOT save yahrtzeits to preferences - we didn't modify them!
-      // Local data remains unchanged.
-
-      return SyncResult.success(
-        syncedCount,
-        'Synced $syncedCount yahrtzeits to calendar',
-      );
-    } on PlatformException catch (e) {
-      debugPrint('DEBUG SYNC: PlatformException during sync: $e');
-      return SyncResult.failure('Error syncing with calendar: $e');
+      debugPrint('DEBUG SYNC: Completed. Synced $syncedCount, skipped $skippedCount');
+      return SyncResult.success(syncedCount, 'Synced $syncedCount yahrtzeits to calendar');
     } catch (e, stackTrace) {
-      debugPrint('DEBUG SYNC: Unexpected exception during sync: $e');
+      debugPrint('DEBUG SYNC: Exception: $e');
       debugPrint('DEBUG SYNC: Stack trace: $stackTrace');
       return SyncResult.failure('Error syncing with calendar: $e');
     }
@@ -210,7 +163,6 @@ class YahrtzeitsManager {
     await prefs.setString('yahrtzeit_data', json.encode(jsonData));
   }
 
-  // Public method to load yahrtzeits from preferences
   Future<void> loadYahrtzeitsFromPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? jsonString = prefs.getString('yahrtzeit_data');
@@ -229,7 +181,6 @@ class YahrtzeitsManager {
       Yahrtzeit yahrtzeit, int yearsToSync, bool syncSettings,
       {bool notificationsEnabled = false, int daysBefore = 10}) async {
     await loadYahrtzeitsFromPreferences();
-    // Check for duplicates by ID first, then by name+date
     if (!_yahrtzeits.any((y) =>
         y.id == yahrtzeit.id ||
         ((y.englishName?.toLowerCase().trim() ?? '') ==
@@ -244,15 +195,19 @@ class YahrtzeitsManager {
         day: yahrtzeit.day,
         month: yahrtzeit.month,
         group: yahrtzeit.group,
-        id: yahrtzeit.id, // Preserve the ID
+        id: yahrtzeit.id,
       );
       _yahrtzeits.add(newYahrtzeit);
+
       if (syncSettings) {
-        await _addToCalendar(newYahrtzeit, yearsToSync);
+        final calendar = await _selectCalendarForSetting();
+        if (calendar != null) {
+          await _addToCalendar(newYahrtzeit, yearsToSync, calendar);
+        }
       }
+
       await saveYahrtzeitsToPreferences();
 
-      // Schedule notifications if enabled
       if (notificationsEnabled) {
         await _notificationService
             .scheduleYahrtzeitNotifications([newYahrtzeit], daysBefore, true);
@@ -263,6 +218,8 @@ class YahrtzeitsManager {
   Future<void> rescheduleAllNotifications(
       bool notificationsEnabled, int daysBefore) async {
     await loadYahrtzeitsFromPreferences();
+    // Cancel all existing notifications before doing a full reschedule
+    await _notificationService.cancelAllNotifications();
     await _notificationService.scheduleYahrtzeitNotifications(
         _yahrtzeits, daysBefore, notificationsEnabled);
   }
@@ -271,29 +228,25 @@ class YahrtzeitsManager {
       int yearsToSync, bool syncSettings,
       {bool notificationsEnabled = false, int daysBefore = 10}) async {
     await loadYahrtzeitsFromPreferences();
-    // Find and update the existing yahrtzeit
     final index = _yahrtzeits.indexWhere((y) => y.id == oldYahrtzeit.id);
     if (index != -1) {
-      // Cancel old notifications
       await _notificationService.cancelYahrtzeitNotifications(oldYahrtzeit.id);
 
-      // Delete from calendar if synced
       if (syncSettings) {
         await _deleteFromCalendar(oldYahrtzeit);
       }
 
-      // Update the yahrtzeit
       _yahrtzeits[index] = newYahrtzeit;
 
-      // Add to calendar if synced
       if (syncSettings) {
-        await _addToCalendar(newYahrtzeit, yearsToSync);
+        final calendar = await _selectCalendarForSetting();
+        if (calendar != null) {
+          await _addToCalendar(newYahrtzeit, yearsToSync, calendar);
+        }
       }
 
-      // Save to preferences
       await saveYahrtzeitsToPreferences();
 
-      // Schedule new notifications if enabled
       if (notificationsEnabled) {
         await _notificationService
             .scheduleYahrtzeitNotifications([newYahrtzeit], daysBefore, true);
@@ -306,7 +259,14 @@ class YahrtzeitsManager {
       await loadYahrtzeitsFromPreferences();
       _yahrtzeits.removeWhere((y) => y.id == yahrtzeit.id);
       await saveYahrtzeitsToPreferences();
-      await _deleteFromCalendar(yahrtzeit);
+
+      // Only delete from calendar if sync is enabled
+      final prefs = await SharedPreferences.getInstance();
+      final syncEnabled = prefs.getBool('syncSettings') ?? true;
+      if (syncEnabled) {
+        await _deleteFromCalendar(yahrtzeit);
+      }
+
       await _notificationService.cancelYahrtzeitNotifications(yahrtzeit.id);
     } catch (e) {
       debugPrint('Error deleting yahrtzeit: $e');
@@ -314,12 +274,12 @@ class YahrtzeitsManager {
   }
 
   Future<List<Yahrtzeit>> getAllYahrtzeits() async {
-    await loadYahrtzeitsFromPreferences(); // טען את הנתונים מ-SharedPreferences
+    await loadYahrtzeitsFromPreferences();
     return _yahrtzeits;
   }
 
   Future<List<String>> getAllGroups() async {
-    await loadYahrtzeitsFromPreferences(); // טען את הנתונים מ-SharedPreferences
+    await loadYahrtzeitsFromPreferences();
     Set<String> uniqueGroups = {};
     for (var yahrtzeit in _yahrtzeits) {
       if (yahrtzeit.group != null && yahrtzeit.group!.isNotEmpty) {
@@ -330,172 +290,135 @@ class YahrtzeitsManager {
   }
 
   Future<List<Yahrtzeit>> getUpcomingYahrtzeits({int days = 1000}) async {
-    await loadYahrtzeitsFromPreferences(); // טען את הנתונים מ-SharedPreferences
-    final now = tz.TZDateTime.now(tz.local);
+    await loadYahrtzeitsFromPreferences();
+    final now = DateTime.now();
     final upcomingYahrtzeits = _yahrtzeits.where((yahrtzeit) {
-      // Skip yahrtzeits without day/month (incomplete entries)
       if (yahrtzeit.day == null || yahrtzeit.month == null) {
         return false;
       }
       try {
-        final yahrtzeitDate =
-            tz.TZDateTime.from(yahrtzeit.getGregorianDate(), tz.local);
-        final isUpcoming = yahrtzeitDate.isAfter(now) &&
+        final yahrtzeitDate = yahrtzeit.getGregorianDate();
+        return yahrtzeitDate.isAfter(now) &&
             yahrtzeitDate.isBefore(now.add(Duration(days: days)));
-        return isUpcoming;
       } catch (e) {
-        // Skip invalid dates
         return false;
       }
     }).toList();
     return upcomingYahrtzeits;
   }
 
-  Future<void> _addToCalendar(Yahrtzeit yahrtzeit, int yearsToSync) async {
-    try {
-      // Skip yahrtzeits without day/month (incomplete entries)
-      if (yahrtzeit.day == null || yahrtzeit.month == null) {
-        debugPrint('DEBUG SYNC: Skipping yahrtzeit "${yahrtzeit.englishName ?? yahrtzeit.hebrewName}" - missing day or month');
-        return;
-      }
+  Future<void> _addToCalendar(Yahrtzeit yahrtzeit, int yearsToSync, Calendar calendar) async {
+    if (yahrtzeit.day == null || yahrtzeit.month == null) return;
 
-      var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
-      if (permissionsGranted.isSuccess && permissionsGranted.data == false) {
-        permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
-        if (permissionsGranted.isSuccess == false ||
-            permissionsGranted.data == false) {
-          return;
+    if (!await _ensureCalendarPermissions()) return;
+
+    final newEventIds = <String>[];
+
+    for (int i = 0; i < yearsToSync; i++) {
+      int year = JewishDate().getJewishYear() + i;
+
+      int month = yahrtzeit.month!;
+      if (month == JewishDate.ADAR) {
+        final testDate = JewishDate.initDate(
+            jewishYear: year, jewishMonth: JewishDate.ADAR, jewishDayOfMonth: 1);
+        if (testDate.getJewishMonth() == JewishDate.ADAR_II) {
+          month = JewishDate.ADAR_II;
+        }
+      } else if (month == JewishDate.ADAR_II) {
+        final testDate = JewishDate.initDate(
+            jewishYear: year, jewishMonth: JewishDate.ADAR, jewishDayOfMonth: 1);
+        if (testDate.getJewishMonth() != JewishDate.ADAR_II) {
+          month = JewishDate.ADAR;
         }
       }
 
-      // Select the main calendar to use
-      final selectedCalendar = await _selectMainCalendar();
-      if (selectedCalendar == null) {
-        debugPrint('DEBUG SYNC: No suitable calendar found for adding events');
-        return;
-      }
-
-      debugPrint(
-          'DEBUG SYNC: Selected calendar for adding events - Name: "${selectedCalendar.name}", ID: ${selectedCalendar.id}');
-
-      // Add events only to the selected calendar
-      for (int i = 0; i < yearsToSync; i++) {
-        int year = JewishDate().getJewishYear() + i;
-
-        // Handle Adar/Adar II in leap years and non-leap years
-        int month = yahrtzeit.month!;
-        if (month == JewishDate.ADAR) {
-          // Check if this is a leap year
-          final testDate = JewishDate.initDate(
-              jewishYear: year,
-              jewishMonth: JewishDate.ADAR,
-              jewishDayOfMonth: 1);
-          if (testDate.getJewishMonth() == JewishDate.ADAR_II) {
-            // In leap years, ADAR becomes ADAR_II
-            month = JewishDate.ADAR_II;
-          }
-        } else if (month == JewishDate.ADAR_II) {
-          // Check if this is a leap year
-          final testDate = JewishDate.initDate(
-              jewishYear: year,
-              jewishMonth: JewishDate.ADAR,
-              jewishDayOfMonth: 1);
-          if (testDate.getJewishMonth() != JewishDate.ADAR_II) {
-            // Not a leap year, so ADAR_II should be treated as ADAR
-            month = JewishDate.ADAR;
-          }
-        }
-
+      try {
         JewishDate jewishDate = JewishDate.initDate(
-            jewishYear: year,
-            jewishMonth: month,
-            jewishDayOfMonth: yahrtzeit.day!);
+            jewishYear: year, jewishMonth: month, jewishDayOfMonth: yahrtzeit.day!);
         DateTime gregorianDate = DateTime(
             jewishDate.getGregorianYear(),
             jewishDate.getGregorianMonth(),
             jewishDate.getGregorianDayOfMonth());
 
-        // Enhanced description with ID for better matching
         final description =
-            'Yahrtzeit for ${yahrtzeit.englishName ?? "Unknown"} (${yahrtzeit.hebrewName})\nID: ${yahrtzeit.id}';
+            'Yahrtzeit for ${yahrtzeit.englishName ?? "Unknown"} (${yahrtzeit.hebrewName ?? ""})\nID: ${yahrtzeit.id}';
 
-        final event = dc.Event(
-          selectedCalendar.id!,
+        final eventId = await _calendarPlugin.createEvent(
+          calendarId: calendar.id,
           title: 'Yahrtzeit: ${yahrtzeit.englishName ?? yahrtzeit.hebrewName}',
+          startDate: gregorianDate,
+          endDate: gregorianDate.add(Duration(days: 1)),
+          isAllDay: true,
           description: description,
-          start: tz.TZDateTime.from(gregorianDate, tz.local),
-          end: tz.TZDateTime.from(gregorianDate, tz.local)
-              .add(Duration(hours: 1)),
         );
-        await _deviceCalendarPlugin.createOrUpdateEvent(event);
+
+        newEventIds.add(eventId);
+      } catch (e) {
+        debugPrint('Error creating calendar event for year $year: $e');
       }
-    } on PlatformException catch (e) {
-      debugPrint('Error adding event to calendar: $e');
     }
+
+    // Store the created event IDs on the yahrtzeit for future deletion
+    yahrtzeit.calendarEventIds.addAll(newEventIds);
   }
 
   Future<void> _deleteFromCalendar(Yahrtzeit yahrtzeit) async {
-    try {
-      var permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
-      if (permissionsGranted.isSuccess && permissionsGranted.data == false) {
-        permissionsGranted = await _deviceCalendarPlugin.requestPermissions();
-        if (permissionsGranted.isSuccess == false ||
-            permissionsGranted.data == false) {
-          return;
+    if (!await _ensureCalendarPermissions()) return;
+
+    // First, try to delete by stored event IDs (reliable path)
+    if (yahrtzeit.calendarEventIds.isNotEmpty) {
+      for (final eventId in yahrtzeit.calendarEventIds) {
+        try {
+          await _calendarPlugin.deleteEvent(eventId: eventId);
+        } catch (e) {
+          debugPrint('DEBUG SYNC: Could not delete event $eventId: $e');
         }
       }
+      yahrtzeit.calendarEventIds.clear();
+      return;
+    }
 
-      // Select the main calendar to use
-      final selectedCalendar = await _selectMainCalendar();
-      if (selectedCalendar == null) {
-        debugPrint('DEBUG SYNC: No suitable calendar found for deleting events');
-        return;
-      }
+    // Fallback: search by title/description for events created before event ID tracking
+    try {
+      final selectedCalendar = await _selectCalendarForSetting();
+      if (selectedCalendar == null) return;
 
-      debugPrint(
-          'DEBUG SYNC: Selected calendar for deleting events - Name: "${selectedCalendar.name}", ID: ${selectedCalendar.id}');
+      final prefs = await SharedPreferences.getInstance();
+      final yearsToSync = prefs.getInt('years') ?? 5;
+      final searchWindow = 365 * yearsToSync;
 
-      // Search for and delete events only from the selected calendar
-      final eventsResult = await _deviceCalendarPlugin.retrieveEvents(
-        selectedCalendar.id!,
-        dc.RetrieveEventsParams(
-          startDate: tz.TZDateTime.now(tz.local).subtract(Duration(days: 365)),
-          endDate: tz.TZDateTime.now(tz.local).add(Duration(days: 365)),
-        ),
+      final now = DateTime.now();
+      final events = await _calendarPlugin.listEvents(
+        now.subtract(Duration(days: 365)),
+        now.add(Duration(days: searchWindow)),
+        calendarIds: [selectedCalendar.id],
       );
-      if (eventsResult.isSuccess && eventsResult.data!.isNotEmpty == true) {
-        for (var event in eventsResult.data!) {
-          // Improved matching: check ID in description or match by name pattern
-          final eventId = _extractIdFromEvent(event);
-          final matchesTitle =
-              event.title?.contains(yahrtzeit.englishName ?? '') == true ||
-                  (yahrtzeit.hebrewName != null &&
-                      event.title?.contains(yahrtzeit.hebrewName!) == true);
-          final matchesId = eventId == yahrtzeit.id;
 
-          if (matchesId ||
-              (matchesTitle &&
-                  yahrtzeit.hebrewName != null &&
-                  event.description?.contains(yahrtzeit.hebrewName!) == true)) {
-            await _deviceCalendarPlugin.deleteEvent(
-                selectedCalendar.id!, event.eventId!);
+      for (var event in events) {
+        final matchesId = event.description?.contains('ID: ${yahrtzeit.id}') ?? false;
+        final matchesTitle = event.title.contains(yahrtzeit.englishName ?? '') ||
+            (yahrtzeit.hebrewName != null &&
+                event.title.contains(yahrtzeit.hebrewName!));
+
+        if (matchesId || (matchesTitle && (event.description?.contains(yahrtzeit.hebrewName ?? '') ?? false))) {
+          try {
+            await _calendarPlugin.deleteEvent(eventId: event.instanceId);
+          } catch (e) {
+            debugPrint('DEBUG SYNC: Could not delete event ${event.instanceId}: $e');
           }
         }
       }
-    } on PlatformException catch (e) {
-      debugPrint('Error deleting event from calendar: $e');
+    } catch (e) {
+      debugPrint('Error deleting events from calendar: $e');
     }
   }
 
   List<YahrtzeitDate> nextMultiple(List<Yahrtzeit> yahrtzeits) {
     final dates = <YahrtzeitDate>[];
     for (var yahrtzeit in yahrtzeits) {
-      // Skip yahrtzeits without day/month (incomplete entries)
       if (yahrtzeit.day == null || yahrtzeit.month == null) {
         continue;
       }
-      // Validate month and day before attempting conversion
-      // Jewish months are 1-12, or 13 (Adar II) in leap years
       if (yahrtzeit.month! < 1 || yahrtzeit.month! > 13) {
         continue;
       }
@@ -510,13 +433,5 @@ class YahrtzeitsManager {
     }
     dates.sort((a, b) => a.gregorianDate.compareTo(b.gregorianDate));
     return dates;
-  }
-
-  String? _extractIdFromEvent(dc.Event event) {
-    if (event.description == null) return null;
-    // Extract ID from description: "ID: ..."
-    final regex = RegExp(r'ID:\s*([^\n]+)');
-    final match = regex.firstMatch(event.description!);
-    return match?.group(1)?.trim();
   }
 }

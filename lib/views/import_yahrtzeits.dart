@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import 'package:provider/provider.dart';
 import '../localizations/app_localizations.dart';
 import '../models/yahrtzeit_library.dart';
+import '../providers/settings_provider.dart';
 import '../services/import_service.dart';
 import '../services/yahrtzeits_manager.dart';
 import '../theme/app_theme.dart';
@@ -140,6 +142,17 @@ class _ImportYahrtzeitsPageState extends State<ImportYahrtzeitsPage> {
         tempFile.path,
         bulkGroupOverride: _selectedGroup,
       );
+
+      // Reschedule all notifications to include newly imported entries
+      if (result.successCount > 0 && mounted) {
+        final settings = Provider.of<SettingsProvider>(context, listen: false);
+        if (settings.notifications) {
+          await _manager.rescheduleAllNotifications(
+            settings.notifications,
+            settings.days,
+          );
+        }
+      }
 
       // Clean up temp file
       try {

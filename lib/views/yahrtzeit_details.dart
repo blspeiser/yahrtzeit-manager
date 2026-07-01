@@ -51,7 +51,7 @@ class YahrtzeitDetailsPage extends StatelessWidget {
               }
               parts.add('${localizations.translate("gregorian_date")}: ${gregorianFormatter.format(yahrtzeitDate.gregorianDate)}');
               parts.add('${localizations.translate("hebrew_date")}: ${hebrewFormatter.format(yahrtzeitDate.hebrewDate)}');
-              Share.share(parts.join('\n'));
+              SharePlus.instance.share(ShareParams(text: parts.join('\n')));
             },
           ),
         ],

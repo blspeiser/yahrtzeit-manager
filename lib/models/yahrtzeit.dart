@@ -19,6 +19,7 @@ class Yahrtzeit {
   final int? day;
   final int? month;
   final String? group;
+  final List<String> calendarEventIds;
   bool selected = false;
 
   Yahrtzeit({
@@ -27,8 +28,10 @@ class Yahrtzeit {
     this.day,
     this.month,
     this.group,
+    List<String>? calendarEventIds,
     String? id,
-  }) : id = id ?? Uuid().v4(); // תן אפשרות להעביר id, אם לא, ייווצר חדש
+  }) : id = id ?? Uuid().v4(),
+       calendarEventIds = calendarEventIds ?? [];
 
   Map<String, dynamic> toJson() {
     return {
@@ -39,17 +42,21 @@ class Yahrtzeit {
       'month': month,
       'group': group,
       'selected': selected,
+      'calendarEventIds': calendarEventIds,
     };
   }
 
   factory Yahrtzeit.fromJson(Map<String, dynamic> json) {
     return Yahrtzeit(
-      id: json['id'], // דאג ש־id יקרא גם מה־JSON
+      id: json['id'],
       englishName: json['englishName'],
       hebrewName: json['hebrewName'],
       day: json['day'],
       month: json['month'],
       group: json['group'],
+      calendarEventIds: json['calendarEventIds'] != null
+          ? List<String>.from(json['calendarEventIds'])
+          : [],
     )..selected = json['selected'] ?? false;
   }
   
