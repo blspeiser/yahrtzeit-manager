@@ -11,6 +11,7 @@ import 'services/file_handler_service.dart';
 import 'theme/app_theme.dart';
 import 'home_page.dart';
 import 'views/import_yahrtzeits.dart';
+import 'widgets/permission_rationale_dialog.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -100,6 +101,7 @@ class _YahrtzeitManagerAppState extends State<YahrtzeitManagerApp> {
     return Consumer<LocaleProvider>(
       builder: (context, localeProvider, child) {
         return MaterialApp(
+          navigatorKey: rootNavigatorKey,
           title: 'Yahrtzeit Manager',
           theme: ThemeData(
             primarySwatch: Colors.grey,

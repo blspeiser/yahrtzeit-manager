@@ -1,5 +1,6 @@
 import 'package:device_calendar_plus/device_calendar_plus.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show Icons;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kosher_dart/kosher_dart.dart' hide Calendar;
 import 'dart:convert';
@@ -7,6 +8,7 @@ import 'dart:io' show Platform;
 import '../models/yahrtzeit.dart';
 import '../models/yahrtzeit_date.dart';
 import '../models/sync_result.dart';
+import '../widgets/permission_rationale_dialog.dart';
 import 'notification_service.dart';
 
 class YahrtzeitsManager {
@@ -88,11 +90,24 @@ class YahrtzeitsManager {
 
   /// Ensures calendar permissions are granted, requesting if needed.
   /// Returns true if permissions are granted.
-  Future<bool> _ensureCalendarPermissions() async {
+  ///
+  /// When [showRationale] is true and the permission has not yet been decided,
+  /// an informative dialog explaining why calendar access is needed is shown
+  /// *before* the OS prompt (a Google Play requirement). Background/cleanup
+  /// callers leave it false so they never surface a dialog.
+  Future<bool> _ensureCalendarPermissions({bool showRationale = false}) async {
     var status = await _calendarPlugin.hasPermissions();
     if (status == CalendarPermissionStatus.granted) return true;
 
     if (status == CalendarPermissionStatus.notDetermined) {
+      if (showRationale) {
+        final proceed = await showPermissionRationaleDialog(
+          titleKey: 'calendar_permission_title',
+          messageKey: 'calendar_permission_rationale',
+          icon: Icons.calendar_month_outlined,
+        );
+        if (!proceed) return false;
+      }
       status = await _calendarPlugin.requestPermissions();
     }
 
@@ -103,7 +118,7 @@ class YahrtzeitsManager {
   Future<SyncResult> syncWithCalendar() async {
     debugPrint('DEBUG SYNC: Starting syncWithCalendar() - ONE-WAY sync (app -> calendar)');
     try {
-      if (!await _ensureCalendarPermissions()) {
+      if (!await _ensureCalendarPermissions(showRationale: true)) {
         debugPrint('DEBUG SYNC: Calendar permissions not granted');
         return SyncResult.failure('Calendar permissions not granted');
       }
@@ -216,12 +231,14 @@ class YahrtzeitsManager {
   }
 
   Future<void> rescheduleAllNotifications(
-      bool notificationsEnabled, int daysBefore) async {
+      bool notificationsEnabled, int daysBefore,
+      {bool forcePermissionPrompt = false}) async {
     await loadYahrtzeitsFromPreferences();
     // Cancel all existing notifications before doing a full reschedule
     await _notificationService.cancelAllNotifications();
     await _notificationService.scheduleYahrtzeitNotifications(
-        _yahrtzeits, daysBefore, notificationsEnabled);
+        _yahrtzeits, daysBefore, notificationsEnabled,
+        forcePermissionPrompt: forcePermissionPrompt);
   }
 
   Future<void> updateYahrtzeit(Yahrtzeit oldYahrtzeit, Yahrtzeit newYahrtzeit,
@@ -310,7 +327,7 @@ class YahrtzeitsManager {
   Future<void> _addToCalendar(Yahrtzeit yahrtzeit, int yearsToSync, Calendar calendar) async {
     if (yahrtzeit.day == null || yahrtzeit.month == null) return;
 
-    if (!await _ensureCalendarPermissions()) return;
+    if (!await _ensureCalendarPermissions(showRationale: true)) return;
 
     final newEventIds = <String>[];
 

@@ -89,5 +89,11 @@
     "month_abbreviation": "mo",
     "not_set": "Not set",
     "search": "Search",
-    "no_results_found": "No results found"
+    "no_results_found": "No results found",
+    "not_now": "Not now",
+    "continue_action": "Continue",
+    "notification_permission_title": "Turn on reminders?",
+    "notification_permission_rationale": "Yahrtzeit Manager can remind you before each yahrtzeit so you don't miss an anniversary. Allow notifications to receive these reminders. You can change this anytime in Settings.",
+    "calendar_permission_title": "Allow calendar access?",
+    "calendar_permission_rationale": "Yahrtzeit Manager adds each yahrtzeit anniversary to your device calendar so it appears alongside your other events. Your information stays on your device."
 }

@@ -1,15 +1,23 @@
+import 'package:flutter/material.dart' show Icons;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:kosher_dart/kosher_dart.dart';
 import '../models/yahrtzeit.dart';
+import '../widgets/permission_rationale_dialog.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
   bool _initialized = false;
+
+  /// Persisted flag: whether we have already shown the notification rationale
+  /// and requested the OS permission at least once. Prevents nagging the user
+  /// on every routine action once they have made their choice.
+  static const String _permissionAskedKey = 'notificationPermissionAsked';
 
   factory NotificationService() {
     return _instance;
@@ -33,11 +41,15 @@ class NotificationService {
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
+    // Do not request permissions here. Requesting is deferred to
+    // [ensureNotificationPermission], which shows an informative rationale
+    // dialog before the OS prompt (a Google Play requirement). Requesting at
+    // init time would fire an unexplained prompt at app startup.
     const DarwinInitializationSettings iosSettings =
         DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
     );
 
     const InitializationSettings initSettings = InitializationSettings(
@@ -50,16 +62,64 @@ class NotificationService {
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
+    _initialized = true;
+  }
+
+  /// Ensures notification permission is granted, showing an informative
+  /// rationale dialog *before* the OS prompt appears.
+  ///
+  /// The rationale is shown automatically at most once (tracked by
+  /// [_permissionAskedKey]) so routine actions like adding a yahrtzeit don't
+  /// nag the user. Pass [force] to always re-show it — used when the user
+  /// explicitly turns notifications on in Settings.
+  ///
+  /// Does nothing (defers) when there is no UI context yet, e.g. at app
+  /// startup before the widget tree exists.
+  Future<void> ensureNotificationPermission({bool force = false}) async {
+    await initialize();
+
     final androidImplementation =
         _notifications.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
-    if (androidImplementation != null) {
-      await androidImplementation.requestNotificationsPermission();
-    }
-
     final iosImplementation =
         _notifications.resolvePlatformSpecificImplementation<
             IOSFlutterLocalNotificationsPlugin>();
+
+    // No runtime notification permission on this platform (e.g. desktop).
+    if (androidImplementation == null && iosImplementation == null) return;
+
+    // If already granted, there is no OS prompt to precede with a rationale.
+    final bool alreadyEnabled;
+    if (androidImplementation != null) {
+      alreadyEnabled =
+          await androidImplementation.areNotificationsEnabled() ?? false;
+    } else {
+      final options = await iosImplementation!.checkPermissions();
+      alreadyEnabled = options?.isEnabled ?? false;
+    }
+    if (alreadyEnabled) return;
+
+    // Avoid nagging: only prompt once automatically unless the caller forces it.
+    final prefs = await SharedPreferences.getInstance();
+    final alreadyAsked = prefs.getBool(_permissionAskedKey) ?? false;
+    if (alreadyAsked && !force) return;
+
+    // No UI context yet (e.g. app startup) — defer to a user-facing moment.
+    if (rootNavigatorKey.currentContext == null) return;
+
+    final proceed = await showPermissionRationaleDialog(
+      titleKey: 'notification_permission_title',
+      messageKey: 'notification_permission_rationale',
+      icon: Icons.notifications_active_outlined,
+    );
+
+    // Record that we've asked so we don't nag on subsequent routine actions.
+    await prefs.setBool(_permissionAskedKey, true);
+    if (!proceed) return;
+
+    if (androidImplementation != null) {
+      await androidImplementation.requestNotificationsPermission();
+    }
     if (iosImplementation != null) {
       await iosImplementation.requestPermissions(
         alert: true,
@@ -67,8 +127,6 @@ class NotificationService {
         sound: true,
       );
     }
-
-    _initialized = true;
   }
 
   void _onNotificationTapped(NotificationResponse response) {
@@ -81,13 +139,15 @@ class NotificationService {
   /// only those yahrtzeits' notifications are cancelled and rescheduled.
   /// For a full reschedule, call [cancelAllNotifications] first, then this method.
   Future<void> scheduleYahrtzeitNotifications(List<Yahrtzeit> yahrtzeits,
-      int daysBefore, bool notificationsEnabled) async {
+      int daysBefore, bool notificationsEnabled,
+      {bool forcePermissionPrompt = false}) async {
     if (!notificationsEnabled) {
       await cancelAllNotifications();
       return;
     }
 
     await initialize();
+    await ensureNotificationPermission(force: forcePermissionPrompt);
 
     final now = tz.TZDateTime.now(tz.local);
     final currentJewishYear = JewishDate().getJewishYear();

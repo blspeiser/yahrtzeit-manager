@@ -89,5 +89,11 @@
     "month_abbreviation": "חו'",
     "not_set": "לא נקבע",
     "search": "חיפוש",
-    "no_results_found": "לא נמצאו תוצאות"
+    "no_results_found": "לא נמצאו תוצאות",
+    "not_now": "לא כעת",
+    "continue_action": "המשך",
+    "notification_permission_title": "להפעיל תזכורות?",
+    "notification_permission_rationale": "מנהל היארצייט יכול להזכיר לכם לפני כל יארצייט כדי שלא תפספסו תאריך. אפשרו התראות כדי לקבל תזכורות אלו. ניתן לשנות זאת בכל עת בהגדרות.",
+    "calendar_permission_title": "לאפשר גישה ליומן?",
+    "calendar_permission_rationale": "מנהל היארצייט מוסיף כל תאריך יארצייט ליומן המכשיר שלכם כך שיופיע לצד שאר האירועים. המידע שלכם נשמר במכשיר בלבד."
 }

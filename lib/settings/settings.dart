@@ -227,8 +227,11 @@ class SettingsPage extends StatelessWidget {
                           onChanged: (value) async {
                             settings.setNotifications(value);
                             final manager = YahrtzeitsManager();
+                            // Turning the switch on is explicit intent, so
+                            // re-show the rationale/prompt even if we asked once.
                             await manager.rescheduleAllNotifications(
-                                value, settings.days);
+                                value, settings.days,
+                                forcePermissionPrompt: value);
                           },
                           activeThumbColor: AppTheme.primaryColor,
                           activeTrackColor:
